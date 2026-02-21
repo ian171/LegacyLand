@@ -1,0 +1,47 @@
+name: LegacyLand
+version: '1.0-Beta1'
+main: net.chen.legacyLand.LegacyLand
+api-version: '1.21'
+authors: [ Chen ]
+depend: [ Towny, ItemsAdder ]
+softdepend: [ PlaceholderAPI ]
+
+commands:
+  legacy:
+    description: LegacyLand 扩展命令
+    usage: /legacy <government|role|info>
+    aliases: [ ll, yichan ]
+  tax:
+    description: 税收系统命令
+    usage: /tax <info|set>
+    aliases: [ shui ]
+  diplomacy:
+    description: 外交系统命令
+    usage: /diplomacy <info|war|peace|ally|trade|tech|neutral>
+    aliases: [ diplo, waijiao ]
+  war:
+    description: 战争系统命令
+    usage: /war <start|info|join|surrender|peace|list>
+    aliases: [ zhanzheng ]
+  siege:
+    description: 攻城战系统命令
+    usage: /siege <outpost|station|supply|core|info>
+    aliases: [ gongcheng ]
+  player:
+    description: 玩家系统命令
+    usage: /player <info|profession|stats>
+    aliases: [ p, wanjia ]
+  status:
+    description: 状态系统命令
+    usage: /status <info|heal>
+    aliases: [ zhuangtai ]
+  heal:
+    description: 医疗物品使用命令（内部命令）
+    usage: /legacyland:heal <player> <itemType>
+  drink:
+    description: 水壶使用命令（内部命令）
+    usage: /legacyland:drink <player>
+  season:
+    description: 季节系统命令
+    usage: /season <info|set|config>
+    aliases: [ jijie ]

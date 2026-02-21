@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "promptx": {
+      "command": "npx",
+      "args": ["-y", "@promptx/mcp-server"]
+    }
+  }
+}

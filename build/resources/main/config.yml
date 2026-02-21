@@ -1,0 +1,172 @@
+# LegacyLand 插件配置文件
+# 版本: 1.0-Beta1
+
+# 数据库配置
+database:
+  # 数据库类型 (sqlite, mysql)
+  type: sqlite
+  # SQLite 数据库文件名
+  filename: legacyland.db
+  # MySQL 配置 (如果使用 MySQL)
+  mysql:
+    host: localhost
+    port: 3306
+    database: legacyland
+    username: root
+    password: password
+
+# 国家系统配置
+nation:
+  # 创建国家所需的最低金额
+  creation-cost: 1000.0
+  # 国家名称最小长度
+  name-min-length: 2
+  # 国家名称最大长度
+  name-max-length: 20
+  # 国库初始金额
+  initial-treasury: 0.0
+  # 是否允许国家删除
+  allow-deletion: true
+
+# 税收系统配置
+tax:
+  # 默认税率
+  default:
+    trade: 0.0
+    shop: 0.0
+    auction: 0.0
+    land-sale: 0.0
+    land-rent: 0.0
+    vassal: 0.0
+  # 税率上限 (百分比)
+  max-rate: 100.0
+  # 税率下限 (百分比)
+  min-rate: 0.0
+
+# 外交系统配置
+diplomacy:
+  # 宣战冷却时间 (秒)
+  war-cooldown: 86400  # 24小时
+  # 结盟冷却时间 (秒)
+  alliance-cooldown: 3600  # 1小时
+  # 是否允许同时与多个国家结盟
+  allow-multiple-alliances: true
+  # 最大同盟数量
+  max-alliances: 5
+
+# 战争系统配置
+war:
+  # 是否启用战争系统
+  enabled: true
+  # 前哨战维持时间 (秒)
+  outpost-duration: 3600  # 1小时
+  # 前哨战所需最少人数
+  outpost-min-players: 2
+  # 战争最大持续时间 (秒)
+  max-duration: 3600  # 1小时
+  # 战争超时后是否强制平局
+  force-draw-on-timeout: true
+  # 初始补给数量
+  initial-supplies: 10
+  # 死亡消耗补给数量
+  death-supply-cost: 1
+  # 前哨战重生消耗补给数量
+  outpost-respawn-cost: 2
+  # 是否允许内战
+  allow-civil-war: true
+
+# 攻城战系统配置
+siege:
+  # 是否启用攻城战系统
+  enabled: true
+  # 城镇接壤距离 (格)
+  adjacent-distance: 48  # 3个区块
+  # 最大补给站数量
+  max-supply-stations: 8
+  # 补给站建造费用
+  supply-station-cost: 10.0
+  # 补给站最大存储量
+  supply-station-capacity: 64
+  # 是否自动放置城市核心
+  auto-place-city-core: true
+  # 城市核心基座材料 (IRON_BLOCK, GOLD_BLOCK, DIAMOND_BLOCK, EMERALD_BLOCK)
+  core-base-material: IRON_BLOCK
+  # 城市核心基座大小 (3x3, 5x5, 7x7, 9x9)
+  core-base-size: 3
+
+# 战争区域配置
+war-zone:
+  # 非参战人员进入战争区是否切换为旁观模式
+  spectator-mode-for-non-participants: true
+  # 前线是否只允许战士和后勤兵进入
+  frontline-soldier-only: true
+  # 战争结束后是否自动恢复游戏模式
+  restore-gamemode-on-end: true
+  # 恢复的游戏模式 (SURVIVAL, ADVENTURE, CREATIVE)
+  restore-gamemode: SURVIVAL
+
+# 战争保护配置
+war-protection:
+  # 是否启用战争保护
+  enabled: true
+  # 敌对国家是否可以在对方领地互动
+  allow-enemy-interaction: false
+  # 中立国家是否可以在对方领地互动
+  allow-neutral-interaction: true
+  # 友好国家是否可以在对方领地互动
+  allow-friendly-interaction: true
+
+# 消息配置
+messages:
+  # 消息前缀
+  prefix: "§6[LegacyLand]§r "
+  # 是否启用调试消息
+  debug: false
+  # 语言 (zh_CN, en_US)
+  language: zh_CN
+
+# 性能配置
+performance:
+  # 前哨战检查间隔 (tick, 20 tick = 1秒)
+  outpost-check-interval: 100  # 5秒
+  # 战争条件检查间隔 (tick)
+  war-condition-check-interval: 200  # 10秒
+  # 补给线检查间隔 (tick)
+  supply-line-check-interval: 200  # 10秒
+  # 是否启用异步处理
+  async-processing: true
+
+# 玩家状态系统配置
+player-status:
+  # 温度变化速率（每5秒最多变化的度数）
+  temperature-change-rate: 0.5
+  # 饮水值消耗间隔（秒）
+  hydration-consume-interval: 120
+  # 状态更新间隔 (ticks)
+  status-update-interval: 100  # 5秒
+  # 是否启用 ActionBar 显示
+  enable-actionbar: true
+  # ActionBar 更新间隔 (ticks)
+  actionbar-update-interval: 10  # 0.5秒
+
+# 集成配置
+integration:
+  # Towny 集成
+  towny:
+    enabled: true
+    # 是否同步 Towny 的国家数据
+    sync-nation-data: true
+  # Vault 集成 (经济系统)
+  vault:
+    enabled: false
+    # 是否使用 Vault 处理税收
+    use-for-tax: false
+
+# 实验性功能
+experimental:
+  # 是否启用实验性功能
+  enabled: false
+  # 自动补给线计算
+  auto-supply-line-calculation: false
+  # 动态战争区域
+  dynamic-war-zone: false

@@ -1,0 +1,146 @@
+package net.chen.legacyLand.nation;
+
+import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.object.Nation;
+import com.palmergames.bukkit.towny.object.Resident;
+import net.chen.legacyLand.database.DatabaseManager;
+import org.bukkit.entity.Player;
+
+import java.util.*;
+
+/**
+ * 国家扩展数据管理器 - 存储 Towny 国家的扩展信息
+ */
+public class NationManager {
+    private static NationManager instance;
+    private final Map<String, GovernmentType> nationGovernments; // 国家名 -> 政体
+    private final Map<String, Map<UUID, NationRole>> nationRoles; // 国家名 -> (玩家UUID -> 角色)
+    private DatabaseManager database;
+    private final TownyAPI townyAPI;
+
+    private NationManager() {
+        this.nationGovernments = new HashMap<>();
+        this.nationRoles = new HashMap<>();
+        this.townyAPI = TownyAPI.getInstance();
+    }
+
+    public static NationManager getInstance() {
+        if (instance == null) {
+            instance = new NationManager();
+        }
+        return instance;
+    }
+
+    public void setDatabase(DatabaseManager database) {
+        this.database = database;
+    }
+
+    /**
+     * 设置国家政体
+     */
+    public void setGovernmentType(String nationName, GovernmentType governmentType) {
+        nationGovernments.put(nationName, governmentType);
+
+        if (database != null) {
+            database.saveNationGovernment(nationName, governmentType);
+        }
+    }
+
+    /**
+     * 获取国家政体
+     */
+    public GovernmentType getGovernmentType(String nationName) {
+        return nationGovernments.getOrDefault(nationName, GovernmentType.FEUDAL);
+    }
+
+    /**
+     * 设置玩家角色
+     */
+    public void setPlayerRole(String nationName, UUID playerId, NationRole role) {
+        nationRoles.computeIfAbsent(nationName, k -> new HashMap<>()).put(playerId, role);
+
+        if (database != null) {
+            database.savePlayerRole(nationName, playerId, role);
+        }
+    }
+
+    /**
+     * 获取玩家角色
+     */
+    public NationRole getPlayerRole(String nationName, UUID playerId) {
+        Map<UUID, NationRole> roles = nationRoles.get(nationName);
+        if (roles != null && roles.containsKey(playerId)) {
+            return roles.get(playerId);
+        }
+
+        // 检查是否是 Towny 的国家领袖
+        Nation nation = townyAPI.getNation(nationName);
+        if (nation != null) {
+            Resident king = nation.getKing();
+            if (king != null && king.getUUID().equals(playerId)) {
+                GovernmentType govType = getGovernmentType(nationName);
+                return govType == GovernmentType.FEUDAL ? NationRole.KINGDOM : NationRole.GOVERNOR;
+            }
+        }
+
+        return NationRole.CITIZEN;
+    }
+
+    /**
+     * 检查玩家是否有权限
+     */
+    public boolean hasPermission(Player player, NationPermission permission) {
+        Resident resident = townyAPI.getResident(player);
+        if (resident == null || !resident.hasNation()) {
+            return false;
+        }
+
+        Nation nation = resident.getNationOrNull();
+        if (nation == null) {
+            return false;
+        }
+
+        NationRole role = getPlayerRole(nation.getName(), player.getUniqueId());
+        return role.hasPermission(permission);
+    }
+
+    /**
+     * 获取玩家所在国家
+     */
+    public Nation getPlayerNation(Player player) {
+        Resident resident = townyAPI.getResident(player);
+        if (resident != null && resident.hasNation()) {
+            return resident.getNationOrNull();
+        }
+        return null;
+    }
+
+    /**
+     * 加载国家扩展数据
+     */
+    public void loadNationData(String nationName) {
+        if (database != null) {
+            GovernmentType govType = database.loadNationGovernment(nationName);
+            if (govType != null) {
+                nationGovernments.put(nationName, govType);
+            }
+
+            Map<UUID, NationRole> roles = database.loadNationRoles(nationName);
+            if (roles != null && !roles.isEmpty()) {
+                nationRoles.put(nationName, roles);
+            }
+        }
+    }
+
+    /**
+     * 移除国家扩展数据
+     */
+    public void removeNationData(String nationName) {
+        nationGovernments.remove(nationName);
+        nationRoles.remove(nationName);
+
+        if (database != null) {
+            database.deleteNationData(nationName);
+        }
+    }
+}
