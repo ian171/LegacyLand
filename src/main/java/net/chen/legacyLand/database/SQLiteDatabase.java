@@ -175,7 +175,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setString(2, governmentType.name());
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存国家政体失败: " + e.getMessage());
+            getLogger().severe("保存国家政体失败: " + e.getMessage());
         }
     }
 
@@ -189,7 +189,7 @@ public class SQLiteDatabase implements IDatabase {
                 return GovernmentType.valueOf(rs.getString("government_type"));
             }
         } catch (SQLException e) {
-            LegacyLand.logger.severe("加载国家政体失败: " + e.getMessage());
+           getLogger().severe("加载国家政体失败: " + e.getMessage());
         }
         return null;
     }
@@ -203,7 +203,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setString(3, role.name());
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存玩家角色失败: " + e.getMessage());
+            getLogger().severe("保存玩家角色失败: " + e.getMessage());
         }
     }
 
@@ -220,7 +220,7 @@ public class SQLiteDatabase implements IDatabase {
                 roles.put(playerId, role);
             }
         } catch (SQLException e) {
-            LegacyLand.logger.severe("加载国家角色失败: " + e.getMessage());
+            getLogger().severe("加载国家角色失败: " + e.getMessage());
         }
         return roles;
     }
@@ -233,7 +233,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setString(2, playerId.toString());
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("删除玩家角色失败: " + e.getMessage());
+            getLogger().severe("删除玩家角色失败: " + e.getMessage());
         }
     }
 
@@ -245,7 +245,7 @@ public class SQLiteDatabase implements IDatabase {
             stmt.execute("DELETE FROM player_roles WHERE nation_name = '" + nationName + "'");
             stmt.close();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("删除国家数据失败: " + e.getMessage());
+            getLogger().severe("删除国家数据失败: " + e.getMessage());
         }
     }
 
@@ -259,7 +259,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setLong(4, relation.getEstablishedTime());
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存外交关系失败: " + e.getMessage());
+            getLogger().severe("保存外交关系失败: " + e.getMessage());
         }
     }
 
@@ -277,7 +277,7 @@ public class SQLiteDatabase implements IDatabase {
                 relations.add(new DiplomacyRelation(nation1, nation2, type));
             }
         } catch (SQLException e) {
-            LegacyLand.logger.severe("加载外交关系失败: " + e.getMessage());
+            getLogger().severe("加载外交关系失败: " + e.getMessage());
         }
         return relations;
     }
@@ -292,7 +292,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setString(4, nation1);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("删除外交关系失败: " + e.getMessage());
+            getLogger().severe("删除外交关系失败: " + e.getMessage());
         }
     }
 
@@ -318,7 +318,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setInt(12, data.getTalentPoints());
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存玩家数据失败: " + e.getMessage());
+            getLogger().severe("保存玩家数据失败: " + e.getMessage());
         }
     }
 
@@ -353,7 +353,7 @@ public class SQLiteDatabase implements IDatabase {
                 return data;
             }
         } catch (SQLException e) {
-            LegacyLand.logger.severe("加载玩家数据失败: " + e.getMessage());
+            getLogger().severe("加载玩家数据失败: " + e.getMessage());
         }
 
         return new PlayerData(playerId, playerName);
@@ -378,7 +378,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setInt(11, 10); // 默认补给
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存战争数据失败: " + e.getMessage());
+            getLogger().severe("保存战争数据失败: " + e.getMessage());
         }
     }
 
@@ -401,7 +401,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setInt(11, (Integer) warData.getOrDefault("defender_supplies", 10));
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存战争数据失败: " + e.getMessage());
+            getLogger().severe("保存战争数据失败: " + e.getMessage());
         }
     }
 
@@ -426,7 +426,7 @@ public class SQLiteDatabase implements IDatabase {
                 warData.put("defender_supplies", rs.getInt("defender_supplies"));
             }
         } catch (SQLException e) {
-            LegacyLand.logger.severe("加载战争数据失败: " + e.getMessage());
+            getLogger().severe("加载战争数据失败: " + e.getMessage());
         }
         return warData;
     }
@@ -438,7 +438,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setString(1, warName);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("删除战争数据失败: " + e.getMessage());
+            getLogger().severe("删除战争数据失败: " + e.getMessage());
         }
     }
 
@@ -451,7 +451,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setString(3, role);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存战争参与者失败: " + e.getMessage());
+            getLogger().severe("保存战争参与者失败: " + e.getMessage());
         }
     }
 
@@ -468,7 +468,7 @@ public class SQLiteDatabase implements IDatabase {
                 participants.put(playerId, role);
             }
         } catch (SQLException e) {
-            LegacyLand.logger.severe("加载战争参与者失败: " + e.getMessage());
+            getLogger().severe("加载战争参与者失败: " + e.getMessage());
         }
         return participants;
     }
@@ -487,7 +487,7 @@ public class SQLiteDatabase implements IDatabase {
             pstmt.setBoolean(7, (Boolean) siegeData.getOrDefault("outpost_active", false));
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            LegacyLand.logger.severe("保存攻城战数据失败: " + e.getMessage());
+            getLogger().severe("保存攻城战数据失败: " + e.getMessage());
         }
     }
 
@@ -508,7 +508,7 @@ public class SQLiteDatabase implements IDatabase {
                 siegeData.put("outpost_active", rs.getBoolean("outpost_active"));
             }
         } catch (SQLException e) {
-            LegacyLand.logger.severe("加载攻城战数据失败: " + e.getMessage());
+            getLogger().severe("加载攻城战数据失败: " + e.getMessage());
         }
         return siegeData;
     }

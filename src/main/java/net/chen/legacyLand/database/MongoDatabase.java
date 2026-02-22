@@ -80,7 +80,6 @@ public class MongoDatabase implements IDatabase {
 
     @Override
     public void createTables() {
-        // MongoDB 不需要预先创建集合，但可以创建索引
         try {
             // 为国家扩展数据创建索引
             database.getCollection("nation_extensions").createIndex(new Document("nation_name", 1));
@@ -108,8 +107,7 @@ public class MongoDatabase implements IDatabase {
 
             LegacyLand.logger.info("MongoDB 索引创建成功！");
         } catch (Exception e) {
-            LegacyLand.logger.severe("创建 MongoDB 索引失败: " + e.getMessage());
-            e.printStackTrace();
+            getLogger().severe("创建 MongoDB 索引失败: " + e.getMessage());
         }
     }
 
