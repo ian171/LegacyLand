@@ -75,6 +75,7 @@ public class DatabaseManager {
         return database.loadNationRoles(nationName);
     }
 
+    @Deprecated
     public void removePlayerRole(String nationName, UUID playerId) {
         database.removePlayerRole(nationName, playerId);
     }
