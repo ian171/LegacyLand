@@ -28,7 +28,7 @@ public class AchievementManager {
         if (playerData != null && !playerData.hasAchievement(achievement)) {
             playerData.addAchievement(achievement);
             // 实时保存到数据库
-            databaseManager.saveAchievement(playerId, achievement);
+            databaseManager.savePlayerAchievement(playerId, achievement.name());
         }
     }
 
@@ -39,8 +39,8 @@ public class AchievementManager {
         PlayerData playerData = playerManager.getPlayerData(playerId);
         if (playerData != null && playerData.hasAchievement(achievement)) {
             playerData.removeAchievement(achievement);
-            // 从数据库删除
-            databaseManager.deleteAchievement(playerId, achievement);
+            // 注意：当前数据库接口没有删除成就的方法，只能重新保存整个玩家数据
+            databaseManager.savePlayerData(playerData);
         }
     }
 

@@ -108,7 +108,10 @@ public class OutpostMonitorTask extends BukkitRunnable {
         discoverer.sendMessage("§a你发现了敌方的前哨战！敌方的前哨战已失效！");
 
         // 保存数据
-        plugin.getDatabaseManager().saveSiegeWar(siegeWarManager.getSiegeWarByWarId(war.getWarName()));
+        SiegeWar siegeWar = siegeWarManager.getSiegeWarByWarId(war.getWarName());
+        if (siegeWar != null) {
+            plugin.getDatabaseManager().saveSiegeWar(siegeWar.toMap());
+        }
     }
 
     /**
@@ -128,7 +131,10 @@ public class OutpostMonitorTask extends BukkitRunnable {
 
         // 保存数据
         plugin.getDatabaseManager().saveWar(war);
-        plugin.getDatabaseManager().saveSiegeWar(siegeWarManager.getSiegeWarByWarId(war.getWarName()));
+        SiegeWar siegeWar = siegeWarManager.getSiegeWarByWarId(war.getWarName());
+        if (siegeWar != null) {
+            plugin.getDatabaseManager().saveSiegeWar(siegeWar.toMap());
+        }
     }
 
     /**

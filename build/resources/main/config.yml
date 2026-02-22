@@ -3,17 +3,40 @@
 
 # 数据库配置
 database:
-  # 数据库类型 (sqlite, mysql)
+  # 数据库类型 (sqlite, mysql, mongodb)
   type: sqlite
   # SQLite 数据库文件名
-  filename: legacyland.db
-  # MySQL 配置 (如果使用 MySQL)
+  sqlite:
+    filename: legacyland.db
+  # MySQL 配置
   mysql:
     host: localhost
     port: 3306
     database: legacyland
     username: root
     password: password
+    # HikariCP 连接池配置
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  # MongoDB 配置
+  mongodb:
+    host: localhost
+    port: 27017
+    database: legacyland
+    username: ""
+    password: ""
+    # 认证数据库
+    auth-database: admin
+    # 连接池配置
+    pool:
+      max-pool-size: 10
+      min-pool-size: 2
+      max-connection-idle-time: 60000
+      max-connection-life-time: 1800000
 
 # 国家系统配置
 nation:
