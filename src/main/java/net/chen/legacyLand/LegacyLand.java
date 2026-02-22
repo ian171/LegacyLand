@@ -104,16 +104,9 @@ public final class LegacyLand extends JavaPlugin {
         }
         logger.info("经济系统已加载");
         logger.info("成就系统已加载。");
-
         // 初始化季节系统
-        try {
-            seasonManager = new SeasonManager(this);
-            seasonManager.start();
-        } catch (Exception e) {
-            logger.info(e.getMessage());
-
-
-        }
+        seasonManager = new SeasonManager(this);
+        seasonManager.start();
         logger.info("季节系统已加载。");
 
         new BukkitRunnable() {

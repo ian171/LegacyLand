@@ -62,7 +62,7 @@ public class SeasonManager {
      * 检查日期进度
      */
     private void checkDayProgress() {
-        World world = Bukkit.getWorlds().get(0); // 主世界
+        World world = Bukkit.getWorlds().getFirst(); // 主世界
         if (world == null) return;
 
         long currentTime = world.getFullTime();
@@ -105,7 +105,7 @@ public class SeasonManager {
      * 应用季节效果（天气、环境等）
      */
     private void applySeasonEffects() {
-        World world = Bukkit.getWorlds().get(0);
+        World world = Bukkit.getWorlds().getFirst();
         if (world == null) return;
 
         // 根据季节调整天气概率
