@@ -1,5 +1,8 @@
 package net.chen.legacyLand.database;
 
+import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j2;
+import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.nation.GovernmentType;
 import net.chen.legacyLand.nation.NationRole;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyRelation;
@@ -9,12 +12,16 @@ import net.chen.legacyLand.war.War;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * 数据库接口
  * 定义所有数据库操作
  */
 public interface IDatabase {
+    default Logger getLogger(){
+        return LegacyLand.logger;
+    }
 
     /**
      * 连接数据库

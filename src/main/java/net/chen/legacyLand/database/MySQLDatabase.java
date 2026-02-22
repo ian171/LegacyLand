@@ -57,8 +57,8 @@ public class MySQLDatabase implements IDatabase {
             LegacyLand.logger.info("MySQL 数据库连接成功！");
             createTables();
         } catch (Exception e) {
-            LegacyLand.logger.severe("MySQL 数据库连接失败: " + e.getMessage());
-            e.printStackTrace();
+            getLogger().severe("MySQL 数据库连接失败: " + e.getMessage());
+            getLogger().severe(e.getCause().toString());
         }
     }
 
