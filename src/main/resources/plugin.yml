@@ -3,8 +3,8 @@ version: '1.0-Beta1'
 main: net.chen.legacyLand.LegacyLand
 api-version: '1.21'
 authors: [ Chen ]
-depend: [ Towny, ItemsAdder ]
-softdepend: [ PlaceholderAPI ]
+depend: [Towny,ItemsAdder,Vault]
+softdepend: [PlaceholderAPI]
 
 commands:
   legacy:

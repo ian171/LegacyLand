@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LegacyLand.iml" filepath="$PROJECT_DIR$/.idea/modules/LegacyLand.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/LegacyLand.main.iml" filepath="$PROJECT_DIR$/.idea/modules/LegacyLand.main.iml" />
     </modules>
   </component>
