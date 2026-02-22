@@ -167,6 +167,28 @@ public class MySQLDatabase implements IDatabase {
                     "CHECK (id = 1)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
+            // FlagWar 数据表
+            String flagWarsTable = "CREATE TABLE IF NOT EXISTS flag_wars (" +
+                    "flag_war_id VARCHAR(36) PRIMARY KEY," +
+                    "attacker_id VARCHAR(36) NOT NULL," +
+                    "attacker_nation VARCHAR(255) NOT NULL," +
+                    "attacker_town VARCHAR(255) NOT NULL," +
+                    "defender_nation VARCHAR(255) NOT NULL," +
+                    "defender_town VARCHAR(255) NOT NULL," +
+                    "flag_location VARCHAR(255) NOT NULL," +
+                    "timer_block_location VARCHAR(255) NOT NULL," +
+                    "beacon_location VARCHAR(255) NOT NULL," +
+                    "start_time BIGINT NOT NULL," +
+                    "end_time BIGINT," +
+                    "status VARCHAR(50) NOT NULL," +
+                    "timer_progress INT DEFAULT 0," +
+                    "staking_fee DOUBLE DEFAULT 0," +
+                    "defense_break_fee DOUBLE DEFAULT 0," +
+                    "victory_cost DOUBLE DEFAULT 0," +
+                    "town_block_coords VARCHAR(100)," +
+                    "is_home_block TINYINT DEFAULT 0" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(nationExtTable);
                 stmt.execute(playerRolesTable);
@@ -177,6 +199,7 @@ public class MySQLDatabase implements IDatabase {
                 stmt.execute(siegeWarsTable);
                 stmt.execute(playerAchievementsTable);
                 stmt.execute(seasonTable);
+                stmt.execute(flagWarsTable);
                 LegacyLand.logger.info("MySQL 数据库表创建成功！");
             }
         } catch (SQLException e) {
@@ -309,7 +332,6 @@ public class MySQLDatabase implements IDatabase {
                 String nation1 = rs.getString("nation1");
                 String nation2 = rs.getString("nation2");
                 RelationType type = RelationType.valueOf(rs.getString("relation_type"));
-                long time = rs.getLong("established_time");
                 relations.add(new DiplomacyRelation(nation1, nation2, type));
             }
         } catch (SQLException e) {
@@ -664,5 +686,103 @@ public class MySQLDatabase implements IDatabase {
             LegacyLand.logger.severe("加载季节数据失败: " + e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public void saveFlagWar(net.chen.legacyLand.war.flagwar.FlagWarData flagWar) {
+        String sql = "INSERT INTO flag_wars (flag_war_id, attacker_id, attacker_nation, attacker_town, " +
+                "defender_nation, defender_town, flag_location, timer_block_location, beacon_location, " +
+                "start_time, end_time, status, timer_progress, staking_fee, defense_break_fee, victory_cost, " +
+                "town_block_coords, is_home_block) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
+                "ON DUPLICATE KEY UPDATE end_time=?, status=?, timer_progress=?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, flagWar.getFlagWarId());
+            pstmt.setString(2, flagWar.getAttackerId().toString());
+            pstmt.setString(3, flagWar.getAttackerNation());
+            pstmt.setString(4, flagWar.getAttackerTown());
+            pstmt.setString(5, flagWar.getDefenderNation());
+            pstmt.setString(6, flagWar.getDefenderTown());
+            pstmt.setString(7, serializeLocation(flagWar.getFlagLocation()));
+            pstmt.setString(8, serializeLocation(flagWar.getTimerBlockLocation()));
+            pstmt.setString(9, serializeLocation(flagWar.getBeaconLocation()));
+            pstmt.setLong(10, flagWar.getStartTime());
+            pstmt.setLong(11, flagWar.getEndTime());
+            pstmt.setString(12, flagWar.getStatus().name());
+            pstmt.setInt(13, flagWar.getTimerProgress());
+            pstmt.setDouble(14, flagWar.getStakingFee());
+            pstmt.setDouble(15, flagWar.getDefenseBreakFee());
+            pstmt.setDouble(16, flagWar.getVictoryCost());
+            pstmt.setString(17, flagWar.getTownBlockCoords());
+            pstmt.setInt(18, flagWar.isHomeBlock() ? 1 : 0);
+            pstmt.setLong(19, flagWar.getEndTime());
+            pstmt.setString(20, flagWar.getStatus().name());
+            pstmt.setInt(21, flagWar.getTimerProgress());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            LegacyLand.logger.severe("保存 FlagWar 数据失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<net.chen.legacyLand.war.flagwar.FlagWarData> loadActiveFlagWars() {
+        List<net.chen.legacyLand.war.flagwar.FlagWarData> result = new ArrayList<>();
+        String sql = "SELECT * FROM flag_wars WHERE status = 'ACTIVE'";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                org.bukkit.Location flagLoc = deserializeLocation(rs.getString("flag_location"));
+                if (flagLoc == null) continue;
+                net.chen.legacyLand.war.flagwar.FlagWarData flagWar = new net.chen.legacyLand.war.flagwar.FlagWarData(
+                    rs.getString("flag_war_id"),
+                    UUID.fromString(rs.getString("attacker_id")),
+                    rs.getString("attacker_nation"),
+                    rs.getString("attacker_town"),
+                    rs.getString("defender_nation"),
+                    rs.getString("defender_town"),
+                    flagLoc
+                );
+                flagWar.setStatus(net.chen.legacyLand.war.flagwar.FlagWarStatus.valueOf(rs.getString("status")));
+                flagWar.setTimerProgress(rs.getInt("timer_progress"));
+                flagWar.setStakingFee(rs.getDouble("staking_fee"));
+                flagWar.setDefenseBreakFee(rs.getDouble("defense_break_fee"));
+                flagWar.setVictoryCost(rs.getDouble("victory_cost"));
+                flagWar.setTownBlockCoords(rs.getString("town_block_coords"));
+                flagWar.setHomeBlock(rs.getInt("is_home_block") == 1);
+                result.add(flagWar);
+            }
+        } catch (SQLException e) {
+            LegacyLand.logger.severe("加载 FlagWar 数据失败: " + e.getMessage());
+        }
+        return result;
+    }
+
+    @Override
+    public void deleteFlagWar(String flagWarId) {
+        String sql = "DELETE FROM flag_wars WHERE flag_war_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, flagWarId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            LegacyLand.logger.severe("删除 FlagWar 数据失败: " + e.getMessage());
+        }
+    }
+
+    private String serializeLocation(org.bukkit.Location loc) {
+        return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+
+    private org.bukkit.Location deserializeLocation(String str) {
+        if (str == null) return null;
+        try {
+            String[] parts = str.split(",");
+            return new org.bukkit.Location(org.bukkit.Bukkit.getWorld(parts[0]),
+                Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+        } catch (Exception e) {
+            LegacyLand.logger.severe("反序列化 Location 失败: " + str);
+            return null;
+        }
     }
 }

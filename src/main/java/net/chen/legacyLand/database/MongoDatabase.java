@@ -11,7 +11,11 @@ import net.chen.legacyLand.nation.diplomacy.DiplomacyRelation;
 import net.chen.legacyLand.nation.diplomacy.RelationType;
 import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.player.Profession;
+import net.chen.legacyLand.war.flagwar.FlagWarData;
+import net.chen.legacyLand.war.flagwar.FlagWarStatus;
 import org.bson.Document;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -104,6 +108,10 @@ public class MongoDatabase implements IDatabase {
 
             // 为玩家成就创建索引
             database.getCollection("player_achievements").createIndex(new Document("player_id", 1).append("achievement_id", 1));
+
+            // 为 FlagWar 创建索引
+            database.getCollection("flag_wars").createIndex(new Document("flag_war_id", 1));
+            database.getCollection("flag_wars").createIndex(new Document("status", 1));
 
             LegacyLand.logger.info("MongoDB 索引创建成功！");
         } catch (Exception e) {
@@ -392,5 +400,85 @@ public class MongoDatabase implements IDatabase {
             return data;
         }
         return null;
+    }
+
+    @Override
+    public void saveFlagWar(FlagWarData flagWar) {
+        MongoCollection<Document> collection = database.getCollection("flag_wars");
+        Document filter = new Document("flag_war_id", flagWar.getFlagWarId());
+        Document doc = new Document("flag_war_id", flagWar.getFlagWarId())
+                .append("attacker_id", flagWar.getAttackerId().toString())
+                .append("attacker_nation", flagWar.getAttackerNation())
+                .append("attacker_town", flagWar.getAttackerTown())
+                .append("defender_nation", flagWar.getDefenderNation())
+                .append("defender_town", flagWar.getDefenderTown())
+                .append("flag_location", serializeLocation(flagWar.getFlagLocation()))
+                .append("timer_block_location", serializeLocation(flagWar.getTimerBlockLocation()))
+                .append("beacon_location", serializeLocation(flagWar.getBeaconLocation()))
+                .append("start_time", flagWar.getStartTime())
+                .append("end_time", flagWar.getEndTime())
+                .append("status", flagWar.getStatus().name())
+                .append("timer_progress", flagWar.getTimerProgress())
+                .append("staking_fee", flagWar.getStakingFee())
+                .append("defense_break_fee", flagWar.getDefenseBreakFee())
+                .append("victory_cost", flagWar.getVictoryCost())
+                .append("town_block_coords", flagWar.getTownBlockCoords())
+                .append("is_home_block", flagWar.isHomeBlock() ? 1 : 0);
+        collection.replaceOne(filter, doc, new com.mongodb.client.model.ReplaceOptions().upsert(true));
+    }
+
+    @Override
+    public List<FlagWarData> loadActiveFlagWars() {
+        List<FlagWarData> result = new ArrayList<>();
+        MongoCollection<Document> collection = database.getCollection("flag_wars");
+        Document filter = new Document("status", "ACTIVE");
+
+        try (MongoCursor<Document> cursor = collection.find(filter).iterator()) {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                Location flagLoc = deserializeLocation(doc.getString("flag_location"));
+                if (flagLoc == null) continue;
+
+                FlagWarData flagWar = new FlagWarData(
+                    doc.getString("flag_war_id"),
+                    UUID.fromString(doc.getString("attacker_id")),
+                    doc.getString("attacker_nation"),
+                    doc.getString("attacker_town"),
+                    doc.getString("defender_nation"),
+                    doc.getString("defender_town"),
+                    flagLoc
+                );
+                flagWar.setStatus(FlagWarStatus.valueOf(doc.getString("status")));
+                flagWar.setTimerProgress(doc.getInteger("timer_progress"));
+                flagWar.setStakingFee(doc.getDouble("staking_fee"));
+                flagWar.setDefenseBreakFee(doc.getDouble("defense_break_fee"));
+                flagWar.setVictoryCost(doc.getDouble("victory_cost"));
+                flagWar.setTownBlockCoords(doc.getString("town_block_coords"));
+                flagWar.setHomeBlock(doc.getInteger("is_home_block") == 1);
+                result.add(flagWar);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void deleteFlagWar(String flagWarId) {
+        database.getCollection("flag_wars").deleteOne(new Document("flag_war_id", flagWarId));
+    }
+
+    private String serializeLocation(Location loc) {
+        return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+
+    private Location deserializeLocation(String str) {
+        if (str == null) return null;
+        try {
+            String[] parts = str.split(",");
+            return new Location(Bukkit.getWorld(parts[0]),
+                Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+        } catch (Exception e) {
+            getLogger().severe("反序列化 Location 失败: " + str);
+            return null;
+        }
     }
 }

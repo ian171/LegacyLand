@@ -95,4 +95,12 @@ public interface IDatabase {
     void saveSeasonData(String currentSeason, int currentDay, int daysPerSubSeason);
 
     Map<String, Object> loadSeasonData();
+
+    // ========== FlagWar 数据 ==========
+
+    void saveFlagWar(net.chen.legacyLand.war.flagwar.FlagWarData flagWar);
+
+    List<net.chen.legacyLand.war.flagwar.FlagWarData> loadActiveFlagWars();
+
+    void deleteFlagWar(String flagWarId);
 }
