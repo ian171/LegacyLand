@@ -21,6 +21,10 @@ import net.chen.legacyLand.player.status.*;
 import net.chen.legacyLand.war.WarManager;
 import net.chen.legacyLand.war.commands.SiegeCommand;
 import net.chen.legacyLand.war.commands.WarCommand;
+import net.chen.legacyLand.war.flagwar.FlagWarCommand;
+import net.chen.legacyLand.war.flagwar.FlagWarListener;
+import net.chen.legacyLand.war.flagwar.FlagWarManager;
+import net.chen.legacyLand.war.flagwar.FlagWarTimerTask;
 import net.chen.legacyLand.war.siege.OutpostMonitorTask;
 import net.chen.legacyLand.war.siege.SiegeWarManager;
 import org.bukkit.Bukkit;
@@ -42,6 +46,7 @@ public final class LegacyLand extends JavaPlugin {
     private DiplomacyManager diplomacyManager;
     private WarManager warManager;
     private SiegeWarManager siegeWarManager;
+    private FlagWarManager flagWarManager;
     private PlayerManager playerManager;
     private DatabaseManager databaseManager;
     private AchievementManager achievementManager;
@@ -78,6 +83,9 @@ public final class LegacyLand extends JavaPlugin {
         warManager = WarManager.getInstance();
         siegeWarManager = SiegeWarManager.getInstance();
         logger.info("战争系统已加载。");
+        flagWarManager = FlagWarManager.getInstance();
+        flagWarManager.loadFromDatabase(databaseManager);
+        logger.info("FlagWar 系统已加载。");
         playerManager = PlayerManager.getInstance();
         playerManager.setDatabase(databaseManager);
         logger.info("玩家系统已加载。");
@@ -116,6 +124,8 @@ public final class LegacyLand extends JavaPlugin {
 
         // 启动前哨战监控任务（每分钟检查一次）
         new OutpostMonitorTask(instance).runTaskTimer(instance, 1200L, 1200L);
+        // 启动 FlagWar 计时器任务（每秒检查一次）
+        new FlagWarTimerTask().runTaskTimer(instance, 20L, 20L);
         // 启动状态更新任务（每5秒检查一次）
         new StatusUpdateTask().runTaskTimer(instance, 10L, 10L);
 
@@ -178,6 +188,10 @@ public final class LegacyLand extends JavaPlugin {
         net.chen.legacyLand.season.SeasonCommand seasonCommand = new net.chen.legacyLand.season.SeasonCommand(this, seasonManager);
         instance.getCommand("season").setExecutor(seasonCommand);
         instance.getCommand("season").setTabCompleter(seasonCommand);
+
+        FlagWarCommand flagWarCommand = new FlagWarCommand();
+        instance.getCommand("flagwar").setExecutor(flagWarCommand);
+        instance.getCommand("flagwar").setTabCompleter(flagWarCommand);
     }
 
     private void registerListeners() {
@@ -187,6 +201,7 @@ public final class LegacyLand extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerEventListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerAchievementsListener(),this);
         getServer().getPluginManager().registerEvents(new PlayerStatusListener(), this);
+        getServer().getPluginManager().registerEvents(new FlagWarListener(), this);
     }
     public static void initItemsadderItems() throws IOException {
         // 修正资源路径（去掉 /resources/）

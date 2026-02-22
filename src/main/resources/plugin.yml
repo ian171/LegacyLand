@@ -45,3 +45,7 @@ commands:
     description: 季节系统命令
     usage: /season <info|set|config>
     aliases: [ jijie ]
+  flagwar:
+    description: FlagWar 旗帜战争命令
+    usage: /flagwar <info|list|cancel>
+    aliases: [ fw, qizhan ]
