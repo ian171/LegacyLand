@@ -22,6 +22,16 @@ public class DiplomacyRelation {
     }
 
     /**
+     * 用于从数据库加载的构造函数
+     */
+    public DiplomacyRelation(String nation1, String nation2, RelationType relationType, long establishedTime) {
+        this.nation1 = nation1;
+        this.nation2 = nation2;
+        this.relationType = relationType;
+        this.establishedTime = establishedTime;
+    }
+
+    /**
      * 检查是否涉及指定国家
      */
     public boolean involves(String nationName) {

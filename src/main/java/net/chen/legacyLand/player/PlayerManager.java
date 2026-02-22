@@ -59,7 +59,7 @@ public class PlayerManager {
         if (data == null) {
             // 尝试从数据库加载
             if (database != null) {
-                data = database.loadPlayerData(player.getUniqueId());
+                data = database.loadPlayerData(player.getUniqueId(), player.getName());
             }
 
             // 如果数据库中也没有，创建新数据

@@ -85,9 +85,9 @@ public class WarManager {
         playerWarMap.put(participant.getPlayerId(), warId);
 
         // 保存参与者到数据库
+        String role = (isAttacker ? "ATTACKER:" : "DEFENDER:") + participant.getRole().name();
         net.chen.legacyLand.LegacyLand.getInstance().getDatabaseManager().saveWarParticipant(
-            warId, participant.getPlayerId(), isAttacker ? "ATTACKER" : "DEFENDER",
-            participant.getRole().name(), participant.getSupplies());
+            warId, participant.getPlayerId(), role);
 
         return true;
     }

@@ -109,7 +109,7 @@ public class SiegeCommand implements CommandExecutor, TabCompleter {
         player.sendMessage("§e如果被敌方发现，前哨战将失效。");
 
         // 保存数据
-        net.chen.legacyLand.LegacyLand.getInstance().getDatabaseManager().saveSiegeWar(siegeWar);
+        net.chen.legacyLand.LegacyLand.getInstance().getDatabaseManager().saveSiegeWar(siegeWar.toMap());
 
         return true;
     }

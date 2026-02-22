@@ -144,4 +144,28 @@ public class SiegeWar {
                 loc.getWorld().equals(location.getWorld()) &&
                 loc.distance(location) <= 16);
     }
+
+    /**
+     * 转换为Map用于数据库存储
+     */
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("siege_id", siegeId);
+        map.put("war_name", warId);
+        map.put("attacker_town", attackerTown);
+        map.put("defender_town", defenderTown);
+
+        if (outpost != null) {
+            Location loc = outpost.getLocation();
+            map.put("outpost_location", loc.getWorld().getName() + "," + loc.getX() + "," + loc.getY() + "," + loc.getZ());
+            map.put("outpost_establish_time", outpost.getEstablishTime());
+            map.put("outpost_active", outpost.isActive());
+        } else {
+            map.put("outpost_location", null);
+            map.put("outpost_establish_time", 0L);
+            map.put("outpost_active", false);
+        }
+
+        return map;
+    }
 }
