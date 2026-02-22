@@ -47,14 +47,21 @@ public class FlagWarListener implements Listener {
         }
 
         // 检查是否是 OP
-        if (player.isOp()) {
-            player.sendMessage("§c服务器管理员无法发起旗帜战争！");
+//        if (player.isOp()) {
+//            player.sendMessage("§c服务器管理员无法发起旗帜战争！");
+//            event.setCancelled(true);
+//            return;
+//        }
+
+        // 获取玩家所在国家
+        Resident attackerResident = TownyAPI.getInstance().getResident(player);
+        if (attackerResident == null) {
+            player.sendMessage("§c你必须加入一个国家才能发起旗帜战争！");
             event.setCancelled(true);
             return;
         }
 
-        // 获取玩家所在国家
-        Nation attackerNation = TownyAPI.getInstance().getResidentNationOrNull((Resident) player);
+        Nation attackerNation = TownyAPI.getInstance().getResidentNationOrNull(attackerResident);
         if (attackerNation == null) {
             player.sendMessage("§c你必须加入一个国家才能发起旗帜战争！");
             event.setCancelled(true);
@@ -63,7 +70,8 @@ public class FlagWarListener implements Listener {
 
         // 检查国家是否是中立/和平状态
         if (attackerNation.isNeutral()) {
-            player.sendMessage("§c中立国家无法发起旗帜战争！");
+            attackerNation.setNeutral(false);
+            player.sendMessage("你已放弃中立国家身份，再次放置宣战");
             event.setCancelled(true);
             return;
         }
@@ -97,9 +105,8 @@ public class FlagWarListener implements Listener {
 
         // 检查目标国家是否是中立/和平状态
         if (defenderNation.isNeutral()) {
-            player.sendMessage("§c无法攻击中立国家！");
-            event.setCancelled(true);
-            return;
+            defenderNation.setNeutral(false);
+            player.sendMessage("你已放弃中立国家身份");
         }
 
         // 检查是否只能攻击边界地块
@@ -150,6 +157,12 @@ public class FlagWarListener implements Listener {
         }
 
         // TODO: 集成经济系统扣费
+        double balance = LegacyLand.getEcon().getBalance(player);
+        if (balance < stakingFee){
+            player.sendMessage("§4余额不足，无法打仗！");
+            return;
+        }
+        LegacyLand.getEcon().depositPlayer(player,stakingFee);
         player.sendMessage("§e已扣除放置费用: " + stakingFee + " 金币");
 
         // 创建 FlagWar
@@ -193,7 +206,8 @@ public class FlagWarListener implements Listener {
         Player player = event.getPlayer();
 
         // 检查是否是防守方
-        Nation playerNation = TownyAPI.getInstance().getResidentNationOrNull((Resident) player);
+        Resident playerResident = TownyAPI.getInstance().getResident(player);
+        Nation playerNation = playerResident != null ? TownyAPI.getInstance().getResidentNationOrNull(playerResident) : null;
         if (playerNation == null || !playerNation.getName().equals(flagWar.getDefenderNation())) {
             player.sendMessage("§c只有防守方可以破坏计时器方块！");
             event.setCancelled(true);
@@ -228,7 +242,7 @@ public class FlagWarListener implements Listener {
             for (WorldCoord neighbor : neighbors) {
                 TownBlock neighborBlock = TownyAPI.getInstance().getTownBlock(neighbor);
                 if (neighborBlock == null || !neighborBlock.hasTown() ||
-                    !neighborBlock.getTownOrNull().equals(town)) {
+                    !town.equals(neighborBlock.getTownOrNull())) {
                     return true; // 至少有一个方向不是本城镇，说明是边界
                 }
             }

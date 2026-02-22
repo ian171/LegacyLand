@@ -18,6 +18,7 @@ import net.chen.legacyLand.player.PlayerManager;
 import net.chen.legacyLand.player.commands.PlayerCommand;
 import net.chen.legacyLand.player.listeners.PlayerEventListener;
 import net.chen.legacyLand.player.status.*;
+import net.chen.legacyLand.season.SeasonManager;
 import net.chen.legacyLand.war.WarManager;
 import net.chen.legacyLand.war.commands.SiegeCommand;
 import net.chen.legacyLand.war.commands.WarCommand;
@@ -27,7 +28,12 @@ import net.chen.legacyLand.war.flagwar.FlagWarManager;
 import net.chen.legacyLand.war.flagwar.FlagWarTimerTask;
 import net.chen.legacyLand.war.siege.OutpostMonitorTask;
 import net.chen.legacyLand.war.siege.SiegeWarManager;
+import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
+import org.bukkit.block.Vault;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -91,11 +97,23 @@ public final class LegacyLand extends JavaPlugin {
         logger.info("玩家系统已加载。");
         achievementManager = new AchievementManager(playerManager, databaseManager);
         AchievementManager.setInstance(achievementManager);
+        try {
+            vault_init();
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+        }
+        logger.info("经济系统已加载");
         logger.info("成就系统已加载。");
 
         // 初始化季节系统
-        seasonManager = new net.chen.legacyLand.season.SeasonManager(this);
-        seasonManager.start();
+        try {
+            seasonManager = new SeasonManager(this);
+            seasonManager.start();
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+
+
+        }
         logger.info("季节系统已加载。");
 
         new BukkitRunnable() {
@@ -244,5 +262,44 @@ public final class LegacyLand extends JavaPlugin {
 
         }
     }
+    @Getter
+    private static Economy econ = null;
+    @Getter
+    private static Permission perms = null;
+    @Getter
+    private static Chat chat = null;
+
+    public void vault_init(){
+        if (!setupEconomy()) {
+            logger.warning("未找到 Vault 或经济插件，经济功能将不可用！");
+            return;
+        }
+        setupPermissions();
+        setupChat();
+    }
+
+    private boolean setupEconomy() {
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp != null) {
+            econ = rsp.getProvider();
+        }
+        return econ != null;
+    }
+    private boolean setupChat() {
+        RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
+        if (rsp != null) {
+            chat = rsp.getProvider();
+        }
+        return chat != null;
+    }
+
+    private boolean setupPermissions() {
+        RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+        if (rsp != null) {
+            perms = rsp.getProvider();
+        }
+        return perms != null;
+    }
+
 
 }
