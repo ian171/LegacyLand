@@ -71,13 +71,109 @@
 - 关系查询
 - 自动通知相关国家成员
 
+### 2. 季节系统 ✅
+完整的四季循环系统，每个季节包含3个子季节。
+
+#### 季节划分
+- **春季 (SPRING)**: 早春、仲春、晚春
+- **夏季 (SUMMER)**: 初夏、盛夏、晚夏
+- **秋季 (AUTUMN)**: 早秋、中秋、晚秋
+- **冬季 (WINTER)**: 初冬、隆冬、残冬
+
+#### 季节特性
+- **温度系统**: 每个季节有不同的基础温度
+  - 春季: 22°C
+  - 夏季: 30°C
+  - 秋季: 21°C
+  - 冬季: 15°C
+- **天气效果**: 自动调整天气
+  - 春季: 30%降雨概率
+  - 夏季: 晴朗
+  - 秋季: 20%降雨概率
+  - 冬季: 40%降雪概率
+- **自动循环**: 每8个游戏日自动切换子季节（可配置）
+
+#### 季节命令
+```
+/season info          - 查看当前季节信息
+/season set <季节>    - 设置季节（管理员）
+/season config        - 查看季节配置
+```
+
+### 3. 玩家状态系统 ✅
+完整的玩家生存状态管理系统。
+
+#### 状态指标
+- **体温 (Temperature)**: 受季节和环境影响
+  - 加热速度: 0.5°C/秒
+  - 冷却速度: 0.75°C/秒（1.5倍）
+  - 季节影响: 根据当前季节调整目标温度
+- **水分 (Hydration)**: 口渴系统
+- **职业系统**: 主职业和副职业
+  - 等级系统
+  - 经验值系统
+  - 天赋点系统
+
+#### ActionBar显示
+- 更新频率: 0.5秒（10 ticks）
+- 显示内容: 生命值、饥饿值、水分、体温
+- 可通过配置关闭，使用PlaceholderAPI自定义显示
+
+#### 数据持久化
+- 玩家加入时自动加载数据
+- 玩家退出时自动保存数据
+- 温度数据实时同步到数据库
+
+### 4. PlaceholderAPI集成 ✅
+提供20+个占位符变量供其他插件使用。
+
+#### 可用变量
+- 玩家状态: health, food, hydration, temperature
+- 职业信息: profession, profession_level, profession_exp
+- 季节信息: season, season_day, season_temperature
+- 国家信息: nation, nation_role, nation_leader
+- 等等...
+
+#### 使用场景
+- TAB插件: 自定义玩家列表显示
+- DeluxeMenus: 创建自定义菜单
+- 其他支持PlaceholderAPI的插件
+
 ## 数据持久化
 
-### SQLite 数据库
-所有数据自动保存到 SQLite 数据库，包括：
+### 多数据库支持 ✅
+插件支持三种数据库类型，可在配置文件中自由切换：
+
+#### 1. SQLite（默认）
+- **适用场景**：小型服务器、单机测试
+- **优点**：无需额外配置，开箱即用
+- **文件位置**：`plugins/LegacyLand/legacyland.db`
+
+#### 2. MySQL
+- **适用场景**：中大型服务器、高并发环境
+- **优点**：使用HikariCP连接池，性能优异
+- **配置项**：host, port, database, username, password, pool settings
+
+#### 3. MongoDB
+- **适用场景**：需要灵活数据结构的场景
+- **优点**：NoSQL支持，文档型存储
+- **配置项**：host, port, database, username, password
+
+### 数据库架构
+- **IDatabase接口**：统一的数据库操作接口
+- **DatabaseManager**：工厂模式管理器，根据配置自动选择数据库
+- **连接池优化**：MySQL使用HikariCP，MongoDB使用内置连接池
+
+### 存储的数据
+所有数据自动保存到数据库，包括：
 - 国家信息（名称、领袖、政体、国库、税收配置）
 - 成员信息（玩家、角色、加入时间）
 - 外交关系（国家间关系、建立时间）
+- 玩家数据（温度、水分、职业、等级、经验）
+- 战争数据（战争状态、参与者、补给）
+- 攻城战数据（前哨战、补给站、核心）
+- 玩家成就
+- 季节数据
 
 ### 数据库表结构
 ```sql
@@ -90,6 +186,29 @@ nation_members (player_id, player_name, nation_name, role, join_time)
 
 -- 外交关系表
 diplomacy_relations (id, nation1, nation2, relation_type, established_time)
+
+-- 玩家数据表
+players (player_id, player_name, max_health, hydration, temperature,
+         main_profession, main_profession_level, main_profession_exp,
+         sub_profession, sub_profession_level, sub_profession_exp, talent_points)
+
+-- 战争表
+wars (war_name, war_type, attacker_nation, defender_nation,
+      attacker_town, defender_town, status, start_time, end_time,
+      attacker_supplies, defender_supplies)
+
+-- 战争参与者表
+war_participants (war_name, player_id, role)
+
+-- 攻城战表
+siege_wars (siege_id, war_name, attacker_town, defender_town,
+            outpost_location, outpost_establish_time, outpost_active)
+
+-- 玩家成就表
+player_achievements (player_id, achievement_id, unlock_time)
+
+-- 季节数据表
+season_data (id, current_season, current_day, days_per_sub_season)
 ```
 
 ## 命令系统
@@ -161,23 +280,59 @@ diplomacy_relations (id, nation1, nation2, relation_type, established_time)
 src/main/java/net/chen/legacyLand/
 ├── LegacyLand.java                          # 主插件类
 ├── database/
-│   └── DatabaseManager.java                # 数据库管理器
-└── nation/
-    ├── GovernmentType.java                  # 政体类型
-    ├── Nation.java                          # 国家模型
-    ├── NationManager.java                   # 国家管理器
-    ├── NationMember.java                    # 成员模型
-    ├── NationPermission.java                # 权限枚举
-    ├── NationRole.java                      # 角色枚举
-    ├── TaxConfig.java                       # 税收配置
-    ├── commands/
-    │   ├── NationCommand.java               # 国家命令
-    │   ├── TaxCommand.java                  # 税收命令
-    │   └── DiplomacyCommand.java            # 外交命令
-    └── diplomacy/
-        ├── RelationType.java                # 关系类型
-        ├── DiplomacyRelation.java           # 外交关系
-        └── DiplomacyManager.java            # 外交管理器
+│   ├── IDatabase.java                       # 数据库接口
+│   ├── DatabaseManager.java                # 数据库管理器（工厂模式）
+│   ├── SQLiteDatabase.java                 # SQLite实现
+│   ├── MySQLDatabase.java                  # MySQL实现（HikariCP）
+│   └── MongoDatabase.java                  # MongoDB实现
+├── config/
+│   └── ConfigManager.java                  # 配置管理器（自动更新配置）
+├── nation/
+│   ├── GovernmentType.java                  # 政体类型
+│   ├── Nation.java                          # 国家模型
+│   ├── NationManager.java                   # 国家管理器
+│   ├── NationMember.java                    # 成员模型
+│   ├── NationPermission.java                # 权限枚举
+│   ├── NationRole.java                      # 角色枚举
+│   ├── TaxConfig.java                       # 税收配置
+│   ├── commands/
+│   │   ├── NationCommand.java               # 国家命令
+│   │   ├── TaxCommand.java                  # 税收命令
+│   │   └── DiplomacyCommand.java            # 外交命令
+│   └── diplomacy/
+│       ├── RelationType.java                # 关系类型
+│       ├── DiplomacyRelation.java           # 外交关系
+│       └── DiplomacyManager.java            # 外交管理器
+├── player/
+│   ├── PlayerData.java                      # 玩家数据模型
+│   ├── Profession.java                      # 职业枚举
+│   └── status/
+│       ├── TemperatureManager.java          # 温度管理器
+│       └── ActionBarUpdateTask.java         # ActionBar更新任务
+├── season/
+│   ├── Season.java                          # 季节枚举（12个子季节）
+│   ├── SeasonManager.java                   # 季节管理器
+│   └── SeasonCommand.java                   # 季节命令
+├── placeholder/
+│   └── LegacyLandPlaceholder.java          # PlaceholderAPI集成
+├── war/
+│   ├── War.java                             # 战争模型
+│   ├── WarManager.java                      # 战争管理器
+│   ├── WarType.java                         # 战争类型
+│   ├── WarStatus.java                       # 战争状态
+│   ├── commands/
+│   │   ├── WarCommand.java                  # 战争命令
+│   │   └── SiegeCommand.java                # 攻城命令
+│   └── siege/
+│       ├── SiegeWar.java                    # 攻城战模型
+│       ├── SiegeWarManager.java             # 攻城战管理器
+│       ├── Outpost.java                     # 前哨战
+│       ├── SupplyLine.java                  # 补给线
+│       ├── SupplyStation.java               # 补给站
+│       └── OutpostMonitorTask.java          # 前哨战监控任务
+└── achievement/
+    ├── Achievement.java                     # 成就模型
+    └── AchievementManager.java             # 成就管理器
 ```
 
 ## 使用示例
@@ -222,11 +377,71 @@ src/main/java/net/chen/legacyLand/
 
 ### 必需依赖
 - **Towny** 0.102.0.0 - 领地管理插件
+- **ItemsAdder** - 物品扩展插件
 - **Paper API** 1.21.11 - 服务器 API
 
+### 可选依赖
+- **PlaceholderAPI** - 变量占位符支持
+
 ### 内置依赖
-- **SQLite JDBC** 3.45.0.0 - 数据库驱动
+- **SQLite JDBC** 3.45.0.0 - SQLite数据库驱动
+- **MySQL Connector** 8.3.0 - MySQL数据库驱动
+- **HikariCP** 5.1.0 - 高性能JDBC连接池
+- **MongoDB Driver** 4.11.1 - MongoDB数据库驱动
 - **Lombok** 1.18.30 - 代码简化
+
+## 配置系统
+
+### 自动配置更新
+ConfigManager会自动检测并添加新的配置项，无需手动修改配置文件。
+
+### 配置文件示例 (config.yml)
+```yaml
+# 数据库配置
+database:
+  type: sqlite  # 可选: sqlite, mysql, mongodb
+
+  sqlite:
+    filename: legacyland.db
+
+  mysql:
+    host: localhost
+    port: 3306
+    database: legacyland
+    username: root
+    password: password
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  mongodb:
+    host: localhost
+    port: 27017
+    database: legacyland
+    username: ""
+    password: ""
+
+# 玩家状态系统
+player-status:
+  enable-actionbar: true  # 是否启用内置ActionBar显示
+
+# 季节系统
+season:
+  days-per-sub-season: 8  # 每个子季节的游戏天数
+```
+
+### PlaceholderAPI变量
+插件提供20+个占位符变量，可用于其他插件（TAB、DeluxeMenus等）：
+- `%legacyland_health%` - 玩家生命值
+- `%legacyland_food%` - 饥饿值
+- `%legacyland_hydration%` - 水分值
+- `%legacyland_temperature%` - 体温
+- `%legacyland_profession%` - 主职业
+- `%legacyland_profession_level%` - 主职业等级
+- `%legacyland_season%` - 当前季节
+- `%legacyland_season_day%` - 季节天数
+- 等等...
 
 ## 数据库文件位置
 
@@ -278,6 +493,18 @@ JAR 文件位置：`build/libs/LegacyLand-1.0-Beta1.jar`
 5. 税收计算功能已实现，但实际扣税需要配合经济插件
 
 ## 更新日志
+
+### v1.0-Beta2 (2026-02-22)
+- ✅ 实现多数据库支持系统
+  - SQLite（默认）
+  - MySQL（HikariCP连接池）
+  - MongoDB（NoSQL支持）
+- ✅ 实现季节系统（12个子季节）
+- ✅ 实现玩家状态系统（温度、水分、职业）
+- ✅ 实现PlaceholderAPI集成（20+变量）
+- ✅ 实现配置自动更新系统
+- ✅ 优化ActionBar更新频率（0.5秒）
+- ✅ 完善数据持久化（玩家温度、季节数据）
 
 ### v1.0-Beta1 (2026-02-15)
 - ✅ 实现国家成员系统 (1.1)

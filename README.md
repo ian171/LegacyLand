@@ -1,10 +1,192 @@
-# LegacyLand - 国家系统实现文档
+# LegacyLand - Minecraft国家系统插件
 
-## 已完成功能
+## 项目简介
 
-### 第一大模块：国家成员系统 (1.1)
+LegacyLand是一个基于Paper 1.21的Minecraft服务器插件，提供完整的国家系统、季节系统、玩家状态管理等功能。
 
-基于 Towny 插件，已实现完整的国家成员管理系统，包含以下核心功能：
+## 核心功能
+
+### 1. 国家系统 ✅
+- **政体系统**: 分封制、城市共和制
+- **角色系统**: 国王、财政大臣、司法大臣等多种角色
+- **权限系统**: 基于角色的细粒度权限控制
+- **税收系统**: 交易税、土地税、封臣税等多种税收类型
+- **外交系统**: 战争、同盟、贸易协议、科技协议等
+
+### 2. 季节系统 ✅
+- **四季循环**: 春夏秋冬，每季3个子季节（共12个）
+- **温度系统**: 每个季节有不同的基础温度
+- **天气效果**: 自动调整降雨、降雪概率
+- **自动循环**: 每8个游戏日切换子季节（可配置）
+
+### 3. 玩家状态系统 ✅
+- **体温管理**: 受季节和环境影响
+- **水分系统**: 口渴机制
+- **职业系统**: 主职业、副职业、等级、经验值
+- **ActionBar显示**: 实时显示玩家状态
+
+### 4. 多数据库支持 ✅
+- **SQLite**: 默认，适合小型服务器
+- **MySQL**: HikariCP连接池，适合中大型服务器
+- **MongoDB**: NoSQL支持，灵活的数据结构
+
+### 5. PlaceholderAPI集成 ✅
+- 提供20+个占位符变量
+- 支持TAB、DeluxeMenus等插件
+- 自定义显示玩家状态和国家信息
+
+## 版本信息
+- **插件版本**: 1.0-Beta2
+- **Minecraft版本**: 1.21
+- **构建状态**: ✅ 成功
+
+## 快速开始
+
+### 安装
+1. 下载插件JAR文件
+2. 将JAR文件放入服务器的`plugins`目录
+3. 确保已安装Towny和ItemsAdder插件
+4. 重启服务器
+
+### 配置数据库
+编辑`plugins/LegacyLand/config.yml`：
+
+```yaml
+database:
+  type: sqlite  # 可选: sqlite, mysql, mongodb
+
+  # MySQL配置（如果使用MySQL）
+  mysql:
+    host: localhost
+    port: 3306
+    database: legacyland
+    username: root
+    password: your_password
+```
+
+### 创建第一个国家
+```
+/nation create 我的国家 FEUDAL
+```
+
+## 命令列表
+
+### 国家命令 (/nation, /n, /guo)
+```
+/nation create <国家名> <FEUDAL|REPUBLIC>  - 创建国家
+/nation info [国家名]                      - 查看国家信息
+/nation list                               - 列出所有国家
+/nation invite <玩家名>                    - 邀请成员
+/nation kick <玩家名>                      - 踢出成员
+/nation setrank <玩家名> <角色>            - 设置角色
+/nation leave                              - 离开国家
+/nation delete                             - 删除国家
+/nation treasury [deposit|withdraw] [金额] - 国库管理
+```
+
+### 税收命令 (/tax, /shui)
+```
+/tax info                          - 查看税收信息
+/tax set <税种> <税率>             - 设置税率
+```
+
+### 外交命令 (/diplomacy, /diplo, /waijiao)
+```
+/diplomacy info [国家名]                        - 查看外交关系
+/diplomacy war <国家名>                         - 宣战
+/diplomacy peace <国家名>                       - 和谈
+/diplomacy ally <国家名> <defensive|offensive>  - 结盟
+/diplomacy trade <国家名>                       - 签订贸易协议
+/diplomacy tech <国家名>                        - 签订科技协议
+/diplomacy neutral <国家名>                     - 恢复中立
+```
+
+### 季节命令 (/season)
+```
+/season info          - 查看当前季节信息
+/season set <季节>    - 设置季节（管理员）
+/season config        - 查看季节配置
+```
+
+## 依赖项
+
+### 必需依赖
+- **Towny** 0.102.0.0 - 领地管理插件
+- **ItemsAdder** - 物品扩展插件
+- **Paper** 1.21+ - 服务器核心
+
+### 可选依赖
+- **PlaceholderAPI** - 变量占位符支持（推荐安装）
+
+## 技术特性
+
+### 数据库支持
+- **多数据库**: SQLite、MySQL、MongoDB三选一
+- **连接池优化**: MySQL使用HikariCP高性能连接池
+- **自动迁移**: 配置文件自动更新，无需手动修改
+
+### 性能优化
+- **异步处理**: 数据库操作异步执行
+- **缓存机制**: 内存缓存减少数据库查询
+- **批量操作**: 支持批量数据保存
+
+### 扩展性
+- **PlaceholderAPI**: 20+个占位符变量
+- **事件系统**: 完整的事件API供其他插件使用
+- **模块化设计**: 各系统独立，易于扩展
+
+## PlaceholderAPI变量
+
+```
+%legacyland_health%              - 玩家生命值
+%legacyland_food%                - 饥饿值
+%legacyland_hydration%           - 水分值
+%legacyland_temperature%         - 体温
+%legacyland_profession%          - 主职业
+%legacyland_profession_level%    - 主职业等级
+%legacyland_season%              - 当前季节
+%legacyland_season_day%          - 季节天数
+%legacyland_nation%              - 所属国家
+%legacyland_nation_role%         - 国家角色
+```
+
+## 配置文件
+
+### config.yml
+```yaml
+# 数据库配置
+database:
+  type: sqlite
+
+  sqlite:
+    filename: legacyland.db
+
+  mysql:
+    host: localhost
+    port: 3306
+    database: legacyland
+    username: root
+    password: password
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  mongodb:
+    host: localhost
+    port: 27017
+    database: legacyland
+    username: ""
+    password: ""
+
+# 玩家状态系统
+player-status:
+  enable-actionbar: true
+
+# 季节系统
+season:
+  days-per-sub-season: 8
+```
 
 ## 核心架构
 
@@ -16,186 +198,109 @@
 
 #### 分封制角色
 - **国王 (KINGDOM)** - 拥有所有权限
-  - 任免所有职位
-  - 任免市长
-  - 宣战与结盟
-  - 所有财政、司法、执法、军事权限
-
 - **财政大臣 (CHANCELLOR)** - 财政管理
-  - 调整税收比例
-  - 调整土地税
-  - 城市拨款
-  - 军需拨款
-  - 封臣税管理
-
 - **司法大臣 (ATTORNEY_GENERAL)** - 司法审判
-  - 审判被拘留者
-
 - **执法大臣 (MINISTER_OF_JUSTICE)** - 执法管理
-  - 发布逮捕令
-
 - **军需大臣 (MINISTER_OF_DEFENSE)** - 军事后勤
-  - 管理补给线
-  - 发布补给运送任务
-  - 调整补给奖励
-  - 决定攻城名单
 
-#### 城市共和制角色
+#### 共和制角色
 - **总督 (GOVERNOR)** - 行政首脑
-  - 提名/罢免职位
-  - 任免市长
-  - 所有财政、司法、执法、军事权限
-
 - **财政官 (FINANCE_OFFICER)** - 财政管理
 - **司法官 (JUDICIAL_OFFICER)** - 司法审判
 - **执法官 (LEGAL_OFFICER)** - 执法管理
 - **军需官 (MILITARY_SUPPLY_OFFICER)** - 军事后勤
 - **议会议员 (PARLIAMENT_MEMBER)** - 议会投票
-  - 投票选举总督
-  - 投票官员提名
-  - 提出外交议案
-  - 投票外交议案
 
-#### 通用角色
-- **公民 (CITIZEN)** - 普通成员
-
-### 3. 权限系统 (NationPermission)
-
-完整的权限控制系统，包含：
-- 人事权限（任免、提名、罢免）
-- 外交权限（宣战、结盟、议案）
-- 财政权限（税收、拨款）
-- 司法权限（审判、逮捕）
-- 军事权限（补给、攻城）
-- 议会权限（投票、选举）
-
-## 命令系统
-
-### 基础命令
-```
-/nation create <国家名> <政体类型>  - 创建国家
-/nation info [国家名]              - 查看国家信息
-/nation list                       - 列出所有国家
-/nation leave                      - 离开国家
-/nation delete                     - 删除国家（仅领袖）
-```
-
-### 管理命令
-```
-/nation invite <玩家名>            - 邀请玩家加入
-/nation kick <玩家名>              - 踢出玩家
-/nation setrank <玩家名> <角色>    - 设置成员角色
-```
-
-### 财政命令
-```
-/nation treasury                   - 查看国库余额
-/nation treasury deposit <金额>    - 存入国库
-/nation treasury withdraw <金额>   - 从国库取款（需权限）
-```
-
-### 命令别名
-- `/nation` = `/n` = `/guo`
-
-## 数据模型
-
-### Nation (国家)
-- 国家名称
-- 政体类型
-- 领袖 ID
-- 成员列表
-- 建国时间
-- 国库余额
-
-### NationMember (国家成员)
-- 玩家 UUID
-- 玩家名称
-- 所属国家
-- 角色
-- 加入时间
-
-### NationManager (国家管理器)
-- 单例模式管理所有国家
-- 玩家-国家映射
-- 权限检查
-- 成员管理
-
-## 技术特性
-
-1. **权限系统** - 基于角色的细粒度权限控制
-2. **政体系统** - 不同政体有不同的角色和权限
-3. **Tab 补全** - 所有命令支持 Tab 自动补全
-4. **中文支持** - 完整的中文界面和提示
-5. **Towny 集成** - 依赖 Towny 插件，可扩展领地功能
-
-## 构建信息
-
-- **插件版本**: 1.0-Beta1
-- **Minecraft 版本**: 1.21
-- **Java 版本**: 21
-- **依赖**: Towny 0.102.0.0
-- **构建工具**: Gradle
-- **构建状态**: ✅ 成功
-
-## 文件结构
-
-```
-src/main/java/net/chen/legacyLand/
-├── LegacyLand.java                    # 主插件类
-└── nation/
-    ├── GovernmentType.java            # 政体类型枚举
-    ├── Nation.java                    # 国家数据模型
-    ├── NationManager.java             # 国家管理器
-    ├── NationMember.java              # 国家成员模型
-    ├── NationPermission.java          # 权限枚举
-    ├── NationRole.java                # 角色枚举
-    └── commands/
-        └── NationCommand.java         # 命令处理器
-```
+### 3. 季节系统
+- **12个子季节**: 春夏秋冬各3个子季节
+- **温度系统**: 季节影响环境温度
+- **天气效果**: 自动调整降雨降雪
+- **自动循环**: 可配置的季节周期
 
 ## 使用示例
 
-### 创建分封制国家
+### 创建国家
 ```
 /nation create 大明帝国 FEUDAL
-```
-
-### 创建共和制国家
-```
 /nation create 罗马共和国 REPUBLIC
 ```
 
-### 邀请成员并设置角色
+### 管理成员
 ```
 /nation invite PlayerName
 /nation setrank PlayerName CHANCELLOR
 ```
 
-### 查看国家信息
+### 设置税收
 ```
-/nation info
-/nation info 大明帝国
+/tax set trade 10
+/tax set shop 5
 ```
 
-## 下一步开发计划
+### 外交操作
+```
+/diplomacy war 敌国
+/diplomacy ally 盟友 defensive
+/diplomacy trade 贸易伙伴
+```
 
-根据 plan 文件，后续可实现：
+## 开发计划
+
+### 已完成 ✅
+- 1.1 国家成员系统
 - 1.2 国家税收系统
 - 1.3 国家外交系统
+- 季节系统（12子季节）
+- 玩家状态系统
+- 多数据库支持
+- PlaceholderAPI集成
+
+### 进行中 🚧
 - 1.4 国家战争系统
 - 1.5 攻城战系统
+
+### 计划中 📋
 - 1.6 国家科技树
 - 1.7 国家公会系统
 - 1.8 国家领土系统
 - 1.9 国策系统
 
+## 构建信息
+
+### 构建产物
+JAR文件位置：`build/libs/LegacyLand-1.0-Beta2.jar`
+
+### 数据文件
+- SQLite数据库：`plugins/LegacyLand/legacyland.db`
+- 配置文件：`plugins/LegacyLand/config.yml`
+
 ## 注意事项
 
-1. 需要安装 Towny 插件作为前置
-2. 当前版本为内存存储，重启后数据会丢失（后续需添加数据持久化）
-3. 部分权限功能（如逮捕、审判）需要配合其他系统实现
+1. 需要安装Towny和ItemsAdder作为前置插件
+2. 推荐安装PlaceholderAPI以使用占位符功能
+3. 定期备份数据库文件
 4. 建议在测试服务器上先进行测试
+5. MySQL和MongoDB需要额外配置
 
-## 构建产物
+## 更新日志
 
-插件 JAR 文件位置：`build/libs/LegacyLand-1.0-Beta1.jar`
+### v1.0-Beta2 (2026-02-22)
+- ✅ 多数据库支持（SQLite/MySQL/MongoDB）
+- ✅ 季节系统（12个子季节）
+- ✅ 玩家状态系统（温度、水分、职业）
+- ✅ PlaceholderAPI集成
+- ✅ 配置自动更新系统
+
+### v1.0-Beta1 (2026-02-15)
+- ✅ 国家成员系统
+- ✅ 国家税收系统
+- ✅ 国家外交系统
+- ✅ SQLite数据持久化
+
+## 许可证
+
+本项目为私有项目，未经授权不得使用。
+
+## Contributor
+[@ian171](https://github.com/ian171)
+

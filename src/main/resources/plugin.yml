@@ -10,7 +10,7 @@ commands:
   legacy:
     description: LegacyLand 扩展命令
     usage: /legacy <government|role|info>
-    aliases: [ ll, yichan ]
+    aliases: [ll]
   tax:
     description: 税收系统命令
     usage: /tax <info|set>
