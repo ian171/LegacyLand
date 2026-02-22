@@ -160,4 +160,18 @@ public class DatabaseManager {
     public Map<String, Object> loadSeasonData() {
         return database.loadSeasonData();
     }
+
+    // ========== FlagWar 数据 ==========
+
+    public void saveFlagWar(net.chen.legacyLand.war.flagwar.FlagWarData flagWar) {
+        database.saveFlagWar(flagWar);
+    }
+
+    public List<net.chen.legacyLand.war.flagwar.FlagWarData> loadActiveFlagWars() {
+        return database.loadActiveFlagWars();
+    }
+
+    public void deleteFlagWar(String flagWarId) {
+        database.deleteFlagWar(flagWarId);
+    }
 }

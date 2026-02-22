@@ -149,6 +149,28 @@ public class SQLiteDatabase implements IDatabase {
                     "days_per_sub_season INTEGER NOT NULL" +
                     ")";
 
+            // FlagWar 数据表
+            String flagWarsTable = "CREATE TABLE IF NOT EXISTS flag_wars (" +
+                    "flag_war_id TEXT PRIMARY KEY," +
+                    "attacker_id TEXT NOT NULL," +
+                    "attacker_nation TEXT NOT NULL," +
+                    "attacker_town TEXT NOT NULL," +
+                    "defender_nation TEXT NOT NULL," +
+                    "defender_town TEXT NOT NULL," +
+                    "flag_location TEXT NOT NULL," +
+                    "timer_block_location TEXT NOT NULL," +
+                    "beacon_location TEXT NOT NULL," +
+                    "start_time INTEGER NOT NULL," +
+                    "end_time INTEGER," +
+                    "status TEXT NOT NULL," +
+                    "timer_progress INTEGER DEFAULT 0," +
+                    "staking_fee REAL DEFAULT 0," +
+                    "defense_break_fee REAL DEFAULT 0," +
+                    "victory_cost REAL DEFAULT 0," +
+                    "town_block_coords TEXT," +
+                    "is_home_block INTEGER DEFAULT 0" +
+                    ")";
+
             stmt.execute(nationExtTable);
             stmt.execute(playerRolesTable);
             stmt.execute(diplomacyTable);
@@ -158,6 +180,7 @@ public class SQLiteDatabase implements IDatabase {
             stmt.execute(siegeWarsTable);
             stmt.execute(playerAchievementsTable);
             stmt.execute(seasonTable);
+            stmt.execute(flagWarsTable);
 
             stmt.close();
             LegacyLand.logger.info("SQLite 数据库表创建成功！");
@@ -570,5 +593,97 @@ public class SQLiteDatabase implements IDatabase {
             LegacyLand.logger.severe("加载季节数据失败: " + e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public void saveFlagWar(net.chen.legacyLand.war.flagwar.FlagWarData flagWar) {
+        String sql = "INSERT OR REPLACE INTO flag_wars (" +
+                "flag_war_id, attacker_id, attacker_nation, attacker_town, defender_nation, defender_town, " +
+                "flag_location, timer_block_location, beacon_location, start_time, end_time, status, " +
+                "timer_progress, staking_fee, defense_break_fee, victory_cost, town_block_coords, is_home_block" +
+                ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, flagWar.getFlagWarId());
+            pstmt.setString(2, flagWar.getAttackerId().toString());
+            pstmt.setString(3, flagWar.getAttackerNation());
+            pstmt.setString(4, flagWar.getAttackerTown());
+            pstmt.setString(5, flagWar.getDefenderNation());
+            pstmt.setString(6, flagWar.getDefenderTown());
+            pstmt.setString(7, serializeLocation(flagWar.getFlagLocation()));
+            pstmt.setString(8, serializeLocation(flagWar.getTimerBlockLocation()));
+            pstmt.setString(9, serializeLocation(flagWar.getBeaconLocation()));
+            pstmt.setLong(10, flagWar.getStartTime());
+            pstmt.setLong(11, flagWar.getEndTime());
+            pstmt.setString(12, flagWar.getStatus().name());
+            pstmt.setInt(13, flagWar.getTimerProgress());
+            pstmt.setDouble(14, flagWar.getStakingFee());
+            pstmt.setDouble(15, flagWar.getDefenseBreakFee());
+            pstmt.setDouble(16, flagWar.getVictoryCost());
+            pstmt.setString(17, flagWar.getTownBlockCoords());
+            pstmt.setInt(18, flagWar.isHomeBlock() ? 1 : 0);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存 FlagWar 数据失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<net.chen.legacyLand.war.flagwar.FlagWarData> loadActiveFlagWars() {
+        List<net.chen.legacyLand.war.flagwar.FlagWarData> result = new ArrayList<>();
+        String sql = "SELECT * FROM flag_wars WHERE status = 'ACTIVE'";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                org.bukkit.Location flagLoc = deserializeLocation(rs.getString("flag_location"));
+                if (flagLoc == null) continue;
+                net.chen.legacyLand.war.flagwar.FlagWarData flagWar = new net.chen.legacyLand.war.flagwar.FlagWarData(
+                    rs.getString("flag_war_id"),
+                    UUID.fromString(rs.getString("attacker_id")),
+                    rs.getString("attacker_nation"),
+                    rs.getString("attacker_town"),
+                    rs.getString("defender_nation"),
+                    rs.getString("defender_town"),
+                    flagLoc
+                );
+                flagWar.setStatus(net.chen.legacyLand.war.flagwar.FlagWarStatus.valueOf(rs.getString("status")));
+                flagWar.setTimerProgress(rs.getInt("timer_progress"));
+                flagWar.setStakingFee(rs.getDouble("staking_fee"));
+                flagWar.setDefenseBreakFee(rs.getDouble("defense_break_fee"));
+                flagWar.setVictoryCost(rs.getDouble("victory_cost"));
+                flagWar.setTownBlockCoords(rs.getString("town_block_coords"));
+                flagWar.setHomeBlock(rs.getInt("is_home_block") == 1);
+                result.add(flagWar);
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载 FlagWar 数据失败: " + e.getMessage());
+        }
+        return result;
+    }
+
+    @Override
+    public void deleteFlagWar(String flagWarId) {
+        String sql = "DELETE FROM flag_wars WHERE flag_war_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, flagWarId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("删除 FlagWar 数据失败: " + e.getMessage());
+        }
+    }
+
+    private String serializeLocation(org.bukkit.Location loc) {
+        return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+
+    private org.bukkit.Location deserializeLocation(String str) {
+        if (str == null) return null;
+        try {
+            String[] parts = str.split(",");
+            return new org.bukkit.Location(org.bukkit.Bukkit.getWorld(parts[0]),
+                Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+        } catch (Exception e) {
+            getLogger().severe("反序列化 Location 失败: " + str);
+            return null;
+        }
     }
 }
