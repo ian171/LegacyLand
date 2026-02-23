@@ -3,6 +3,7 @@ package net.chen.legacyLand.nation;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
+import lombok.Setter;
 import net.chen.legacyLand.database.DatabaseManager;
 import org.bukkit.entity.Player;
 
@@ -15,6 +16,7 @@ public class NationManager {
     private static NationManager instance;
     private final Map<String, GovernmentType> nationGovernments; // 国家名 -> 政体
     private final Map<String, Map<UUID, NationRole>> nationRoles; // 国家名 -> (玩家UUID -> 角色)
+    @Setter
     private DatabaseManager database;
     private final TownyAPI townyAPI;
 
@@ -29,10 +31,6 @@ public class NationManager {
             instance = new NationManager();
         }
         return instance;
-    }
-
-    public void setDatabase(DatabaseManager database) {
-        this.database = database;
     }
 
     /**

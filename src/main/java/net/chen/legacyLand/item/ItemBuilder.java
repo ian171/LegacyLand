@@ -7,7 +7,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
+@SuppressWarnings(value = "all")
 public class ItemBuilder {
     private final ItemStack itemStack;
     public ItemBuilder(@NotNull Material material){

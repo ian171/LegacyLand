@@ -7,6 +7,10 @@ depend: [Towny,ItemsAdder,Vault]
 softdepend: [PlaceholderAPI]
 
 commands:
+  legacylandadmin:
+    description: LegacyLand 管理命令
+    usage: /legacylandadmin reload
+    aliases: [ ladmin ]
   legacy:
     description: LegacyLand 扩展命令
     usage: /legacy <government|role|info>

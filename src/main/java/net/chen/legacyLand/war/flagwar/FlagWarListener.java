@@ -32,13 +32,11 @@ public class FlagWarListener implements Listener {
         Player player = event.getPlayer();
         Material material = event.getBlock().getType();
 
-        // 检查是否是橡木栅栏
-        if (material != Material.OAK_FENCE) {
+        // 检查是否是栅栏
+        if (material != Material.OAK_FENCE && material != Material.ACACIA_FENCE && material != Material.JUNGLE_FENCE) {
             return;
         }
-
         Location location = event.getBlock().getLocation();
-
         // 检查玩家是否已经有进行中的 FlagWar
         if (flagWarManager.getPlayerFlagWar(player.getUniqueId()) != null) {
             player.sendMessage("§c你已经有一个进行中的旗帜战争！");

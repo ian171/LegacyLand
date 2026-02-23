@@ -3,6 +3,7 @@ package net.chen.legacyLand;
 import lombok.Getter;
 import net.chen.legacyLand.achievements.AchievementManager;
 import net.chen.legacyLand.achievements.listener.PlayerAchievementsListener;
+import net.chen.legacyLand.command.AdministrationCommands;
 import net.chen.legacyLand.config.ConfigManager;
 import net.chen.legacyLand.database.DatabaseManager;
 import net.chen.legacyLand.listeners.TownyEventListener;
@@ -164,6 +165,9 @@ public final class LegacyLand extends JavaPlugin {
     }
 
     private void registerCommands(){
+        AdministrationCommands administrationCommands = new AdministrationCommands();
+        instance.getCommand("legacylandadmin").setExecutor(administrationCommands);
+
         LegacyCommand legacyCommand = new LegacyCommand();
         instance.getCommand("legacy").setExecutor(legacyCommand);
         instance.getCommand("legacy").setTabCompleter(legacyCommand);
@@ -245,7 +249,7 @@ public final class LegacyLand extends JavaPlugin {
             logger.info("ItemsAdder 医疗物品配置已成功复制");
         }
     }
-
+    @Deprecated
     public static void incompatiblePluginsChecker(){
         try {
             if (Bukkit.getPluginManager().getPlugin("RealisticSeason").isEnabled()){
