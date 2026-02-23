@@ -22,7 +22,8 @@ LegacyLand是一个基于Paper 1.21的Minecraft服务器插件，提供完整的
 ## 核心功能
 
 ### 1. 国家系统 ✅
-- **政体系统**: 分封制、城市共和制
+- **政体系统**: 5种可配置政体（分封制、共和制、君主立宪制、军事独裁、商业联邦）
+- **自定义效果**: 速度加成、粒子效果等可扩展效果系统
 - **角色系统**: 国王、财政大臣、司法大臣等多种角色
 - **权限系统**: 基于角色的细粒度权限控制
 - **税收系统**: 交易税、土地税、封臣税等多种税收类型
@@ -56,6 +57,11 @@ LegacyLand是一个基于Paper 1.21的Minecraft服务器插件，提供完整的
 - **构建状态**: ✅ 成功
 
 ## 快速开始
+
+### 📚 详细文档
+- [实现细节文档](instructions/IMPLEMENTATION.md) - 系统架构和实现细节
+- [PlaceholderAPI变量](instructions/PLACEHOLDERS.md) - 完整的占位符变量列表
+- [FlagWar系统](instructions/FLAGWAR_README.md) - 旗帜战争系统说明
 
 ### 安装
 1. 下载插件JAR文件
@@ -97,6 +103,13 @@ database:
 /nation leave                              - 离开国家
 /nation delete                             - 删除国家
 /nation treasury [deposit|withdraw] [金额] - 国库管理
+```
+
+### 政治体制命令 (/legacy politics)
+```
+/legacy politics list           - 查看所有可用政体
+/legacy politics set <政体ID>   - 切换国家政体（需要国王权限）
+/legacy politics info           - 查看当前政体详情
 ```
 
 ### 税收命令 (/tax, /shui)
@@ -203,11 +216,50 @@ season:
   days-per-sub-season: 8
 ```
 
+### politics.yml
+政治体制配置文件，定义所有可用政体及其效果：
+
+```yaml
+types:
+  FEUDAL:
+    display-name: "分封制"
+    description: "国王拥有绝对权力..."
+    roles:
+      - KINGDOM
+      - CHANCELLOR
+    effects:
+      tax-efficiency: 0.8
+      military-strength: 1.3
+      treasury-income: 1.0
+    custom-effects:
+      particle-effect:
+        particle: "FLAME"
+        pattern: "STAR"
+```
+
+详细配置说明请参考 [实现细节文档](instructions/IMPLEMENTATION.md)。
+
 ## 核心架构
 
-### 1. 政体系统 (GovernmentType)
-- **分封制 (FEUDAL)** - 君主制国家体系
-- **城市共和制 (REPUBLIC)** - 议会制国家体系
+### 1. 政体系统 (PoliticalSystem)
+
+#### 可用政体类型
+- **分封制 (FEUDAL)** - 国王绝对权力，军事强大（1.3x），税收较低（0.8x）
+  - 粒子效果：火焰五角星
+- **共和制 (REPUBLIC)** - 总督+议会制，高国库收入（1.3x），军事较弱（0.9x）
+  - 自定义效果：全员速度加成
+- **君主立宪制 (CONSTITUTIONAL_MONARCHY)** - 国王+议会共治，各方面均衡
+  - 粒子效果：末地烛圆形
+- **军事独裁 (MILITARY_DICTATORSHIP)** - 军事领袖掌权，极强军事（1.6x），外交受限
+  - 粒子效果：红石正方形
+- **商业联邦 (TRADE_FEDERATION)** - 贸易为核心，高税收（1.5x），军事薄弱（0.7x）
+  - 粒子效果：村民高兴圆形
+
+#### 政体效果系统
+- **标准效果**: 税收效率、军事力量、国库收入、战争冷却等倍率
+- **自定义效果**: 可扩展的效果系统（速度加成、粒子效果等）
+- **配置驱动**: 通过 `politics.yml` 配置所有政体参数
+- **数据库持久化**: 政体选择自动保存到数据库
 
 ### 2. 角色与权限系统
 
@@ -240,6 +292,13 @@ season:
 /nation create 罗马共和国 REPUBLIC
 ```
 
+### 切换政体
+```
+/legacy politics list                    # 查看所有可用政体
+/legacy politics set MILITARY_DICTATORSHIP  # 切换为军事独裁
+/legacy politics info                    # 查看当前政体详情
+```
+
 ### 管理成员
 ```
 /nation invite PlayerName
@@ -265,14 +324,17 @@ season:
 - 1.1 国家成员系统
 - 1.2 国家税收系统
 - 1.3 国家外交系统
+- 1.4 配置驱动的政治体制系统（5种政体）
+- 1.5 自定义效果系统（速度加成、粒子效果）
 - 季节系统（12子季节）
 - 玩家状态系统
 - 多数据库支持
 - PlaceholderAPI集成
 
 ### 进行中 🚧
-- 1.4 国家战争系统
-- 1.5 攻城战系统
+- 1.6 国家战争系统
+- 1.7 攻城战系统
+- 1.8 旗帜战争系统
 
 ### 计划中 📋
 - 1.6 国家科技树
@@ -299,7 +361,13 @@ JAR文件位置：`build/libs/LegacyLand-1.0-Beta2.jar`
 
 ## 更新日志
 
-### v1.0-Beta2 (2026-02-22)
+### v1.0-Beta2.0 (2026-02-23)
+- ✅ 配置驱动的政治体制系统
+  - 5种预置政体（分封制、共和制、君主立宪制、军事独裁、商业联邦）
+  - 可扩展的自定义效果系统
+  - 速度加成效果（共和制）
+  - 粒子效果系统（五角星、圆形、正方形图案）
+  - 政体数据库持久化
 - ✅ 多数据库支持（SQLite/MySQL/MongoDB）
 - ✅ 季节系统（12个子季节）
 - ✅ 玩家状态系统（温度、水分、职业）
