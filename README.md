@@ -1,5 +1,18 @@
 # LegacyLand - Minecraft国家系统插件
 
+## 法律许可证
+````
+License Change Notice
+
+Important: Starting from version 2.0, this project is licensed under MS-RSL.
+
+This means:
+
+- Source code is viewable only
+- Modification and redistribution are no longer permitted
+
+Versions before 2.0 remain under MS-RL.
+````
 ## 项目简介
 
 LegacyLand是一个基于Paper 1.21的Minecraft服务器插件，提供完整的国家系统、季节系统、玩家状态管理等功能。
