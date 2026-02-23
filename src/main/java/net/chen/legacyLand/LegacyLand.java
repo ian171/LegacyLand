@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 public final class LegacyLand extends JavaPlugin {
 
     public static Logger logger;
+    public static String version = "1.0-Beta2.0";
     @Getter
     private static LegacyLand instance;
     private ConfigManager configManager;
@@ -69,7 +70,8 @@ public final class LegacyLand extends JavaPlugin {
         instance = this;
         logger = getLogger();
         logger.info("LegacyLand 插件已启用！");
-
+        logger.warning("Unauthorized modification and redistribution prohibited.");
+        logger.info("LegacyLand Version: "+version);
         // 检查 Towny 依赖
         if (getServer().getPluginManager().getPlugin("Towny") == null) {
             logger.severe("Towny 插件未找到！插件无法启动。");
@@ -135,13 +137,13 @@ public final class LegacyLand extends JavaPlugin {
         logger.info("玩家系统已加载。");
         achievementManager = new AchievementManager(playerManager, databaseManager);
         AchievementManager.setInstance(achievementManager);
+        logger.info("成就系统已加载。");
         try {
             vault_init();
         } catch (Exception e) {
             logger.warning(e.getMessage());
         }
         logger.info("经济系统已加载");
-        logger.info("成就系统已加载。");
         // 初始化季节系统
         seasonManager = new SeasonManager(this);
         seasonManager.start();
@@ -183,9 +185,9 @@ public final class LegacyLand extends JavaPlugin {
         if (enableActionBar) {
             int interval = getConfig().getInt("player-status.actionbar-update-interval", 10);
             new ActionBarUpdateTask().runTaskTimer(instance, interval, interval);
-            logger.info("ActionBar 显示已启用（更新间隔: " + interval + " ticks）");
+            //logger.info("ActionBar 显示已启用（更新间隔: " + interval + " ticks）");
         } else {
-            logger.info("ActionBar 显示已禁用，请使用 PlaceholderAPI 变量自定义显示");
+            //logger.info("ActionBar 显示已禁用，请使用 PlaceholderAPI 变量自定义显示");
         }
     }
 

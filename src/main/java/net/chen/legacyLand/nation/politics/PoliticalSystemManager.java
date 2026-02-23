@@ -109,7 +109,7 @@ public class PoliticalSystemManager {
 
             PoliticalSystem system = new PoliticalSystem(key, displayName, description, roles, effects, customEffects);
             systems.put(key, system);
-            LegacyLand.logger.info("已加载政体: " + key + " (" + displayName + ")");
+            //LegacyLand.logger.info("已加载政体: " + key + " (" + displayName + ")");
         }
 
         LegacyLand.logger.info("共加载 " + systems.size() + " 种政治体制。");
