@@ -139,6 +139,25 @@ public class MongoDatabase implements IDatabase {
     }
 
     @Override
+    public void saveNationPoliticalSystem(String nationName, String systemId) {
+        MongoCollection<Document> collection = database.getCollection("nation_extensions");
+        Document filter = new Document("nation_name", nationName);
+        Document update = new Document("$set", new Document("government_type", systemId));
+        collection.updateOne(filter, update, new com.mongodb.client.model.UpdateOptions().upsert(true));
+    }
+
+    @Override
+    public String loadNationPoliticalSystem(String nationName) {
+        MongoCollection<Document> collection = database.getCollection("nation_extensions");
+        Document filter = new Document("nation_name", nationName);
+        Document result = collection.find(filter).first();
+        if (result != null) {
+            return result.getString("government_type");
+        }
+        return null;
+    }
+
+    @Override
     public void savePlayerRole(String nationName, UUID playerId, NationRole role) {
         MongoCollection<Document> collection = database.getCollection("player_roles");
         Document filter = new Document("nation_name", nationName).append("player_id", playerId.toString());

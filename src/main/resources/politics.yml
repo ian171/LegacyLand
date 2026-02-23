@@ -1,0 +1,117 @@
+# LegacyLand 政治体制配置文件
+# 每种政体定义其显示名称、描述、可用角色和效果
+
+# 切换政体的冷却时间（秒）
+change-cooldown: 86400  # 24小时
+
+# 切换政体的费用
+change-cost: 500.0
+
+# 政体定义
+types:
+  # 分封制 - 国王拥有绝对权力
+  FEUDAL:
+    display-name: "分封制"
+    description: "国王拥有绝对权力，可直接任免所有职位。军事力量强大，但税收效率较低。"
+    # 该政体下可用的角色列表
+    roles:
+      - KINGDOM
+      - CHANCELLOR
+      - ATTORNEY_GENERAL
+      - MINISTER_OF_JUSTICE
+      - MINISTER_OF_DEFENSE
+      - CITIZEN
+    # 政体效果 - 通过配置定义，预留接口可扩展
+    effects:
+      # 税收效率倍率
+      tax-efficiency: 0.8
+      # 军事力量倍率（影响战争补给、攻城等）
+      military-strength: 1.3
+      # 最大同盟数量修正
+      max-alliance-modifier: 0
+      # 城镇最大数量修正
+      max-town-modifier: 0
+      # 国库收入倍率
+      treasury-income: 1.0
+      # 战争冷却时间倍率
+      war-cooldown-modifier: 0.8
+      # 自定义效果（预留扩展）
+      custom: {}
+
+  # 城市共和制 - 总督通过议会治理
+  REPUBLIC:
+    display-name: "城市共和制"
+    description: "总督通过议会治理国家，官员需经提名和投票。贸易繁荣，但军事决策较慢。"
+    roles:
+      - GOVERNOR
+      - FINANCE_OFFICER
+      - JUDICIAL_OFFICER
+      - LEGAL_OFFICER
+      - MILITARY_SUPPLY_OFFICER
+      - PARLIAMENT_MEMBER
+      - CITIZEN
+    effects:
+      tax-efficiency: 1.2
+      military-strength: 0.9
+      max-alliance-modifier: 2
+      max-town-modifier: 0
+      treasury-income: 1.2
+      war-cooldown-modifier: 1.2
+    custom-effects:
+      speed-boost:
+        amplifier: 0  # 速度I效果
+
+  # 君主立宪制 - 国王与议会共治
+  CONSTITUTIONAL_MONARCHY:
+    display-name: "君主立宪制"
+    description: "国王保留象征性权力，实际政务由议会和首相处理。各方面较为均衡。"
+    roles:
+      - KINGDOM
+      - CHANCELLOR
+      - PARLIAMENT_MEMBER
+      - ATTORNEY_GENERAL
+      - MINISTER_OF_DEFENSE
+      - CITIZEN
+    effects:
+      tax-efficiency: 1.0
+      military-strength: 1.1
+      max-alliance-modifier: 1
+      max-town-modifier: 1
+      treasury-income: 1.1
+      war-cooldown-modifier: 1.0
+      custom: {}
+
+  # 军事独裁 - 军事领袖掌权
+  MILITARY_DICTATORSHIP:
+    display-name: "军事独裁"
+    description: "军事领袖掌握一切权力，全民皆兵。军事极强但外交受限，经济发展缓慢。"
+    roles:
+      - KINGDOM
+      - MINISTER_OF_DEFENSE
+      - CITIZEN
+    effects:
+      tax-efficiency: 0.6
+      military-strength: 1.6
+      max-alliance-modifier: -2
+      max-town-modifier: -1
+      treasury-income: 0.8
+      war-cooldown-modifier: 0.5
+      custom: {}
+
+  # 商业联邦 - 以贸易为核心
+  TRADE_FEDERATION:
+    display-name: "商业联邦"
+    description: "以商业利益为核心的联邦体制，贸易繁荣但军事薄弱。"
+    roles:
+      - GOVERNOR
+      - FINANCE_OFFICER
+      - PARLIAMENT_MEMBER
+      - CITIZEN
+    effects:
+      tax-efficiency: 1.5
+      military-strength: 0.7
+      max-alliance-modifier: 3
+      max-town-modifier: 2
+      treasury-income: 1.5
+      war-cooldown-modifier: 1.5
+      custom: {}

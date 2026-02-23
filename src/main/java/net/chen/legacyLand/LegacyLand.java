@@ -14,6 +14,9 @@ import net.chen.legacyLand.nation.commands.DiplomacyCommand;
 import net.chen.legacyLand.nation.commands.LegacyCommand;
 import net.chen.legacyLand.nation.commands.TaxCommand;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
+import net.chen.legacyLand.nation.politics.PoliticalEffectListener;
+import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
+import net.chen.legacyLand.nation.politics.effects.SpeedBoostEffect;
 import net.chen.legacyLand.placeholder.LegacyLandPlaceholder;
 import net.chen.legacyLand.player.PlayerManager;
 import net.chen.legacyLand.player.commands.PlayerCommand;
@@ -58,6 +61,7 @@ public final class LegacyLand extends JavaPlugin {
     private DatabaseManager databaseManager;
     private AchievementManager achievementManager;
     private net.chen.legacyLand.season.SeasonManager seasonManager;
+    private PoliticalSystemManager politicalSystemManager;
 
     @Override
     public void onEnable() {
@@ -84,6 +88,21 @@ public final class LegacyLand extends JavaPlugin {
         nationManager = NationManager.getInstance();
         logger.info("国家系统已加载。");
         nationManager.setDatabase(databaseManager);
+        // 加载政治体制配置
+        politicalSystemManager = PoliticalSystemManager.getInstance();
+        politicalSystemManager.load(this);
+        // 注册自定义效果工厂
+        politicalSystemManager.registerEffectFactory("speed-boost", (nation, config) -> {
+            int amplifier = 0;
+            if (config != null && config.containsKey("amplifier")) {
+                Object ampValue = config.get("amplifier");
+                if (ampValue instanceof Number) {
+                    amplifier = ((Number) ampValue).intValue();
+                }
+            }
+            return new SpeedBoostEffect(amplifier);
+        });
+        logger.info("政治体制系统已加载。");
         diplomacyManager = DiplomacyManager.getInstance();
         logger.info("外交系统已加载。");
         logger.info("税收系统已加载。");
@@ -217,6 +236,7 @@ public final class LegacyLand extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerAchievementsListener(),this);
         getServer().getPluginManager().registerEvents(new PlayerStatusListener(), this);
         getServer().getPluginManager().registerEvents(new FlagWarListener(), this);
+        getServer().getPluginManager().registerEvents(new PoliticalEffectListener(), this);
     }
     public static void initItemsadderItems() throws IOException {
         // 修正资源路径（去掉 /resources/）

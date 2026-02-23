@@ -218,6 +218,33 @@ public class SQLiteDatabase implements IDatabase {
     }
 
     @Override
+    public void saveNationPoliticalSystem(String nationName, String systemId) {
+        String sql = "INSERT OR REPLACE INTO nation_extensions (nation_name, government_type) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, nationName);
+            pstmt.setString(2, systemId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存国家政治体制失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public String loadNationPoliticalSystem(String nationName) {
+        String sql = "SELECT government_type FROM nation_extensions WHERE nation_name = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, nationName);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("government_type");
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载国家政治体制失败: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
     public void savePlayerRole(String nationName, UUID playerId, NationRole role) {
         String sql = "INSERT OR REPLACE INTO player_roles (nation_name, player_id, role) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

@@ -44,6 +44,16 @@ public interface IDatabase {
 
     GovernmentType loadNationGovernment(String nationName);
 
+    /**
+     * 保存国家政治体制（配置驱动）
+     */
+    void saveNationPoliticalSystem(String nationName, String systemId);
+
+    /**
+     * 加载国家政治体制ID
+     */
+    String loadNationPoliticalSystem(String nationName);
+
     void savePlayerRole(String nationName, UUID playerId, NationRole role);
 
     Map<UUID, NationRole> loadNationRoles(String nationName);
