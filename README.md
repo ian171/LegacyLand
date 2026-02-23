@@ -1,17 +1,19 @@
 # LegacyLand - Minecraft国家系统插件
 
 ## 法律许可证
+Unauthorized modification and redistribution prohibited.
 ````
 License Change Notice
 
-Important: Starting from version 2.0, this project is licensed under MS-RSL.
+Important: Starting from version 1.0-Beta2.0, this project is licensed under MS-RSL.
 
 This means:
 
 - Source code is viewable only
 - Modification and redistribution are no longer permitted
+- Every violation of MS-RSL will be subject to prosecution.
 
-Versions before 2.0 remain under MS-RL.
+Versions before 1.0-Beta2.0 remain under MS-RL.
 ````
 ## 项目简介
 
