@@ -16,6 +16,7 @@ import net.chen.legacyLand.nation.commands.TaxCommand;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
 import net.chen.legacyLand.nation.politics.PoliticalEffectListener;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
+import net.chen.legacyLand.nation.politics.effects.ParticleEffect;
 import net.chen.legacyLand.nation.politics.effects.SpeedBoostEffect;
 import net.chen.legacyLand.placeholder.LegacyLandPlaceholder;
 import net.chen.legacyLand.player.PlayerManager;
@@ -101,6 +102,23 @@ public final class LegacyLand extends JavaPlugin {
                 }
             }
             return new SpeedBoostEffect(amplifier);
+        });
+        politicalSystemManager.registerEffectFactory("particle-effect", (nation, config) -> {
+            if (config == null) return null;
+
+            String particleName = (String) config.get("particle");
+            String patternName = (String) config.get("pattern");
+
+            if (particleName == null || patternName == null) return null;
+
+            try {
+                org.bukkit.Particle particle = org.bukkit.Particle.valueOf(particleName.toUpperCase());
+                ParticleEffect.ParticlePattern pattern = ParticleEffect.ParticlePattern.valueOf(patternName.toUpperCase());
+                return new ParticleEffect(particle, pattern);
+            } catch (IllegalArgumentException e) {
+                logger.warning("无效的粒子效果配置: particle=" + particleName + ", pattern=" + patternName);
+                return null;
+            }
         });
         logger.info("政治体制系统已加载。");
         diplomacyManager = DiplomacyManager.getInstance();

@@ -83,18 +83,26 @@ public class PoliticalSystemManager {
             ConfigurationSection effectsSection = typeSection.getConfigurationSection("effects");
             if (effectsSection != null) {
                 for (String effectKey : effectsSection.getKeys(false)) {
-                    if (effectKey.equals("custom")) continue;
                     effects.put(effectKey, effectsSection.getDouble(effectKey, 1.0));
                 }
             }
 
-            // 加载自定义效果
+            // 加载自定义效果（从顶层 custom-effects 读取）
             Map<String, Object> customEffects = new HashMap<>();
-            if (effectsSection != null) {
-                ConfigurationSection customSection = effectsSection.getConfigurationSection("custom");
-                if (customSection != null) {
-                    for (String customKey : customSection.getKeys(true)) {
-                        customEffects.put(customKey, customSection.get(customKey));
+            ConfigurationSection customSection = typeSection.getConfigurationSection("custom-effects");
+            if (customSection != null) {
+                for (String customKey : customSection.getKeys(false)) {
+                    Object value = customSection.get(customKey);
+                    if (value instanceof ConfigurationSection) {
+                        // 转换为 Map
+                        ConfigurationSection subSection = (ConfigurationSection) value;
+                        Map<String, Object> subMap = new HashMap<>();
+                        for (String subKey : subSection.getKeys(false)) {
+                            subMap.put(subKey, subSection.get(subKey));
+                        }
+                        customEffects.put(customKey, subMap);
+                    } else {
+                        customEffects.put(customKey, value);
                     }
                 }
             }

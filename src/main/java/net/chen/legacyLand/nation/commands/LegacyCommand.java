@@ -156,6 +156,9 @@ public class LegacyCommand implements CommandExecutor, TabCompleter {
 
         if (!nation.isKing(resident)) {
             player.sendMessage("§c只有国王才能设置政治体制！");
+            if (resident.isMayor()){
+                player.sendMessage("§c你只是一个小小的城主罢了...喵");
+            }
             return;
         }
 

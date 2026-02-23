@@ -35,8 +35,10 @@ types:
       treasury-income: 1.0
       # 战争冷却时间倍率
       war-cooldown-modifier: 0.8
-      # 自定义效果（预留扩展）
-      custom: {}
+    custom-effects:
+      particle-effect:
+        particle: "FLAME"  # 火焰粒子
+        pattern: "STAR"    # 五角星图案
 
   # 城市共和制 - 总督通过议会治理
   REPUBLIC:
@@ -59,7 +61,7 @@ types:
       war-cooldown-modifier: 1.2
     custom-effects:
       speed-boost:
-        amplifier: 0  # 速度I效果
+        amplifier: 1  # 速度 I 效果
 
   # 君主立宪制 - 国王与议会共治
   CONSTITUTIONAL_MONARCHY:
@@ -79,7 +81,10 @@ types:
       max-town-modifier: 1
       treasury-income: 1.1
       war-cooldown-modifier: 1.0
-      custom: {}
+    custom-effects:
+      particle-effect:
+        particle: "END_ROD"  # 末地烛粒子
+        pattern: "CIRCLE"    # 圆形图案
 
   # 军事独裁 - 军事领袖掌权
   MILITARY_DICTATORSHIP:
@@ -96,7 +101,10 @@ types:
       max-town-modifier: -1
       treasury-income: 0.8
       war-cooldown-modifier: 0.5
-      custom: {}
+    custom-effects:
+      particle-effect:
+        particle: "REDSTONE"  # 红石粒子
+        pattern: "SQUARE"     # 正方形图案
 
   # 商业联邦 - 以贸易为核心
   TRADE_FEDERATION:
@@ -114,4 +122,7 @@ types:
       max-town-modifier: 2
       treasury-income: 1.5
       war-cooldown-modifier: 1.5
-      custom: {}
+    custom-effects:
+      particle-effect:
+        particle: "VILLAGER_HAPPY"  # 村民高兴粒子
+        pattern: "CIRCLE"            # 圆形图案

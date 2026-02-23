@@ -4,12 +4,16 @@ import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import net.chen.legacyLand.nation.NationManager;
+import net.chen.legacyLand.nation.politics.effects.ParticleEffect;
 import net.chen.legacyLand.nation.politics.effects.SpeedBoostEffect;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.Map;
 
 /**
  * 政治体制效果监听器 - 处理玩家加入/离开时的效果应用
@@ -59,6 +63,30 @@ public class PoliticalEffectListener implements Listener {
                 effect.applyToPlayer(player);
             }
         }
+        if (system.customEffects().containsKey("particle-effect")){
+            Object config = system.customEffects().get("particle-effect");
+            if (config instanceof Map<?,?>){
+                @SuppressWarnings("unchecked")
+                Map<String, Object> configMap = (Map<String, Object>) config;
+
+                // 只为国王应用粒子效果
+                if (nation.isKing(resident)) {
+                    String particleName = (String) configMap.get("particle");
+                    String patternName = (String) configMap.get("pattern");
+
+                    if (particleName != null && patternName != null) {
+                        try {
+                            Particle particle = Particle.valueOf(particleName.toUpperCase());
+                            ParticleEffect.ParticlePattern pattern = ParticleEffect.ParticlePattern.valueOf(patternName.toUpperCase());
+                            ParticleEffect particleEffect = new ParticleEffect(particle, pattern);
+                            particleEffect.startParticleEffect(player, nation.getName());
+                        } catch (IllegalArgumentException e) {
+                            // 无效的粒子或图案名称
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @EventHandler
@@ -81,5 +109,6 @@ public class PoliticalEffectListener implements Listener {
             SpeedBoostEffect effect = new SpeedBoostEffect(0);
             effect.removeFromPlayer(player);
         }
+
     }
 }
