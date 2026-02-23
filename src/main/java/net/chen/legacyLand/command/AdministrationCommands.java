@@ -2,6 +2,7 @@ package net.chen.legacyLand.command;
 
 import com.palmergames.bukkit.towny.object.Nation;
 import net.chen.legacyLand.LegacyLand;
+import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
 import net.kyori.adventure.identity.Identity;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -31,6 +32,7 @@ public class AdministrationCommands implements CommandExecutor, TabCompleter {
             return true;
         }else if (args.length == 1){
             LegacyLand.getInstance().getConfigManager().reloadConfig();
+            PoliticalSystemManager.getInstance().load(LegacyLand.getInstance());
             sender.sendMessage("Loaded!");
             return true;
         }

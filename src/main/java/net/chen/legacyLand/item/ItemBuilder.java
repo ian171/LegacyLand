@@ -28,4 +28,7 @@ public class ItemBuilder {
     public ItemMeta getItemMeta(){
         return this.itemStack.getItemMeta();
     }
+    public ItemStack build(){
+        return this.itemStack;
+    }
 }

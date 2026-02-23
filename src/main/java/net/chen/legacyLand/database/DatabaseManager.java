@@ -67,6 +67,14 @@ public class DatabaseManager {
         return database.loadNationGovernment(nationName);
     }
 
+    public void saveNationPoliticalSystem(String nationName, String systemId) {
+        database.saveNationPoliticalSystem(nationName, systemId);
+    }
+
+    public String loadNationPoliticalSystem(String nationName) {
+        return database.loadNationPoliticalSystem(nationName);
+    }
+
     public void savePlayerRole(String nationName, UUID playerId, NationRole role) {
         database.savePlayerRole(nationName, playerId, role);
     }

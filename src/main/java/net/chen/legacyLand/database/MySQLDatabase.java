@@ -244,6 +244,38 @@ public class MySQLDatabase implements IDatabase {
     }
 
     @Override
+    public void saveNationPoliticalSystem(String nationName, String systemId) {
+        String sql = "INSERT INTO nation_extensions (nation_name, government_type) VALUES (?, ?) " +
+                "ON DUPLICATE KEY UPDATE government_type = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nationName);
+            pstmt.setString(2, systemId);
+            pstmt.setString(3, systemId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            LegacyLand.logger.severe("保存国家政治体制失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public String loadNationPoliticalSystem(String nationName) {
+        String sql = "SELECT government_type FROM nation_extensions WHERE nation_name = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nationName);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("government_type");
+                }
+            }
+        } catch (SQLException e) {
+            LegacyLand.logger.severe("加载国家政治体制失败: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
     public void savePlayerRole(String nationName, UUID playerId, NationRole role) {
         String sql = "INSERT INTO player_roles (nation_name, player_id, role) VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE role = ?";
