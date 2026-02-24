@@ -11,7 +11,6 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -79,9 +78,9 @@ public class ParticleEffect implements PoliticalEffect {
                 return;
             }
 
-            Location loc = player.getLocation().add(0, 2.5, 0); // 在玩家头顶上方
+            Location loc = player.getLocation().add(0, 0.1, 0); // 在玩家脚下
             spawnParticlePattern(loc, particle, pattern);
-        }, 0L, 20L); // 每秒执行一次
+        }, 0L, 20L);
 
         activeTasks.put(nationName, task);
     }

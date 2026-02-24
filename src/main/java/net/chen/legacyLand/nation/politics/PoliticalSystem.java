@@ -2,7 +2,9 @@ package net.chen.legacyLand.nation.politics;
 
 import net.chen.legacyLand.nation.NationRole;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 政治体制 - 从配置文件加载的政体定义

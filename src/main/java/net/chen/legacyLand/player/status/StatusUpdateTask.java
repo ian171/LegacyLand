@@ -1,6 +1,5 @@
 package net.chen.legacyLand.player.status;
 
-import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.player.PlayerManager;
 import org.bukkit.Bukkit;

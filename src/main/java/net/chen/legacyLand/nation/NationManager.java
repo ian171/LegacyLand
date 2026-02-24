@@ -9,7 +9,9 @@ import net.chen.legacyLand.nation.politics.PoliticalSystem;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 国家扩展数据管理器 - 存储 Towny 国家的扩展信息

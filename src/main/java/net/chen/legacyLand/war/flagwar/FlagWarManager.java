@@ -1,11 +1,7 @@
 package net.chen.legacyLand.war.flagwar;
 
 import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.object.Nation;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.WorldCoord;
+import com.palmergames.bukkit.towny.object.*;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.database.DatabaseManager;
 import org.bukkit.Bukkit;

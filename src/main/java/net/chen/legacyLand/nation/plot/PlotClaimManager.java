@@ -1,9 +1,13 @@
 package net.chen.legacyLand.nation.plot;
 
+import com.palmergames.bukkit.towny.Towny;
 import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.WorldCoord;
+import com.palmergames.bukkit.towny.tasks.TownClaim;
 import net.chen.legacyLand.LegacyLand;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -106,7 +110,7 @@ public class PlotClaimManager {
      */
     public void completeClaim(PlotClaim claim) {
         try {
-            Player player = org.bukkit.Bukkit.getPlayer(claim.getPlayerId());
+            Player player = Bukkit.getPlayer(claim.getPlayerId());
             Town town = TownyAPI.getInstance().getTown(claim.getTownName());
 
             if (town == null) {
@@ -119,15 +123,33 @@ public class PlotClaimManager {
 
             // 调用 Towny API 完成真正的占领
             try {
-                town.addTownBlock(TownyAPI.getInstance().getTownBlock(claim.getWorldCoord()));
-
+                //town.addTownBlock(TownyAPI.getInstance().getTownBlock(claim.getWorldCoord()));
+                //town.addTownBlock(TownyAPI.getInstance().getTownBlock(player).setClaimedAt(player.get););
                 if (player != null) {
-                    player.sendMessage("§a成功占领地块！");
+                    // 检查玩家是否具有声明领地的权限
+                    Resident resident = TownyAPI.getInstance().getResident(player);
+                    if (resident == null) {
+                        player.sendMessage("§c你没有声明领地的权限！");
+                        cancelClaim(claim.getPlayerId());
+                        return;
+                    }
+                    if (!resident.isMayor()
+                            && !resident.hasTownRank("assistant")
+                            && !resident.hasPermissionNode("towny.command.town.claim")) {
+                        player.sendMessage("§c你没有声明领地的权限！");
+                        cancelClaim(claim.getPlayerId());
+                        return;
+                    }
+                    List<WorldCoord> list = new ArrayList<>();
+                    list.add(WorldCoord.parseWorldCoord(player));
+                    new TownClaim(Towny.getPlugin(),player, town,list,false,true,true).run();
+                }else {
+                    LegacyLand.logger.warning("无法创建领地，因为无法找到玩家");
+                    return;
                 }
-
                 // 广播消息
                 String message = String.format("§e[领地] §a%s 成功占领了一块地块！", claim.getTownName());
-                org.bukkit.Bukkit.getServer().broadcast(net.kyori.adventure.text.Component.text(message));
+                Bukkit.getServer().broadcast(net.kyori.adventure.text.Component.text(message));
 
                 LegacyLand.logger.info("PlotClaim 完成: " + claim.getClaimId());
 

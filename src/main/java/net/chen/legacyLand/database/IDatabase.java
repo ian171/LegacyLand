@@ -1,7 +1,5 @@
 package net.chen.legacyLand.database;
 
-import lombok.extern.java.Log;
-import lombok.extern.log4j.Log4j2;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.nation.GovernmentType;
 import net.chen.legacyLand.nation.NationRole;

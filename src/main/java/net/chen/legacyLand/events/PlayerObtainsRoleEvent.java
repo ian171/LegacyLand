@@ -8,9 +8,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Getter
 public class PlayerObtainsRoleEvent extends Event {
     private static final HandlerList handlers = new HandlerList();

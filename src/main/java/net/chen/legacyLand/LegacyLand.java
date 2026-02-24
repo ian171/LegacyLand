@@ -1,5 +1,6 @@
 package net.chen.legacyLand;
 
+import com.palmergames.bukkit.towny.TownyAPI;
 import lombok.Getter;
 import net.chen.legacyLand.achievements.AchievementManager;
 import net.chen.legacyLand.achievements.listener.PlayerAchievementsListener;
@@ -14,6 +15,9 @@ import net.chen.legacyLand.nation.commands.DiplomacyCommand;
 import net.chen.legacyLand.nation.commands.LegacyCommand;
 import net.chen.legacyLand.nation.commands.TaxCommand;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
+import net.chen.legacyLand.nation.plot.PlotClaimListener;
+import net.chen.legacyLand.nation.plot.PlotClaimManager;
+import net.chen.legacyLand.nation.plot.PlotClaimTimerTask;
 import net.chen.legacyLand.nation.politics.PoliticalEffectListener;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
 import net.chen.legacyLand.nation.politics.effects.ParticleEffect;
@@ -31,9 +35,6 @@ import net.chen.legacyLand.war.flagwar.FlagWarCommand;
 import net.chen.legacyLand.war.flagwar.FlagWarListener;
 import net.chen.legacyLand.war.flagwar.FlagWarManager;
 import net.chen.legacyLand.war.flagwar.FlagWarTimerTask;
-import net.chen.legacyLand.nation.plot.PlotClaimManager;
-import net.chen.legacyLand.nation.plot.PlotClaimListener;
-import net.chen.legacyLand.nation.plot.PlotClaimTimerTask;
 import net.chen.legacyLand.war.siege.OutpostMonitorTask;
 import net.chen.legacyLand.war.siege.SiegeWarManager;
 import net.milkbowl.vault.chat.Chat;
@@ -96,6 +97,11 @@ public final class LegacyLand extends JavaPlugin {
         // 加载政治体制配置
         politicalSystemLoader();
         logger.info("政治体制系统已加载。");
+        // 加载所有已有国家的扩展数据（政体持久化）
+        for (com.palmergames.bukkit.towny.object.Nation nation : TownyAPI.getInstance().getNations()) {
+            nationManager.loadNationData(nation.getName());
+        }
+        logger.info("已加载 " + TownyAPI.getInstance().getNations().size() + " 个国家的扩展数据。");
         diplomacyManager = DiplomacyManager.getInstance();
         logger.info("外交系统已加载。");
         logger.info("税收系统已加载。");

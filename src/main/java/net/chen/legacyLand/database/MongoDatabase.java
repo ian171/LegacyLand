@@ -2,8 +2,10 @@ package net.chen.legacyLand.database;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoCredential;
-import com.mongodb.client.*;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.nation.GovernmentType;
 import net.chen.legacyLand.nation.NationRole;

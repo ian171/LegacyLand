@@ -69,7 +69,7 @@ public class FlagWarListener implements Listener {
         // 检查国家是否是中立/和平状态
         if (attackerNation.isNeutral()) {
             attackerNation.setNeutral(false);
-            player.sendMessage("你已放弃中立国家身份，再次放置宣战");
+            player.sendMessage("§c你已放弃中立国家身份，再次放置宣战");
             event.setCancelled(true);
             return;
         }
@@ -84,6 +84,8 @@ public class FlagWarListener implements Listener {
 
         Town defenderTown = targetBlock.getTownOrNull();
         if (defenderTown == null) {
+            event.setCancelled(true);
+            player.sendMessage("§c旁边没有🈚️国家城镇");
             return;
         }
 
@@ -104,7 +106,8 @@ public class FlagWarListener implements Listener {
         // 检查目标国家是否是中立/和平状态
         if (defenderNation.isNeutral()) {
             defenderNation.setNeutral(false);
-            player.sendMessage("你已放弃中立国家身份");
+            player.sendMessage("§b你已放弃中立国家身份");
+            event.setCancelled(true);
         }
 
         // 检查是否只能攻击边界地块

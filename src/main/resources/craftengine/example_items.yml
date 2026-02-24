@@ -1,0 +1,199 @@
+# CraftEngine 物品示范配置
+# 这是一个简单的示例，展示如何使用 CraftEngine 创建自定义物品和合成配方
+
+# ==================== 物品定义 ====================
+items:
+  # 示例物品 1: 铁质工具零件
+  iron_tool_part:
+    # 物品的唯一 ID
+    id: "legacyland:iron_tool_part"
+    # 显示名称
+    display_name: "§7铁质工具零件"
+    # 基础材料
+    material: IRON_INGOT
+    # 自定义模型数据（用于资源包）
+    custom_model_data: 1001
+    # 物品描述
+    lore:
+      - "§7用于制作高级工具的零件"
+      - "§7可以与其他材料组合"
+      - "§e通过工作台合成"
+    # 物品标签（用于识别）
+    tags:
+      - "tool_part"
+      - "craftable"
+
+  # 示例物品 2: 木质手柄
+  wooden_handle:
+    id: "legacyland:wooden_handle"
+    display_name: "§6木质手柄"
+    material: STICK
+    custom_model_data: 1002
+    lore:
+      - "§7工具的基础部件"
+      - "§7由橡木制成"
+      - "§e通过工作台合成"
+    tags:
+      - "tool_part"
+      - "craftable"
+
+  # 示例物品 3: 强化镐
+  reinforced_pickaxe:
+    id: "legacyland:reinforced_pickaxe"
+    display_name: "§b§l强化镐"
+    material: IRON_PICKAXE
+    custom_model_data: 1003
+    lore:
+      - "§7经过强化的铁镐"
+      - "§7挖掘速度 +20%"
+      - "§7耐久度 +50%"
+      - "§e通过特殊配方合成"
+    # 附魔
+    enchantments:
+      efficiency: 3
+      unbreaking: 2
+    # 属性修饰符
+    attribute_modifiers:
+      GENERIC_ATTACK_DAMAGE:
+        amount: 5.0
+        operation: ADD_NUMBER
+    tags:
+      - "advanced_tool"
+      - "pickaxe"
+
+  # 示例物品 4: 神秘水晶
+  mysterious_crystal:
+    id: "legacyland:mysterious_crystal"
+    display_name: "§d§l神秘水晶"
+    material: AMETHYST_SHARD
+    custom_model_data: 1004
+    lore:
+      - "§7散发着神秘光芒的水晶"
+      - "§7可用于制作魔法物品"
+      - "§c稀有材料"
+    # 发光效果
+    glow: true
+    tags:
+      - "rare"
+      - "magic_material"
+
+# ==================== 合成配方 ====================
+recipes:
+  # 配方 1: 铁质工具零件
+  craft_iron_tool_part:
+    # 配方类型：shaped（有形状）、shapeless（无形状）
+    type: shaped
+    # 合成结果
+    result:
+      item: "legacyland:iron_tool_part"
+      amount: 2
+    # 有形状的配方（3x3 工作台）
+    shape:
+      - "III"
+      - " I "
+      - "   "
+    # 材料映射
+    ingredients:
+      I: IRON_INGOT
+    # 配方权限（可选）
+    permission: "legacyland.craft.iron_tool_part"
+
+  # 配方 2: 木质手柄
+  craft_wooden_handle:
+    type: shaped
+    result:
+      item: "legacyland:wooden_handle"
+      amount: 4
+    shape:
+      - "O"
+      - "O"
+      - " "
+    ingredients:
+      O: OAK_PLANKS
+
+  # 配方 3: 强化镐（使用自定义物品）
+  craft_reinforced_pickaxe:
+    type: shaped
+    result:
+      item: "legacyland:reinforced_pickaxe"
+      amount: 1
+    shape:
+      - "PPP"
+      - " H "
+      - " H "
+    ingredients:
+      # P = 铁质工具零件（自定义物品）
+      P: "legacyland:iron_tool_part"
+      # H = 木质手柄（自定义物品）
+      H: "legacyland:wooden_handle"
+    permission: "legacyland.craft.reinforced_pickaxe"
+
+  # 配方 4: 神秘水晶（无形状配方）
+  craft_mysterious_crystal:
+    type: shapeless
+    result:
+      item: "legacyland:mysterious_crystal"
+      amount: 1
+    # 无形状配方的材料列表
+    ingredients:
+      - AMETHYST_SHARD
+      - AMETHYST_SHARD
+      - DIAMOND
+      - GLOWSTONE_DUST
+    permission: "legacyland.craft.mysterious_crystal"
+
+  # 配方 5: 强化镐的替代配方（使用原版材料）
+  craft_reinforced_pickaxe_alt:
+    type: shaped
+    result:
+      item: "legacyland:reinforced_pickaxe"
+      amount: 1
+    shape:
+      - "DDD"
+      - " S "
+      - " S "
+    ingredients:
+      D: DIAMOND
+      S: STICK
+    # 需要特殊工作台或条件
+    conditions:
+      - type: "permission"
+        value: "legacyland.craft.advanced"
+
+# ==================== 熔炉配方 ====================
+smelting:
+  # 熔炉配方示例
+  smelt_iron_tool_part:
+    # 输入材料
+    input: IRON_INGOT
+    # 输出结果
+    result:
+      item: "legacyland:iron_tool_part"
+      amount: 1
+    # 经验值
+    experience: 0.5
+    # 烧炼时间（tick，20 tick = 1秒）
+    cooking_time: 200
+
+# ==================== 配置说明 ====================
+#
+# CraftEngine 支持的功能：
+# 1. 自定义物品属性（名称、描述、材质、模型）
+# 2. 有形状和无形状的合成配方
+# 3. 熔炉、高炉、烟熏炉配方
+# 4. 权限控制
+# 5. 条件判断
+# 6. 物品标签系统
+# 7. 附魔和属性修饰符
+#
+# 使用方法：
+# 1. 将此文件放在 plugins/CraftEngine/recipes/ 目录下
+# 2. 重载插件：/craftengine reload
+# 3. 在游戏中使用工作台合成物品
+# 4. 使用命令获取物品：/craftengine give <玩家> <物品ID> [数量]
+#
+# 注意事项：
+# - 物品 ID 必须唯一，建议使用命名空间格式（namespace:item_id）
+# - 自定义模型数据需要配合资源包使用
+# - 配方中引用自定义物品时使用完整 ID
+# - 权限节点可以在 permissions.yml 中配置
