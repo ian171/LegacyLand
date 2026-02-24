@@ -1,9 +1,7 @@
 package net.chen.legacyLand.command;
 
-import com.palmergames.bukkit.towny.object.Nation;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
-import net.kyori.adventure.identity.Identity;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -13,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class AdministrationCommands implements CommandExecutor, TabCompleter {

@@ -1,6 +1,5 @@
 package net.chen.legacyLand.player;
 
-import lombok.Getter;
 import lombok.Setter;
 import net.chen.legacyLand.database.DatabaseManager;
 import org.bukkit.entity.Player;

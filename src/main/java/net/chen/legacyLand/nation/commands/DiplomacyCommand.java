@@ -2,7 +2,6 @@ package net.chen.legacyLand.nation.commands;
 
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
-import com.palmergames.bukkit.towny.object.Resident;
 import net.chen.legacyLand.nation.NationManager;
 import net.chen.legacyLand.nation.NationPermission;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
