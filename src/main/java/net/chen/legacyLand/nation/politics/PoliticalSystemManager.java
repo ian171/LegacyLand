@@ -23,6 +23,7 @@ public class PoliticalSystemManager {
     private final Map<String, PoliticalSystem> systems = new LinkedHashMap<>();
     private final Map<String, List<PoliticalEffect>> registeredEffects = new ConcurrentHashMap<>();
     private final Map<String, PoliticalEffectFactory> effectFactories = new ConcurrentHashMap<>();
+    private final Map<String, List<PoliticalEffect>> activeNationEffects = new ConcurrentHashMap<>();
     private final Map<String, Long> changeCooldowns = new ConcurrentHashMap<>();
 
     @Getter
@@ -174,7 +175,7 @@ public class PoliticalSystemManager {
      * @param newSystemId 新政体ID
      */
     public void applySystemChange(Nation nation, String oldSystemId, String newSystemId) {
-        // 移除旧政体效果
+        // 移除旧政体的注册效果
         if (oldSystemId != null) {
             List<PoliticalEffect> oldEffects = registeredEffects.get(oldSystemId);
             if (oldEffects != null) {
@@ -184,7 +185,15 @@ public class PoliticalSystemManager {
             }
         }
 
-        // 应用新政体效果
+        // 移除旧政体的工厂创建效果（粒子等）
+        List<PoliticalEffect> oldActiveEffects = activeNationEffects.remove(nation.getName());
+        if (oldActiveEffects != null) {
+            for (PoliticalEffect effect : oldActiveEffects) {
+                effect.onRemove(nation);
+            }
+        }
+
+        // 应用新政体的注册效果
         List<PoliticalEffect> newEffects = registeredEffects.get(newSystemId);
         if (newEffects != null) {
             for (PoliticalEffect effect : newEffects) {
@@ -192,9 +201,10 @@ public class PoliticalSystemManager {
             }
         }
 
-        // 从配置创建并应用自定义效果
+        // 从配置创建并应用自定义效果，同时跟踪它们
         PoliticalSystem newSystem = systems.get(newSystemId);
         if (newSystem != null && newSystem.customEffects() != null) {
+            List<PoliticalEffect> newActiveEffects = new ArrayList<>();
             for (Map.Entry<String, Object> entry : newSystem.customEffects().entrySet()) {
                 String effectName = entry.getKey();
                 PoliticalEffectFactory factory = effectFactories.get(effectName);
@@ -202,8 +212,14 @@ public class PoliticalSystemManager {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> config = (Map<String, Object>) entry.getValue();
                     PoliticalEffect effect = factory.create(nation, config);
-                    effect.onApply(nation);
+                    if (effect != null) {
+                        effect.onApply(nation);
+                        newActiveEffects.add(effect);
+                    }
                 }
+            }
+            if (!newActiveEffects.isEmpty()) {
+                activeNationEffects.put(nation.getName(), newActiveEffects);
             }
         }
 

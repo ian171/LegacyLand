@@ -1,5 +1,6 @@
 package net.chen.legacyLand;
 
+import com.palmergames.bukkit.towny.TownyAPI;
 import lombok.Getter;
 import net.chen.legacyLand.achievements.AchievementManager;
 import net.chen.legacyLand.achievements.listener.PlayerAchievementsListener;
@@ -96,6 +97,11 @@ public final class LegacyLand extends JavaPlugin {
         // 加载政治体制配置
         politicalSystemLoader();
         logger.info("政治体制系统已加载。");
+        // 加载所有已有国家的扩展数据（政体持久化）
+        for (com.palmergames.bukkit.towny.object.Nation nation : TownyAPI.getInstance().getNations()) {
+            nationManager.loadNationData(nation.getName());
+        }
+        logger.info("已加载 " + TownyAPI.getInstance().getNations().size() + " 个国家的扩展数据。");
         diplomacyManager = DiplomacyManager.getInstance();
         logger.info("外交系统已加载。");
         logger.info("税收系统已加载。");

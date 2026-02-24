@@ -4,7 +4,7 @@ main: net.chen.legacyLand.LegacyLand
 api-version: '1.21'
 authors: [ Chen ]
 depend: [Towny,ItemsAdder,Vault]
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, CraftEngine]
 
 commands:
   legacylandadmin:

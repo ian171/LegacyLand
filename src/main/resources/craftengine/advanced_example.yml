@@ -1,0 +1,271 @@
+# CraftEngine 高级示范配置
+# 展示更复杂的功能：条件合成、多步骤制作、特殊效果
+
+# ==================== 高级物品 ====================
+items:
+  # 魔法精华
+  magic_essence:
+    id: "legacyland:magic_essence"
+    display_name: "§5§l魔法精华"
+    material: NETHER_STAR
+    custom_model_data: 2001
+    lore:
+      - "§7蕴含强大魔力的精华"
+      - "§7可用于附魔和强化"
+      - "§c传说级材料"
+    glow: true
+    tags:
+      - "legendary"
+      - "magic"
+
+  # 附魔书：效率大师
+  enchanted_book_efficiency_master:
+    id: "legacyland:enchanted_book_efficiency_master"
+    display_name: "§b§l附魔书：效率大师"
+    material: ENCHANTED_BOOK
+    custom_model_data: 2002
+    lore:
+      - "§7包含强大的效率附魔"
+      - "§7效率 V"
+      - "§7可应用于工具"
+    stored_enchantments:
+      efficiency: 5
+    tags:
+      - "enchanted_book"
+
+  # 战士之剑
+  warrior_sword:
+    id: "legacyland:warrior_sword"
+    display_name: "§c§l战士之剑"
+    material: NETHERITE_SWORD
+    custom_model_data: 2003
+    lore:
+      - "§7传说中的战士之剑"
+      - "§7攻击力 +12"
+      - "§7攻击速度 +10%"
+      - "§c史诗级武器"
+    enchantments:
+      sharpness: 5
+      unbreaking: 3
+      fire_aspect: 2
+    attribute_modifiers:
+      GENERIC_ATTACK_DAMAGE:
+        amount: 12.0
+        operation: ADD_NUMBER
+      GENERIC_ATTACK_SPEED:
+        amount: 0.1
+        operation: ADD_SCALAR
+    glow: true
+    tags:
+      - "epic"
+      - "weapon"
+      - "sword"
+
+  # 生命护符
+  life_amulet:
+    id: "legacyland:life_amulet"
+    display_name: "§a§l生命护符"
+    material: TOTEM_OF_UNDYING
+    custom_model_data: 2004
+    lore:
+      - "§7佩戴后增加生命值"
+      - "§7最大生命 +4"
+      - "§7生命恢复 +1"
+      - "§e可放置在副手栏"
+    attribute_modifiers:
+      GENERIC_MAX_HEALTH:
+        amount: 4.0
+        operation: ADD_NUMBER
+        slot: OFFHAND
+    glow: true
+    tags:
+      - "rare"
+      - "amulet"
+
+# ==================== 高级配方 ====================
+recipes:
+  # 魔法精华合成（需要多种稀有材料）
+  craft_magic_essence:
+    type: shaped
+    result:
+      item: "legacyland:magic_essence"
+      amount: 1
+    shape:
+      - "DED"
+      - "ENE"
+      - "DED"
+    ingredients:
+      D: DIAMOND
+      E: ENDER_PEARL
+      N: NETHER_STAR
+    # 合成条件
+    conditions:
+      - type: "permission"
+        value: "legacyland.craft.legendary"
+      - type: "level"
+        value: 30  # 需要 30 级经验
+    # 消耗经验
+    experience_cost: 30
+
+  # 附魔书合成
+  craft_enchanted_book_efficiency:
+    type: shaped
+    result:
+      item: "legacyland:enchanted_book_efficiency_master"
+      amount: 1
+    shape:
+      - "MMM"
+      - "MBM"
+      - "MMM"
+    ingredients:
+      M: "legacyland:magic_essence"
+      B: BOOK
+    conditions:
+      - type: "permission"
+        value: "legacyland.craft.enchanted_book"
+      - type: "level"
+        value: 50
+    experience_cost: 50
+
+  # 战士之剑合成（多步骤）
+  craft_warrior_sword:
+    type: shaped
+    result:
+      item: "legacyland:warrior_sword"
+      amount: 1
+    shape:
+      - " M "
+      - " M "
+      - " H "
+    ingredients:
+      M: "legacyland:magic_essence"
+      H: NETHERITE_SWORD
+    conditions:
+      - type: "permission"
+        value: "legacyland.craft.epic"
+      - type: "level"
+        value: 60
+      # 需要在特定位置合成
+      - type: "location"
+        value: "nether"  # 必须在下界合成
+    experience_cost: 60
+
+  # 生命护符合成
+  craft_life_amulet:
+    type: shapeless
+    result:
+      item: "legacyland:life_amulet"
+      amount: 1
+    ingredients:
+      - TOTEM_OF_UNDYING
+      - "legacyland:magic_essence"
+      - GOLDEN_APPLE
+      - GOLDEN_APPLE
+    conditions:
+      - type: "permission"
+        value: "legacyland.craft.rare"
+      - type: "level"
+        value: 40
+    experience_cost: 40
+
+# ==================== 升级配方 ====================
+# 使用铁砧或特殊工作台升级物品
+upgrades:
+  # 强化镐升级为战士镐
+  upgrade_pickaxe_to_warrior:
+    # 基础物品
+    base: "legacyland:reinforced_pickaxe"
+    # 升级材料
+    materials:
+      - "legacyland:magic_essence"
+      - DIAMOND
+      - DIAMOND
+    # 升级结果
+    result:
+      item: "legacyland:warrior_pickaxe"
+      amount: 1
+    # 升级条件
+    conditions:
+      - type: "permission"
+        value: "legacyland.upgrade.warrior"
+      - type: "level"
+        value: 45
+    experience_cost: 45
+
+# ==================== 分解配方 ====================
+# 将物品分解为材料
+disassembly:
+  # 分解强化镐
+  disassemble_reinforced_pickaxe:
+    input: "legacyland:reinforced_pickaxe"
+    results:
+      - item: "legacyland:iron_tool_part"
+        amount: 2
+        chance: 0.8  # 80% 概率
+      - item: "legacyland:wooden_handle"
+        amount: 1
+        chance: 0.6  # 60% 概率
+      - item: IRON_INGOT
+        amount: 1
+        chance: 0.4  # 40% 概率
+
+  # 分解战士之剑
+  disassemble_warrior_sword:
+    input: "legacyland:warrior_sword"
+    results:
+      - item: "legacyland:magic_essence"
+        amount: 1
+        chance: 0.5  # 50% 概率
+      - item: NETHERITE_INGOT
+        amount: 1
+        chance: 0.7  # 70% 概率
+
+# ==================== 特殊合成站 ====================
+# 自定义合成站配置
+custom_stations:
+  # 魔法工作台
+  magic_workbench:
+    # 方块类型
+    block: ENCHANTING_TABLE
+    # 显示名称
+    display_name: "§5§l魔法工作台"
+    # 可用配方列表
+    recipes:
+      - "craft_magic_essence"
+      - "craft_enchanted_book_efficiency"
+      - "craft_life_amulet"
+    # 使用权限
+    permission: "legacyland.use.magic_workbench"
+
+  # 战士铁砧
+  warrior_anvil:
+    block: ANVIL
+    display_name: "§c§l战士铁砧"
+    recipes:
+      - "craft_warrior_sword"
+      - "upgrade_pickaxe_to_warrior"
+    permission: "legacyland.use.warrior_anvil"
+
+# ==================== 配置说明 ====================
+#
+# 高级功能：
+# 1. 条件合成：权限、等级、位置、时间等
+# 2. 经验消耗：合成时消耗玩家经验
+# 3. 物品升级：通过特殊配方升级现有物品
+# 4. 物品分解：将物品拆解为材料（带概率）
+# 5. 自定义合成站：指定特殊方块作为合成站
+# 6. 属性修饰符：增加攻击力、生命值等属性
+# 7. 发光效果：物品带有附魔光效
+#
+# 条件类型：
+# - permission: 权限检查
+# - level: 经验等级要求
+# - location: 位置要求（overworld, nether, end）
+# - time: 时间要求（day, night）
+# - weather: 天气要求（clear, rain, thunder）
+# - biome: 生物群系要求
+#
+# 使用示例：
+# /craftengine give <玩家> legacyland:magic_essence 1
+# /craftengine give <玩家> legacyland:warrior_sword 1
+# /craftengine reload

@@ -25,10 +25,16 @@ repositories {
         name = 'placeholderapi'
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
     }
+    maven {
+        name = 'craft_engine'
+        url 'https://repo.momirealms.net/releases/'
+    }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly 'net.momirealms:craft-engine-core:0.0.67' // 将 "{version}" 替换为插件稳定版本
+    compileOnly 'net.momirealms:craft-engine-bukkit:0.0.67' // 例如 0.0.60
     compileOnly 'com.palmergames.bukkit.towny:towny:0.102.0.0'
     compileOnly 'com.github.LoneDev6:API-ItemsAdder:3.6.3-beta-14'
     compileOnly 'me.clip:placeholderapi:2.11.6'
