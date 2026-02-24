@@ -80,13 +80,13 @@ public class FlagWarData {
     }
 
     /**
-     * 获取战争持续时间（毫秒）
+     * 获取战争持续时间（秒）
      */
     public long getDuration() {
         if (endTime == 0) {
-            return System.currentTimeMillis() - startTime;
+            return (System.currentTimeMillis() - startTime)/1000;
         }
-        return endTime - startTime;
+        return (endTime - startTime)/1000;
     }
 
     /**

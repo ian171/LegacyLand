@@ -31,19 +31,20 @@ import net.chen.legacyLand.war.flagwar.FlagWarCommand;
 import net.chen.legacyLand.war.flagwar.FlagWarListener;
 import net.chen.legacyLand.war.flagwar.FlagWarManager;
 import net.chen.legacyLand.war.flagwar.FlagWarTimerTask;
+import net.chen.legacyLand.nation.plot.PlotClaimManager;
+import net.chen.legacyLand.nation.plot.PlotClaimListener;
+import net.chen.legacyLand.nation.plot.PlotClaimTimerTask;
 import net.chen.legacyLand.war.siege.OutpostMonitorTask;
 import net.chen.legacyLand.war.siege.SiegeWarManager;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
-import org.bukkit.block.Vault;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 @Getter
@@ -59,6 +60,7 @@ public final class LegacyLand extends JavaPlugin {
     private WarManager warManager;
     private SiegeWarManager siegeWarManager;
     private FlagWarManager flagWarManager;
+    private PlotClaimManager plotClaimManager;
     private PlayerManager playerManager;
     private DatabaseManager databaseManager;
     private AchievementManager achievementManager;
@@ -92,36 +94,7 @@ public final class LegacyLand extends JavaPlugin {
         logger.info("国家系统已加载。");
         nationManager.setDatabase(databaseManager);
         // 加载政治体制配置
-        politicalSystemManager = PoliticalSystemManager.getInstance();
-        politicalSystemManager.load(this);
-        // 注册自定义效果工厂
-        politicalSystemManager.registerEffectFactory("speed-boost", (nation, config) -> {
-            int amplifier = 0;
-            if (config != null && config.containsKey("amplifier")) {
-                Object ampValue = config.get("amplifier");
-                if (ampValue instanceof Number) {
-                    amplifier = ((Number) ampValue).intValue();
-                }
-            }
-            return new SpeedBoostEffect(amplifier);
-        });
-        politicalSystemManager.registerEffectFactory("particle-effect", (nation, config) -> {
-            if (config == null) return null;
-
-            String particleName = (String) config.get("particle");
-            String patternName = (String) config.get("pattern");
-
-            if (particleName == null || patternName == null) return null;
-
-            try {
-                org.bukkit.Particle particle = org.bukkit.Particle.valueOf(particleName.toUpperCase());
-                ParticleEffect.ParticlePattern pattern = ParticleEffect.ParticlePattern.valueOf(patternName.toUpperCase());
-                return new ParticleEffect(particle, pattern);
-            } catch (IllegalArgumentException e) {
-                logger.warning("无效的粒子效果配置: particle=" + particleName + ", pattern=" + patternName);
-                return null;
-            }
-        });
+        politicalSystemLoader();
         logger.info("政治体制系统已加载。");
         diplomacyManager = DiplomacyManager.getInstance();
         logger.info("外交系统已加载。");
@@ -132,17 +105,15 @@ public final class LegacyLand extends JavaPlugin {
         flagWarManager = FlagWarManager.getInstance();
         flagWarManager.loadFromDatabase(databaseManager);
         logger.info("FlagWar 系统已加载。");
+        plotClaimManager = PlotClaimManager.getInstance();
+        logger.info("PlotClaim 系统已加载。");
         playerManager = PlayerManager.getInstance();
         playerManager.setDatabase(databaseManager);
         logger.info("玩家系统已加载。");
         achievementManager = new AchievementManager(playerManager, databaseManager);
         AchievementManager.setInstance(achievementManager);
         logger.info("成就系统已加载。");
-        try {
-            vault_init();
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
-        }
+        vault_init();
         logger.info("经济系统已加载");
         // 初始化季节系统
         seasonManager = new SeasonManager(this);
@@ -177,6 +148,8 @@ public final class LegacyLand extends JavaPlugin {
         new OutpostMonitorTask(instance).runTaskTimer(instance, 1200L, 1200L);
         // 启动 FlagWar 计时器任务（每秒检查一次）
         new FlagWarTimerTask().runTaskTimer(instance, 20L, 20L);
+        // 启动 PlotClaim 计时器任务（每秒检查一次）
+        new PlotClaimTimerTask().runTaskTimer(instance, 20L, 20L);
         // 启动状态更新任务（每5秒检查一次）
         new StatusUpdateTask().runTaskTimer(instance, 10L, 10L);
 
@@ -189,6 +162,39 @@ public final class LegacyLand extends JavaPlugin {
         } else {
             //logger.info("ActionBar 显示已禁用，请使用 PlaceholderAPI 变量自定义显示");
         }
+    }
+
+    private void politicalSystemLoader() {
+        politicalSystemManager = PoliticalSystemManager.getInstance();
+        politicalSystemManager.load(this);
+        // 注册自定义效果工厂
+        politicalSystemManager.registerEffectFactory("speed-boost", (nation, config) -> {
+            int amplifier = 0;
+            if (config != null && config.containsKey("amplifier")) {
+                Object ampValue = config.get("amplifier");
+                if (ampValue instanceof Number) {
+                    amplifier = ((Number) ampValue).intValue();
+                }
+            }
+            return new SpeedBoostEffect(amplifier);
+        });
+        politicalSystemManager.registerEffectFactory("particle-effect", (nation, config) -> {
+            if (config == null) return null;
+
+            String particleName = (String) config.get("particle");
+            String patternName = (String) config.get("pattern");
+
+            if (particleName == null || patternName == null) return null;
+
+            try {
+                org.bukkit.Particle particle = org.bukkit.Particle.valueOf(particleName.toUpperCase());
+                ParticleEffect.ParticlePattern pattern = ParticleEffect.ParticlePattern.valueOf(patternName.toUpperCase());
+                return new ParticleEffect(particle, pattern);
+            } catch (IllegalArgumentException e) {
+                logger.warning("无效的粒子效果配置: particle=" + particleName + ", pattern=" + patternName);
+                return null;
+            }
+        });
     }
 
     @Override
@@ -256,6 +262,7 @@ public final class LegacyLand extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerAchievementsListener(),this);
         getServer().getPluginManager().registerEvents(new PlayerStatusListener(), this);
         getServer().getPluginManager().registerEvents(new FlagWarListener(), this);
+        getServer().getPluginManager().registerEvents(new PlotClaimListener(), this);
         getServer().getPluginManager().registerEvents(new PoliticalEffectListener(), this);
     }
     public static void initItemsadderItems() throws IOException {

@@ -185,11 +185,19 @@ integration:
     # 是否使用 Vault 处理税收
     use-for-tax: false
 
+# 地块占领系统配置
+#Beta
+plot-claim:
+  # 是否启用地块占领系统
+  enabled: true
+  # 占领所需时间（秒）
+  claim-duration-seconds: 60
+
 # 实验性功能
 experimental:
-  # 是否启用实验性功能
+  # 是否启用实验性功能(Unused)
   enabled: false
-  # 自动补给线计算
+  # 自动补给线计算(Unused)
   auto-supply-line-calculation: false
-  # 动态战争区域
+  # 动态战争区域(Unused)
   dynamic-war-zone: false
