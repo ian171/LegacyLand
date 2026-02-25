@@ -2,6 +2,7 @@ package net.chen.legacyLand.nation.plot;
 
 import com.palmergames.bukkit.towny.object.WorldCoord;
 import lombok.Data;
+import org.bukkit.boss.BossBar;
 
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public class PlotClaim {
     private final int requiredSeconds;
     private boolean paused;
     private String pauseReason;
+    private transient BossBar bossBar;
 
     public PlotClaim(String claimId, UUID playerId, String townName, WorldCoord worldCoord,
                      long startTime, int progress, int requiredSeconds, boolean paused, String pauseReason) {

@@ -1,6 +1,9 @@
 package net.chen.legacyLand.nation.plot;
 
-import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -23,41 +26,53 @@ public class PlotClaimTimerTask extends BukkitRunnable {
             // 增加进度
             claim.setProgress(claim.getProgress() + 1);
 
-            // 发送 ActionBar 进度提示
-            Player player = org.bukkit.Bukkit.getPlayer(claim.getPlayerId());
+            // 更新 BossBar 进度
+            Player player = Bukkit.getPlayer(claim.getPlayerId());
             if (player != null) {
-                int progress = claim.getProgress();
-                int required = claim.getRequiredSeconds();
-                int percentage = (progress * 100) / required;
-
-                String bar = generateProgressBar(percentage);
-                String message = String.format("§e占领进度: %s §f%d/%d 秒 (§a%d%%§f)", bar, progress, required, percentage);
-
-                player.sendActionBar(Component.text(message));
+                double percentage = (double) claim.getProgress() / claim.getRequiredSeconds();
+                updateBossBar(claim, player, percentage);
             }
 
             // 检查是否完成
             if (claim.getProgress() >= claim.getRequiredSeconds()) {
+                removeBossBar(claim);
                 manager.completeClaim(claim);
             }
         }
     }
 
     /**
-     * 生成进度条
+     * 更新占领进度条
      */
-    private String generateProgressBar(int percentage) {
-        int bars = 20;
-        int filled = (percentage * bars) / 100;
-
-        StringBuilder bar = new StringBuilder("§a");
-        for (int i = 0; i < bars; i++) {
-            if (i == filled) {
-                bar.append("§7");
-            }
-            bar.append("|");
+    private void updateBossBar(PlotClaim claim, Player player, double percentage) {
+        BossBar bar = claim.getBossBar();
+        if (bar == null) {
+            bar = Bukkit.createBossBar(
+                    "§e占领进度",
+                    BarColor.RED,
+                    BarStyle.SEGMENTED_12
+            );
+            claim.setBossBar(bar);
         }
 
-        return bar.toString();
+        bar.setProgress(Math.min(percentage, 1.0));
+        bar.setTitle("§e占领进度 §f" + (int) (percentage * 100) + "%");
+
+        if (!bar.getPlayers().contains(player)) {
+            bar.addPlayer(player);
+        }
+        bar.setVisible(true);
+    }
+
+    /**
+     * 移除占领进度条
+     */
+    public static void removeBossBar(PlotClaim claim) {
+        BossBar bar = claim.getBossBar();
+        if (bar != null) {
+            bar.removeAll();
+            bar.setVisible(false);
+            claim.setBossBar(null);
+        }
     }
 }

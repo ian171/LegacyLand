@@ -22,6 +22,7 @@ import net.chen.legacyLand.nation.politics.PoliticalEffectListener;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
 import net.chen.legacyLand.nation.politics.effects.ParticleEffect;
 import net.chen.legacyLand.nation.politics.effects.SpeedBoostEffect;
+import net.chen.legacyLand.nation.transaction.NationTradeManager;
 import net.chen.legacyLand.placeholder.LegacyLandPlaceholder;
 import net.chen.legacyLand.player.PlayerManager;
 import net.chen.legacyLand.player.commands.PlayerCommand;
@@ -67,6 +68,7 @@ public final class LegacyLand extends JavaPlugin {
     private AchievementManager achievementManager;
     private net.chen.legacyLand.season.SeasonManager seasonManager;
     private PoliticalSystemManager politicalSystemManager;
+    private NationTradeManager nationTradeManager;
 
     @Override
     public void onEnable() {
@@ -121,6 +123,7 @@ public final class LegacyLand extends JavaPlugin {
         logger.info("成就系统已加载。");
         vault_init();
         logger.info("经济系统已加载");
+        nationTradeManager = new NationTradeManager(getNationManager());
         // 初始化季节系统
         seasonManager = new SeasonManager(this);
         seasonManager.start();

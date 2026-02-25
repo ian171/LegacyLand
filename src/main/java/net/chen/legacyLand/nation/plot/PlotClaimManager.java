@@ -92,6 +92,8 @@ public class PlotClaimManager {
     public void cancelClaim(UUID playerId) {
         PlotClaim claim = activeClaims.get(playerId);
         if (claim != null) {
+            PlotClaimTimerTask.removeBossBar(claim);
+
             Player player = org.bukkit.Bukkit.getPlayer(playerId);
             if (player != null) {
                 player.sendMessage("§c占领已取消！");
@@ -160,11 +162,11 @@ public class PlotClaimManager {
                 LegacyLand.logger.severe("占领地块失败: " + e.getMessage());
             }
 
-            // 从内存移除
+            // 清理 BossBar 并从内存移除
+            PlotClaimTimerTask.removeBossBar(claim);
             String coordKey = getCoordKey(claim.getWorldCoord());
             activeClaims.remove(claim.getPlayerId());
             coordClaimMap.remove(coordKey);
-            System.gc();
         } catch (Exception e) {
             LegacyLand.logger.severe("完成 PlotClaim 失败: " + e.getMessage());
         }

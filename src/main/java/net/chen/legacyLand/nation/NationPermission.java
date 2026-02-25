@@ -26,6 +26,8 @@ public enum NationPermission {
     ALLOCATE_FUNDS_TO_CITY("向城市拨款"),
     ALLOCATE_FUNDS_TO_DEFENSE("向军需拨款"),
     ADJUST_VASSAL_TAX("调整封臣税"),
+    WITHDRAW_TREASURY("从国库取物"),
+    APPROVE_TREASURY_REQUEST("审批国库申请"),
 
     // 司法权限
     JUDGE_DETAINED("审判被拘留者"),

@@ -11,11 +11,13 @@ import net.chen.legacyLand.nation.NationRole;
 import net.chen.legacyLand.nation.politics.PoliticalSystem;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,10 +55,98 @@ public class LegacyCommand implements CommandExecutor, TabCompleter {
             case "politics" -> handlePolitics(player, args);
             case "role" -> handleRole(player, args);
             case "info" -> handleInfo(player);
+            case "trade" -> handleTrade(player, args);
+            case "treasury" -> handleTreasury(player, args);
             default -> sendHelp(player);
         }
 
         return true;
+    }
+    private void handleTrade(Player player, String[] args) {
+        if (args.length < 3) {
+            player.sendMessage("§c用法: /legacy trade <目标国家> <价格>");
+            player.sendMessage("§7手持要交易的物品执行此命令");
+            return;
+        }
+
+        Nation source = TownyAPI.getInstance().getNation(player);
+        if (source == null) {
+            player.sendMessage("§c你不属于任何国家。");
+            return;
+        }
+
+        Nation target = TownyAPI.getInstance().getNation(args[1]);
+        if (target == null) {
+            player.sendMessage("§c找不到国家: " + args[1]);
+            return;
+        }
+
+        if (source.equals(target)) {
+            player.sendMessage("§c不能与自己的国家交易。");
+            return;
+        }
+
+        int price;
+        try {
+            price = Integer.parseInt(args[2]);
+        } catch (NumberFormatException e) {
+            player.sendMessage("§c价格必须是整数。");
+            return;
+        }
+
+        if (price <= 0) {
+            player.sendMessage("§c价格必须大于 0。");
+            return;
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir()) {
+            player.sendMessage("§c你手上没有物品。");
+            return;
+        }
+
+        LegacyLand.getInstance().getNationTradeManager().purchaseFrom(source, target, player, item, price);
+    }
+
+    /**
+     * 设定国库箱子
+     */
+    private void handleTreasury(Player player, String[] args) {
+        if (args.length < 2 || !args[1].equalsIgnoreCase("set")) {
+            player.sendMessage("§c用法: /legacy treasury set");
+            player.sendMessage("§7看向一个箱子执行此命令以设定国库");
+            return;
+        }
+
+        Resident resident = townyAPI.getResident(player);
+        if (resident == null || !resident.hasNation()) {
+            player.sendMessage("§c你不在任何国家中！");
+            return;
+        }
+
+        Nation nation = resident.getNationOrNull();
+        if (nation == null) {
+            player.sendMessage("§c无法获取国家信息！");
+            return;
+        }
+
+        NationRole role = nationManager.getPlayerRole(nation.getName(), player.getUniqueId());
+        if (!role.isLeader()) {
+            player.sendMessage("§c只有国家领导人才能设定国库！");
+            return;
+        }
+
+        Block block = player.getTargetBlockExact(5);
+        if (block == null) {
+            player.sendMessage("§c请看向一个箱子！");
+            return;
+        }
+
+        if (nationManager.setTreasury(nation.getName(), block.getLocation())) {
+            player.sendMessage("§a成功设定国库位置！");
+        } else {
+            player.sendMessage("§c设定失败！请确保你看向的是首都城镇领土内的箱子。");
+        }
     }
 
     /**
@@ -357,6 +447,8 @@ public class LegacyCommand implements CommandExecutor, TabCompleter {
         player.sendMessage("§e/legacy government <政体> §7- 设置国家政体（旧）");
         player.sendMessage("§e/legacy politics <list|set|info> §7- 政治体制管理");
         player.sendMessage("§e/legacy role <玩家> <角色> §7- 设置玩家角色");
+        player.sendMessage("§e/legacy trade <目标国家> <价格> §7- 手持物品与其他国家交易");
+        player.sendMessage("§e/legacy treasury set §7- 设定国库箱子（看向箱子执行）");
         player.sendMessage("§e/legacy info §7- 查看国家扩展信息");
     }
 
@@ -365,11 +457,12 @@ public class LegacyCommand implements CommandExecutor, TabCompleter {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            completions.addAll(Arrays.asList("government", "politics", "role", "info"));
+            completions.addAll(Arrays.asList("government", "politics", "role", "info", "trade", "treasury"));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase()) {
                 case "government" -> completions.addAll(Arrays.asList("FEUDAL", "REPUBLIC"));
                 case "politics" -> completions.addAll(Arrays.asList("list", "set", "info"));
+                case "treasury" -> completions.add("set");
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("politics") && args[1].equalsIgnoreCase("set")) {

@@ -21,6 +21,8 @@ public enum NationRole {
         NationPermission.ALLOCATE_FUNDS_TO_CITY,
         NationPermission.ALLOCATE_FUNDS_TO_DEFENSE,
         NationPermission.ADJUST_VASSAL_TAX,
+        NationPermission.WITHDRAW_TREASURY,
+        NationPermission.APPROVE_TREASURY_REQUEST,
         NationPermission.JUDGE_DETAINED,
         NationPermission.ISSUE_ARREST_WARRANT,
         NationPermission.MANAGE_SUPPLY_LINE,
@@ -35,7 +37,9 @@ public enum NationRole {
         NationPermission.ADJUST_LAND_RENT_TAX,
         NationPermission.ALLOCATE_FUNDS_TO_CITY,
         NationPermission.ALLOCATE_FUNDS_TO_DEFENSE,
-        NationPermission.ADJUST_VASSAL_TAX
+        NationPermission.ADJUST_VASSAL_TAX,
+        NationPermission.WITHDRAW_TREASURY,
+        NationPermission.APPROVE_TREASURY_REQUEST
     )),
 
     ATTORNEY_GENERAL("司法大臣", GovernmentType.FEUDAL, Set.of(
@@ -65,6 +69,8 @@ public enum NationRole {
         NationPermission.ADJUST_LAND_RENT_TAX,
         NationPermission.ALLOCATE_FUNDS_TO_CITY,
         NationPermission.ALLOCATE_FUNDS_TO_DEFENSE,
+        NationPermission.WITHDRAW_TREASURY,
+        NationPermission.APPROVE_TREASURY_REQUEST,
         NationPermission.JUDGE_DETAINED,
         NationPermission.ISSUE_ARREST_WARRANT,
         NationPermission.MANAGE_SUPPLY_LINE,
@@ -78,7 +84,9 @@ public enum NationRole {
         NationPermission.ADJUST_LAND_SALE_TAX,
         NationPermission.ADJUST_LAND_RENT_TAX,
         NationPermission.ALLOCATE_FUNDS_TO_CITY,
-        NationPermission.ALLOCATE_FUNDS_TO_DEFENSE
+        NationPermission.ALLOCATE_FUNDS_TO_DEFENSE,
+        NationPermission.WITHDRAW_TREASURY,
+        NationPermission.APPROVE_TREASURY_REQUEST
     )),
 
     JUDICIAL_OFFICER("司法官", GovernmentType.REPUBLIC, Set.of(
