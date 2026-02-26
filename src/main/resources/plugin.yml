@@ -54,3 +54,11 @@ commands:
     description: FlagWar 旗帜战争命令
     usage: /flagwar <info|list|cancel>
     aliases: [ fw, qizhan ]
+  market:
+    description: 市场管理命令
+    usage: /market <create|delete|info>
+    aliases: [ sc, shichang ]
+  price:
+    description: 设置销售箱价格
+    usage: /price set <价格>
+    aliases: [ jiage ]

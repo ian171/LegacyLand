@@ -38,6 +38,11 @@ import net.chen.legacyLand.war.flagwar.FlagWarManager;
 import net.chen.legacyLand.war.flagwar.FlagWarTimerTask;
 import net.chen.legacyLand.war.siege.OutpostMonitorTask;
 import net.chen.legacyLand.war.siege.SiegeWarManager;
+import net.chen.legacyLand.market.MarketManager;
+import net.chen.legacyLand.market.commands.MarketCommand;
+import net.chen.legacyLand.market.commands.PriceCommand;
+import net.chen.legacyLand.market.listener.MarketListener;
+import net.chen.legacyLand.organization.OrganizationManager;
 import net.chen.legacyLand.util.FoliaScheduler;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
@@ -47,6 +52,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.logging.Logger;
 
 @Getter
@@ -170,6 +176,21 @@ public final class LegacyLand extends JavaPlugin {
             logger.info("季节系统已加载。");
         }
 
+        // 初始化组织系统和市场系统（需要 DB 连接）
+        java.sql.Connection dbConn = null;
+        try {
+            dbConn = databaseManager.getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (dbConn != null) {
+            OrganizationManager.getInstance(this).init(dbConn);
+            MarketManager.getInstance(this).init(dbConn);
+            logger.info("组织系统和市场系统已加载。");
+        } else {
+            logger.warning("无法获取数据库连接，组织/市场系统将无法持久化（MongoDB 暂不支持）。");
+        }
+
         try {
             LegacyLand.initItemsadderItems();
         } catch (IOException e) {
@@ -291,6 +312,14 @@ public final class LegacyLand extends JavaPlugin {
         FlagWarCommand flagWarCommand = new FlagWarCommand();
         instance.getCommand("flagwar").setExecutor(flagWarCommand);
         instance.getCommand("flagwar").setTabCompleter(flagWarCommand);
+
+        MarketCommand marketCommand = new MarketCommand();
+        instance.getCommand("market").setExecutor(marketCommand);
+        instance.getCommand("market").setTabCompleter(marketCommand);
+
+        PriceCommand priceCommand = new PriceCommand();
+        instance.getCommand("price").setExecutor(priceCommand);
+        instance.getCommand("price").setTabCompleter(priceCommand);
     }
 
     private void registerListeners() {
@@ -303,6 +332,7 @@ public final class LegacyLand extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new FlagWarListener(), this);
         getServer().getPluginManager().registerEvents(new PlotClaimListener(), this);
         getServer().getPluginManager().registerEvents(new PoliticalEffectListener(), this);
+        getServer().getPluginManager().registerEvents(new MarketListener(this), this);
     }
     public static void initItemsadderItems() throws IOException {
         // 修正资源路径（去掉 /resources/）

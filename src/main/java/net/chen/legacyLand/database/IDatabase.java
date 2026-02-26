@@ -7,6 +7,8 @@ import net.chen.legacyLand.nation.diplomacy.DiplomacyRelation;
 import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.war.War;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,6 +22,11 @@ public interface IDatabase {
     default Logger getLogger(){
         return LegacyLand.logger;
     }
+
+    /**
+     * 获取底层 JDBC 连接（用于扩展模块直接操作，仅 SQL 类型数据库支持）
+     */
+    default Connection getConnection() throws SQLException { return null; }
 
     /**
      * 连接数据库

@@ -6,6 +6,7 @@ import net.chen.legacyLand.nation.NationRole;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyRelation;
 import net.chen.legacyLand.player.PlayerData;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -182,5 +183,12 @@ public class DatabaseManager {
 
     public void deleteFlagWar(String flagWarId) {
         database.deleteFlagWar(flagWarId);
+    }
+
+    /**
+     * 获取底层 JDBC 连接（供组织/市场等扩展模块直接使用）
+     */
+    public java.sql.Connection getConnection() throws SQLException {
+        return database.getConnection();
     }
 }

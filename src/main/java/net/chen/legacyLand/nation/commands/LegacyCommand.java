@@ -10,6 +10,8 @@ import net.chen.legacyLand.nation.NationManager;
 import net.chen.legacyLand.nation.NationRole;
 import net.chen.legacyLand.nation.politics.PoliticalSystem;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
+import net.chen.legacyLand.organization.commands.OrganizeCommand;
+import net.chen.legacyLand.organization.commands.OutpostCommand;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -31,11 +33,15 @@ public class LegacyCommand implements CommandExecutor, TabCompleter {
     private final NationManager nationManager;
     private final TownyAPI townyAPI;
     private final PoliticalSystemManager politicalSystemManager;
+    private final OrganizeCommand organizeCommand;
+    private final OutpostCommand outpostCommand;
 
     public LegacyCommand() {
         this.nationManager = NationManager.getInstance();
         this.townyAPI = TownyAPI.getInstance();
         this.politicalSystemManager = PoliticalSystemManager.getInstance();
+        this.organizeCommand = new OrganizeCommand();
+        this.outpostCommand = new OutpostCommand();
     }
 
     @Override
@@ -52,12 +58,14 @@ public class LegacyCommand implements CommandExecutor, TabCompleter {
 
         switch (args[0].toLowerCase()) {
             case "government" -> handleGovernment(player, args);
-            case "politics" -> handlePolitics(player, args);
-            case "role" -> handleRole(player, args);
-            case "info" -> handleInfo(player);
-            case "trade" -> handleTrade(player, args);
-            case "treasury" -> handleTreasury(player, args);
-            default -> sendHelp(player);
+            case "politics"   -> handlePolitics(player, args);
+            case "role"       -> handleRole(player, args);
+            case "info"       -> handleInfo(player);
+            case "trade"      -> handleTrade(player, args);
+            case "treasury"   -> handleTreasury(player, args);
+            case "organize"   -> organizeCommand.onCommand(sender, command, label, args);
+            case "outpost"    -> outpostCommand.onCommand(sender, command, label, args);
+            default           -> sendHelp(player);
         }
 
         return true;

@@ -44,6 +44,9 @@ public class SQLiteDatabase implements IDatabase {
     }
 
     @Override
+    public Connection getConnection() { return connection; }
+
+    @Override
     public void disconnect() {
         try {
             if (connection != null && !connection.isClosed()) {

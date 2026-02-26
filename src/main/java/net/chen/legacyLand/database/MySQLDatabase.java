@@ -62,6 +62,12 @@ public class MySQLDatabase implements IDatabase {
         }
     }
 
+//    @Override
+//    public Connection getConnection() {
+//        try { return dataSource != null ? dataSource.getConnection() : null; }
+//        catch (SQLException e) { return null; }
+//    }
+
     @Override
     public void disconnect() {
         if (dataSource != null && !dataSource.isClosed()) {
@@ -70,8 +76,10 @@ public class MySQLDatabase implements IDatabase {
         }
     }
 
-    private Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+    @Override
+    public Connection getConnection() {
+        try { return dataSource != null ? dataSource.getConnection() : null; }
+        catch (SQLException e) { return null; }
     }
 
     @Override
