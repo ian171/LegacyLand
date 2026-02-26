@@ -38,13 +38,13 @@ import net.chen.legacyLand.war.flagwar.FlagWarManager;
 import net.chen.legacyLand.war.flagwar.FlagWarTimerTask;
 import net.chen.legacyLand.war.siege.OutpostMonitorTask;
 import net.chen.legacyLand.war.siege.SiegeWarManager;
+import net.chen.legacyLand.util.FoliaScheduler;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
 import java.util.logging.Logger;
@@ -54,6 +54,7 @@ public final class LegacyLand extends JavaPlugin {
 
     public static Logger logger;
     public static String version = "1.0-Beta2.0";
+    public boolean isDev;
     @Getter
     private static LegacyLand instance;
     private ConfigManager configManager;
@@ -71,9 +72,19 @@ public final class LegacyLand extends JavaPlugin {
     private NationTradeManager nationTradeManager;
 
     @Override
+    public void onLoad() {
+        logger = getLogger();
+        if (FoliaScheduler.isFolia()){
+            logger.warning("You are using Folia Client");
+            logger.warning("Folia supporting is still in test. Report your bugs in Github!");
+        }else {
+            logger.warning("The plugin is in test. Please report your bugs in Github!");
+        }
+    }
+
+    @Override
     public void onEnable() {
         instance = this;
-        logger = getLogger();
         logger.info("LegacyLand 插件已启用！");
         logger.warning("Unauthorized modification and redistribution prohibited.");
         logger.info("LegacyLand Version: "+version);
@@ -84,92 +95,111 @@ public final class LegacyLand extends JavaPlugin {
             return;
         }
         //incompatiblePluginsChecker();
+        Thread virtual = Thread.ofVirtual().unstarted(() -> {
+            // 注册命令
+            registerCommands();
+            // 注册监听器
+            registerListeners();
+
+            // 注册 PlaceholderAPI
+
+        });
 
         // 加载配置
         configManager = new ConfigManager(this);
-
+        isDev = configManager.isDev;
+        virtual.start();
         // 初始化数据库
         databaseManager = new DatabaseManager(this);
         databaseManager.connect();
 
         // 初始化管理器
         nationManager = NationManager.getInstance();
-        logger.info("国家系统已加载。");
+        if (isDev) {
+            logger.info("国家系统已加载。");
+        }
         nationManager.setDatabase(databaseManager);
         // 加载政治体制配置
         politicalSystemLoader();
-        logger.info("政治体制系统已加载。");
+        if (isDev) {
+            logger.info("政治体制系统已加载。");
+        }
         // 加载所有已有国家的扩展数据（政体持久化）
         for (com.palmergames.bukkit.towny.object.Nation nation : TownyAPI.getInstance().getNations()) {
             nationManager.loadNationData(nation.getName());
         }
         logger.info("已加载 " + TownyAPI.getInstance().getNations().size() + " 个国家的扩展数据。");
         diplomacyManager = DiplomacyManager.getInstance();
-        logger.info("外交系统已加载。");
-        logger.info("税收系统已加载。");
+        if (isDev) {
+            logger.info("外交系统已加载。");
+            logger.info("税收系统已加载。");
+        }
         warManager = WarManager.getInstance();
         siegeWarManager = SiegeWarManager.getInstance();
-        logger.info("战争系统已加载。");
+        if (isDev) {
+            logger.info("战争系统已加载。");
+        }
         flagWarManager = FlagWarManager.getInstance();
         flagWarManager.loadFromDatabase(databaseManager);
-        logger.info("FlagWar 系统已加载。");
+        if (isDev) {
+            logger.info("FlagWar 系统已加载。");
+        }
         plotClaimManager = PlotClaimManager.getInstance();
-        logger.info("PlotClaim 系统已加载。");
+        if (isDev) {
+            logger.info("PlotClaim 系统已加载。");
+        }
         playerManager = PlayerManager.getInstance();
         playerManager.setDatabase(databaseManager);
-        logger.info("玩家系统已加载。");
+        if (isDev) {
+            logger.info("玩家系统已加载。");
+        }
         achievementManager = new AchievementManager(playerManager, databaseManager);
         AchievementManager.setInstance(achievementManager);
-        logger.info("成就系统已加载。");
+        if (isDev) {
+            logger.info("成就系统已加载。");
+        }
         vault_init();
-        logger.info("经济系统已加载");
+        if (isDev) {
+            logger.info("经济系统已加载");
+        }
         nationTradeManager = new NationTradeManager(getNationManager());
         // 初始化季节系统
         seasonManager = new SeasonManager(this);
         seasonManager.start();
-        logger.info("季节系统已加载。");
+        if (isDev) {
+            logger.info("季节系统已加载。");
+        }
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    LegacyLand.initItemsadderItems();
-                } catch (IOException e) {
-                    LegacyLand.logger.severe("Failed to write items");
-                }
-            }
-        }.run();
+        try {
+            LegacyLand.initItemsadderItems();
+        } catch (IOException e) {
+            LegacyLand.logger.severe("Failed to write items");
+        }
 
-        // 注册命令
-        registerCommands();
-        // 注册监听器
-        registerListeners();
-
-        // 注册 PlaceholderAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new LegacyLandPlaceholder(this, seasonManager).register();
-            logger.info("PlaceholderAPI 已注册！");
+            if (isDev) {
+                logger.info("PlaceholderAPI 已注册！");
+            }
         } else {
             logger.warning("未找到 PlaceholderAPI，变量功能将不可用！");
         }
 
         // 启动前哨战监控任务（每分钟检查一次）
-        new OutpostMonitorTask(instance).runTaskTimer(instance, 1200L, 1200L);
+        FoliaScheduler.runTaskTimerGlobal(instance, new OutpostMonitorTask(instance), 1200L, 1200L);
         // 启动 FlagWar 计时器任务（每秒检查一次）
-        new FlagWarTimerTask().runTaskTimer(instance, 20L, 20L);
+        FoliaScheduler.runTaskTimerGlobal(instance, new FlagWarTimerTask(), 20L, 20L);
         // 启动 PlotClaim 计时器任务（每秒检查一次）
-        new PlotClaimTimerTask().runTaskTimer(instance, 20L, 20L);
+        FoliaScheduler.runTaskTimerGlobal(instance, new PlotClaimTimerTask(), 20L, 20L);
         // 启动状态更新任务（每5秒检查一次）
-        new StatusUpdateTask().runTaskTimer(instance, 10L, 10L);
+        FoliaScheduler.runTaskTimerGlobal(instance, new StatusUpdateTask(), 10L, 10L);
 
         // 根据配置决定是否启用 ActionBar
         boolean enableActionBar = getConfig().getBoolean("player-status.enable-actionbar", true);
         if (enableActionBar) {
             int interval = getConfig().getInt("player-status.actionbar-update-interval", 10);
-            new ActionBarUpdateTask().runTaskTimer(instance, interval, interval);
+            FoliaScheduler.runTaskTimerGlobal(instance, new ActionBarUpdateTask(), interval, interval);
             //logger.info("ActionBar 显示已启用（更新间隔: " + interval + " ticks）");
-        } else {
-            //logger.info("ActionBar 显示已禁用，请使用 PlaceholderAPI 变量自定义显示");
         }
     }
 

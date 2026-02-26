@@ -7,13 +7,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * ActionBar 更新任务
  * 每0.5秒更新一次所有在线玩家的 ActionBar 显示
  */
-public class ActionBarUpdateTask extends BukkitRunnable {
+public class ActionBarUpdateTask implements Runnable {
 
     private final PlayerManager playerManager;
     private final TemperatureManager temperatureManager;

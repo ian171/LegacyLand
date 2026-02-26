@@ -4,13 +4,12 @@ import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.player.PlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * 状态更新任务
  * 每5秒检查一次所有在线玩家的状态
  */
-public class StatusUpdateTask extends BukkitRunnable {
+public class StatusUpdateTask implements Runnable {
 
     private final PlayerStatusManager statusManager;
     private final TemperatureManager temperatureManager;

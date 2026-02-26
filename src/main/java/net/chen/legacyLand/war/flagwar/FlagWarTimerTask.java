@@ -1,7 +1,6 @@
 package net.chen.legacyLand.war.flagwar;
 
 import net.chen.legacyLand.LegacyLand;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +9,7 @@ import java.util.List;
  * FlagWar 计时器任务
  * 每秒更新所有活跃 FlagWar 的计时器进度
  */
-public class FlagWarTimerTask extends BukkitRunnable {
+public class FlagWarTimerTask implements Runnable {
 
     private final FlagWarManager flagWarManager;
     // 默认战争持续时间（秒），可配置

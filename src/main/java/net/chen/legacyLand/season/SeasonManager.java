@@ -3,10 +3,10 @@ package net.chen.legacyLand.season;
 import lombok.Getter;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.player.status.TemperatureManager;
+import net.chen.legacyLand.util.FoliaScheduler;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public class SeasonManager {
     private int currentDay; // 当前子季节的第几天
     @Getter
     private int daysPerSubSeason; // 每个子季节持续天数
-    private BukkitTask seasonTask;
+    private FoliaScheduler.TaskHandle seasonTask;
     private long lastDayTime; // 上次检查的游戏时间
 
     public SeasonManager(LegacyLand plugin) {
@@ -42,7 +42,7 @@ public class SeasonManager {
         loadSeasonData();
 
         // 每20 ticks (1秒) 检查一次
-        seasonTask = Bukkit.getScheduler().runTaskTimer(plugin, this::checkDayProgress, 20L, 20L);
+        seasonTask = FoliaScheduler.runTaskTimerGlobal(plugin, this::checkDayProgress, 20L, 20L);
         plugin.getLogger().info("季节系统已启动 - 当前季节: " + currentSeason.getDisplayName());
     }
 

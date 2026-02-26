@@ -9,9 +9,9 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 温度系统管理器
@@ -30,7 +30,7 @@ public class TemperatureManager {
     private double temperatureChangeRate = 4.5; // 默认每5秒最多变化4.5
 
     private TemperatureManager() {
-        this.playerTemperature = new HashMap<>();
+        this.playerTemperature = new ConcurrentHashMap<>();
     }
 
     public static TemperatureManager getInstance() {
@@ -281,6 +281,27 @@ public class TemperatureManager {
 
         Block block = player.getLocation().getBlock();
 
+        // 先用1格快速检查是否有热/冷源，无则跳过完整扫描
+        boolean hasNearbySources = false;
+        outer:
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    Material m = block.getRelative(x, y, z).getType();
+                    if (isFireSource(m) || m == Material.LAVA ||
+                        m == Material.SNOW || m == Material.ICE ||
+                        m == Material.PACKED_ICE || m == Material.POWDER_SNOW) {
+                        hasNearbySources = true;
+                        break outer;
+                    }
+                }
+            }
+        }
+
+        if (!hasNearbySources) {
+            return result;
+        }
+
         // 统计附近的热源和冷源数量及距离
         int fireSourceCount = 0;
         int coldSourceCount = 0;
@@ -361,6 +382,13 @@ public class TemperatureManager {
         } else if (temperature < 10) {
             statusManager.checkAndApplyBodyStatus(player, playerData);
         }
+    }
+
+    /**
+     * 玩家退出时清理温度数据
+     */
+    public void removePlayer(UUID playerId) {
+        playerTemperature.remove(playerId);
     }
 
     /**

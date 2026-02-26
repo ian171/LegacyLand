@@ -3,8 +3,9 @@ version: '1.0-Beta2.0'
 main: net.chen.legacyLand.LegacyLand
 api-version: '1.21'
 authors: [ Chen ]
-depend: [Towny,ItemsAdder,Vault]
-softdepend: [PlaceholderAPI, CraftEngine]
+depend: [Towny,Vault]
+softdepend: [PlaceholderAPI, CraftEngine,ItemsAdder]
+folia-supported: true
 
 commands:
   legacylandadmin:

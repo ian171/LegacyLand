@@ -195,6 +195,7 @@ plot-claim:
 
 # 实验性功能
 experimental:
+  devmode: false
   # 是否启用实验性功能(Unused)
   enabled: false
   # 自动补给线计算(Unused)
