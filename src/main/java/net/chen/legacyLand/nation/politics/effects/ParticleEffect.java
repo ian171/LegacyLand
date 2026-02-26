@@ -5,11 +5,10 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.nation.politics.PoliticalEffect;
-import org.bukkit.Bukkit;
+import net.chen.legacyLand.util.FoliaScheduler;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +21,7 @@ public class ParticleEffect implements PoliticalEffect {
     private final Particle particle;
     private final ParticlePattern pattern;
     private final TownyAPI townyAPI;
-    private final Map<String, BukkitTask> activeTasks = new ConcurrentHashMap<>();
+    private final Map<String, FoliaScheduler.TaskHandle> activeTasks = new ConcurrentHashMap<>();
 
     public ParticleEffect(Particle particle, ParticlePattern pattern) {
         this.particle = particle;
@@ -50,7 +49,7 @@ public class ParticleEffect implements PoliticalEffect {
     @Override
     public void onRemove(Nation nation) {
         // 停止国王的粒子效果
-        BukkitTask task = activeTasks.remove(nation.getName());
+        FoliaScheduler.TaskHandle task = activeTasks.remove(nation.getName());
         if (task != null) {
             task.cancel();
         }
@@ -66,13 +65,14 @@ public class ParticleEffect implements PoliticalEffect {
      */
     public void startParticleEffect(Player player, String nationName) {
         // 如果已有任务，先取消
-        BukkitTask existingTask = activeTasks.get(nationName);
+        FoliaScheduler.TaskHandle existingTask = activeTasks.get(nationName);
         if (existingTask != null) {
             existingTask.cancel();
         }
 
         // 每秒显示一次粒子效果
-        BukkitTask task = Bukkit.getScheduler().runTaskTimer(LegacyLand.getInstance(), () -> {
+        FoliaScheduler.TaskHandle task = FoliaScheduler.runTaskTimerAtLocation(
+                LegacyLand.getInstance(), player.getLocation(), () -> {
             if (!player.isOnline()) {
                 stopParticleEffect(nationName);
                 return;
@@ -80,7 +80,7 @@ public class ParticleEffect implements PoliticalEffect {
 
             Location loc = player.getLocation().add(0, 0.1, 0); // 在玩家脚下
             spawnParticlePattern(loc, particle, pattern);
-        }, 0L, 20L);
+        }, 1L, 20L);
 
         activeTasks.put(nationName, task);
     }
@@ -89,7 +89,7 @@ public class ParticleEffect implements PoliticalEffect {
      * 停止粒子效果
      */
     public void stopParticleEffect(String nationName) {
-        BukkitTask task = activeTasks.remove(nationName);
+        FoliaScheduler.TaskHandle task = activeTasks.remove(nationName);
         if (task != null) {
             task.cancel();
         }

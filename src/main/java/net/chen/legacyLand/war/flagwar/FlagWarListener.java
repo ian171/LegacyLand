@@ -19,9 +19,19 @@ import org.bukkit.event.block.BlockPlaceEvent;
 public class FlagWarListener implements Listener {
 
     private final FlagWarManager flagWarManager;
+    // 缓存配置值，避免在事件处理器中重复读取
+    private final boolean onlyBorder;
+    private final int minAttackerOnline;
+    private final int minDefenderOnline;
+    private final double stakingFee;
 
     public FlagWarListener() {
         this.flagWarManager = FlagWarManager.getInstance();
+        var config = LegacyLand.getInstance().getConfig();
+        this.onlyBorder = config.getBoolean("flagwar.only-border-plots", true);
+        this.minAttackerOnline = config.getInt("flagwar.min-online-attackers", 1);
+        this.minDefenderOnline = config.getInt("flagwar.min-online-defenders", 1);
+        this.stakingFee = config.getDouble("flagwar.costs.staking-fee", 100.0);
     }
 
     /**
@@ -111,7 +121,6 @@ public class FlagWarListener implements Listener {
         }
 
         // 检查是否只能攻击边界地块
-        boolean onlyBorder = LegacyLand.getInstance().getConfig().getBoolean("flagwar.only-border-plots", true);
         if (onlyBorder && !isBorderPlot(targetBlock)) {
             player.sendMessage("§c你只能攻击边界地块！");
             event.setCancelled(true);
@@ -119,9 +128,6 @@ public class FlagWarListener implements Listener {
         }
 
         // 检查在线人数要求
-        int minAttackerOnline = LegacyLand.getInstance().getConfig().getInt("flagwar.min-online-attackers", 1);
-        int minDefenderOnline = LegacyLand.getInstance().getConfig().getInt("flagwar.min-online-defenders", 1);
-
         int attackerOnline = getOnlinePlayersInNation(attackerNation);
         int defenderOnline = getOnlinePlayersInNation(defenderNation);
 
@@ -152,19 +158,19 @@ public class FlagWarListener implements Listener {
         }
 
         // 扣除放置费用
-        double stakingFee = LegacyLand.getInstance().getConfig().getDouble("flagwar.costs.staking-fee", 100.0);
+        double fee = stakingFee;
         if (targetBlock.isHomeBlock()) {
-            stakingFee *= 2;
+            fee *= 2;
         }
 
         // TODO: 集成经济系统扣费
         double balance = LegacyLand.getEcon().getBalance(player);
-        if (balance < stakingFee){
+        if (balance < fee){
             player.sendMessage("§4余额不足，无法打仗！");
             return;
         }
-        LegacyLand.getEcon().depositPlayer(player,stakingFee);
-        player.sendMessage("§e已扣除放置费用: " + stakingFee + " 金币");
+        LegacyLand.getEcon().depositPlayer(player, fee);
+        player.sendMessage("§e已扣除放置费用: " + fee + " 金币");
 
         // 创建 FlagWar
         FlagWarData flagWar = flagWarManager.createFlagWar(player, location, targetBlock);
@@ -264,17 +270,11 @@ public class FlagWarListener implements Listener {
     }
 
     /**
-     * 检查天空是否可见
+     * 检查天空是否可见（使用 getHighestBlockYAt 避免逐块遍历）
      */
     private boolean isSkyVisible(Location location) {
-        Location skyCheck = location.clone();
-        for (int y = location.getBlockY() + 1; y < location.getWorld().getMaxHeight(); y++) {
-            skyCheck.setY(y);
-            if (skyCheck.getBlock().getType().isSolid()) {
-                return false;
-            }
-        }
-        return true;
+        int highestY = location.getWorld().getHighestBlockYAt(location);
+        return location.getBlockY() >= highestY;
     }
 
     /**

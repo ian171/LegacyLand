@@ -135,7 +135,8 @@ public class PlayerStatusListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        // 不清理数据，保留到下次登录
+        // 清理内存中的温度缓存（持久数据由 PlayerData 保存）
+        TemperatureManager.getInstance().removePlayer(player.getUniqueId());
     }
 
     /**

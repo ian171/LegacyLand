@@ -9,7 +9,6 @@ import net.chen.legacyLand.war.WarStatus;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
 
@@ -17,7 +16,7 @@ import java.util.Collection;
  * 前哨战监控任务
  * 每分钟检查一次前哨战状态
  */
-public class OutpostMonitorTask extends BukkitRunnable {
+public class OutpostMonitorTask implements Runnable {
 
     private final LegacyLand plugin;
     private final WarManager warManager;

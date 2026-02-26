@@ -96,6 +96,7 @@ public class ConfigManager {
     }
 
     // ========== 数据库配置 ==========
+    public boolean isDev = config.getBoolean("experimental.devmode");
 
     public String getDatabaseType() {
         return config.getString("database.type", "sqlite");

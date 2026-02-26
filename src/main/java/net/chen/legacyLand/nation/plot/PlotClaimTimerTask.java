@@ -5,13 +5,12 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * PlotClaim 定时任务
  * 每秒更新占领进度
  */
-public class PlotClaimTimerTask extends BukkitRunnable {
+public class PlotClaimTimerTask implements Runnable {
 
     private final PlotClaimManager manager = PlotClaimManager.getInstance();
 

@@ -20,6 +20,7 @@ import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.*;
 
@@ -375,6 +376,12 @@ public class PlayerAchievementsListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
+        // 只在玩家移动到不同方块时检查，避免每次视角转动都触发
+        if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
+            event.getFrom().getBlockY() == event.getTo().getBlockY() &&
+            event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+            return;
+        }
         Player player = event.getPlayer();
         PlayerStats stats = getStats(player.getUniqueId());
 
@@ -383,6 +390,12 @@ public class PlayerAchievementsListener implements Listener {
             Bukkit.getPluginManager().callEvent(
                 new AchievementsEvents.PlayerVisitBiome(player, biomeName, stats.visitedBiomes.size()));
         }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        // 清理玩家数据，防止内存泄漏
+        playerStats.remove(event.getPlayer().getUniqueId());
     }
 
     // ========== 辅助方法 ==========
