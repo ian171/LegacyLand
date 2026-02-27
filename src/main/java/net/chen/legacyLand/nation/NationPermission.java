@@ -12,6 +12,7 @@ public enum NationPermission {
     NOMINATE_POSITION("提名职位"),
     DISMISS_POSITION("罢免职位"),
     APPOINT_MAYOR("任免市长"),
+    MANAGE_ORGANIZATION("管理国家组织"),
 
     // 外交权限
     DECLARE_WAR("宣战"),

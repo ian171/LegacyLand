@@ -113,7 +113,24 @@ public class LegacyCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        LegacyLand.getInstance().getNationTradeManager().purchaseFrom(source, target, player, item, price);
+        var result = LegacyLand.getInstance().getNationTradeManager().purchaseFrom(source, target, player, item, price);
+        switch (result) {
+            case SUCCESS -> {} // 成功消息已在 Manager 内发送
+            case NO_PERMISSION ->
+                    player.sendMessage("§c你没有发起国家贸易的权限！");
+            case HOSTILE_RELATION ->
+                    player.sendMessage("§c与敌对/战争状态的国家无法进行贸易！");
+            case INSUFFICIENT_FUNDS ->
+                    player.sendMessage("§c对方国家余额不足，无法完成交易。");
+            case SOURCE_TREASURY_EMPTY ->
+                    player.sendMessage("§c你方国库中没有足够的该物品。");
+            case TARGET_TREASURY_FULL ->
+                    player.sendMessage("§c对方国库已满，无法存入物品。");
+            case ECONOMY_ERROR ->
+                    player.sendMessage("§c经济系统异常，交易已取消。");
+            default ->
+                    player.sendMessage("§c交易失败，请检查参数后重试。");
+        }
     }
 
     /**
