@@ -113,7 +113,10 @@ public class OrganizationManager {
         loadMembers();
         loadOutposts();
         loadOutpostGoods();
-        logger.info("[Organization] 加载完成: " + organizationsById.size() + " 个组织, " + outpostsById.size() + " 个据点");
+        logger.info("[Organization] 加载完成");
+        if (LegacyLand.getInstance().isDev) {
+            logger.info(organizationsById.size() + " 个组织, " + outpostsById.size() + " 个据点");
+        }
     }
 
     private void loadOrganizations() {

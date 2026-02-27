@@ -1,8 +1,11 @@
 package net.chen.legacyLand.organization;
 
+import lombok.Getter;
+
 /**
  * 组织权限枚举
  */
+@Getter
 public enum OrganizationPermission {
     DELETE_OUTPOST("删除据点"),
     TRANSFER_OUTPOST("转让据点"),
@@ -17,10 +20,6 @@ public enum OrganizationPermission {
 
     OrganizationPermission(String displayName) {
         this.displayName = displayName;
-    }
-
-    public String getDisplayName() {
-        return displayName;
     }
 
     /**
