@@ -42,6 +42,12 @@ import net.chen.legacyLand.market.MarketManager;
 import net.chen.legacyLand.market.commands.MarketCommand;
 import net.chen.legacyLand.market.commands.PriceCommand;
 import net.chen.legacyLand.market.listener.MarketListener;
+import net.chen.legacyLand.nation.law.LawCommand;
+import net.chen.legacyLand.nation.law.LawManager;
+import net.chen.legacyLand.nation.law.LawTimerTask;
+import net.chen.legacyLand.nation.tech.TechCommand;
+import net.chen.legacyLand.nation.tech.TechManager;
+import net.chen.legacyLand.nation.tech.TechPointTask;
 import net.chen.legacyLand.organization.OrganizationManager;
 import net.chen.legacyLand.util.FoliaScheduler;
 import net.milkbowl.vault.chat.Chat;
@@ -76,6 +82,8 @@ public final class LegacyLand extends JavaPlugin {
     private net.chen.legacyLand.season.SeasonManager seasonManager;
     private PoliticalSystemManager politicalSystemManager;
     private NationTradeManager nationTradeManager;
+    private LawManager lawManager;
+    private TechManager techManager;
 
     @Override
     public void onLoad() {
@@ -187,8 +195,19 @@ public final class LegacyLand extends JavaPlugin {
             OrganizationManager.getInstance(this).init(dbConn);
             MarketManager.getInstance(this).init(dbConn);
             logger.info("组织系统和市场系统已加载。");
+
+            // 法令系统
+            lawManager = LawManager.getInstance(this);
+            lawManager.init(dbConn);
+            logger.info("法令系统已加载。");
+
+            // 科技树系统
+            techManager = TechManager.getInstance(this);
+            techManager.loadConfig(this);
+            techManager.init(dbConn);
+            logger.info("科技树系统已加载。");
         } else {
-            logger.warning("无法获取数据库连接，组织/市场系统将无法持久化（MongoDB 暂不支持）。");
+            logger.warning("无法获取数据库连接，组织/市场/法令/科技系统将无法持久化（MongoDB 暂不支持）。");
         }
 
         try {
@@ -214,6 +233,11 @@ public final class LegacyLand extends JavaPlugin {
         FoliaScheduler.runTaskTimerGlobal(instance, new PlotClaimTimerTask(), 20L, 20L);
         // 启动状态更新任务（每5秒检查一次）
         FoliaScheduler.runTaskTimerGlobal(instance, new StatusUpdateTask(), 10L, 10L);
+        // 启动法令定时任务（每分钟检查一次）
+        FoliaScheduler.runTaskTimerGlobal(instance, new LawTimerTask(), 1200L, 1200L);
+        // 启动科技研究点生成任务
+        int techInterval = getConfig().getInt("tech.research-tick-interval", 6000);
+        FoliaScheduler.runTaskTimerGlobal(instance, new TechPointTask(), techInterval, techInterval);
 
         // 根据配置决定是否启用 ActionBar
         boolean enableActionBar = getConfig().getBoolean("player-status.enable-actionbar", true);
@@ -320,6 +344,14 @@ public final class LegacyLand extends JavaPlugin {
         PriceCommand priceCommand = new PriceCommand();
         instance.getCommand("price").setExecutor(priceCommand);
         instance.getCommand("price").setTabCompleter(priceCommand);
+
+        LawCommand lawCommand = new LawCommand();
+        instance.getCommand("law").setExecutor(lawCommand);
+        instance.getCommand("law").setTabCompleter(lawCommand);
+
+        TechCommand techCommand = new TechCommand();
+        instance.getCommand("tech").setExecutor(techCommand);
+        instance.getCommand("tech").setTabCompleter(techCommand);
     }
 
     private void registerListeners() {

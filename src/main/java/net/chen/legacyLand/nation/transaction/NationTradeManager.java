@@ -6,6 +6,9 @@ import net.chen.legacyLand.nation.NationManager;
 import net.chen.legacyLand.nation.NationPermission;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
 import net.chen.legacyLand.nation.diplomacy.RelationType;
+import net.chen.legacyLand.nation.law.LawManager;
+import net.chen.legacyLand.nation.law.LawType;
+import net.chen.legacyLand.nation.tech.TechManager;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -62,6 +65,21 @@ public class NationTradeManager {
             return TradeResult.HOSTILE_RELATION;
         }
 
+        // 3a. 法令校验：禁运令
+        LawManager lawManager = LawManager.getInstance();
+        if (lawManager != null) {
+            String embargoTarget = lawManager.getLawParamString(
+                    source.getName(), LawType.TRADE_EMBARGO, "target_nation", null);
+            if (target.getName().equalsIgnoreCase(embargoTarget)) {
+                return TradeResult.TRADE_EMBARGOED;
+            }
+            embargoTarget = lawManager.getLawParamString(
+                    target.getName(), LawType.TRADE_EMBARGO, "target_nation", null);
+            if (source.getName().equalsIgnoreCase(embargoTarget)) {
+                return TradeResult.TRADE_EMBARGOED;
+            }
+        }
+
         // 4. 买方余额预检（避免扣款后才发现余额不足）
         double buyerBalance;
         try {
@@ -77,6 +95,18 @@ public class NationTradeManager {
         // 5. 计算贸易税（从 config 读取，范围限制在 [0, 1]）
         double taxRate = LegacyLand.getInstance().getConfig()
                 .getDouble("tax.default.trade", 0.0) / 100.0;
+        // 法令：贸易税调整令
+        if (lawManager != null) {
+            double lawModifier = lawManager.getLawParamDouble(
+                    source.getName(), LawType.TRADE_TAX_MODIFIER, "rate", 0.0);
+            taxRate += lawModifier / 100.0;
+        }
+        // 科技：TRADE 线减免
+        TechManager techManager = TechManager.getInstance();
+        if (techManager != null) {
+            double techDiscount = techManager.getTotalEffect(source.getName(), "trade_tax_reduction");
+            taxRate -= techDiscount / 100.0;
+        }
         taxRate = Math.max(0.0, Math.min(taxRate, 1.0));
         double sellerReceives = price * (1.0 - taxRate);
 
@@ -133,6 +163,7 @@ public class NationTradeManager {
         SAME_NATION,
         NO_PERMISSION,
         HOSTILE_RELATION,
+        TRADE_EMBARGOED,
         INSUFFICIENT_FUNDS,
         SOURCE_TREASURY_EMPTY,
         TARGET_TREASURY_FULL,
