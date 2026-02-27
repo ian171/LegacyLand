@@ -81,6 +81,8 @@ public class OrganizeCommand implements CommandExecutor, TabCompleter {
             case INSUFFICIENT_FUNDS ->
                     player.sendMessage("§c余额不足！创建组织需要 "
                             + LegacyLand.getInstance().getConfig().getDouble("organization.create-cost", 500.0) + " 金币。");
+            case NO_NATION_PERMISSION ->
+                    player.sendMessage("§c你没有管理国家组织的权限！需要国家领导者授权。");
         }
     }
 

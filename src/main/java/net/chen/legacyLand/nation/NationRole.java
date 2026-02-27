@@ -13,6 +13,7 @@ public enum NationRole {
     KINGDOM("国王", GovernmentType.FEUDAL, Set.of(
         NationPermission.APPOINT_ALL_POSITIONS,
         NationPermission.APPOINT_MAYOR,
+        NationPermission.MANAGE_ORGANIZATION,
         NationPermission.DECLARE_WAR,
         NationPermission.FORM_ALLIANCE,
         NationPermission.ADJUST_TAX_RATE,
@@ -62,6 +63,7 @@ public enum NationRole {
         NationPermission.NOMINATE_POSITION,
         NationPermission.DISMISS_POSITION,
         NationPermission.APPOINT_MAYOR,
+        NationPermission.MANAGE_ORGANIZATION,
         NationPermission.DECLARE_WAR,
         NationPermission.FORM_ALLIANCE,
         NationPermission.ADJUST_TAX_RATE,

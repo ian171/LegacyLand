@@ -7,6 +7,7 @@ import lombok.Getter;
  */
 @Getter
 public enum OrganizationPermission {
+    CREATE_OUTPOST("创建据点"),
     DELETE_OUTPOST("删除据点"),
     TRANSFER_OUTPOST("转让据点"),
     CLOSE_OUTPOST("关闭据点"),
@@ -29,6 +30,7 @@ public enum OrganizationPermission {
         return switch (role) {
             case LEADER -> values(); // Leader 拥有所有权限
             case MANAGER -> new OrganizationPermission[]{
+                    CREATE_OUTPOST,
                     CLOSE_OUTPOST,
                     ADD_OUTPOST_GOODS,
                     SET_GOODS_PRICE,

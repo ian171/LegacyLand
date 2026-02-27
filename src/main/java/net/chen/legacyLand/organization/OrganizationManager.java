@@ -5,6 +5,8 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import lombok.Getter;
 import net.chen.legacyLand.LegacyLand;
+import net.chen.legacyLand.nation.NationManager;
+import net.chen.legacyLand.nation.NationPermission;
 import net.chen.legacyLand.organization.outpost.Outpost;
 import net.chen.legacyLand.organization.outpost.OutpostGoods;
 import net.chen.legacyLand.organization.outpost.OutpostStatus;
@@ -245,6 +247,11 @@ public class OrganizationManager {
         Nation nation = resident != null ? TownyAPI.getInstance().getResidentNationOrNull(resident) : null;
         String nationName = nation != null ? nation.getName() : null;
 
+        // 国家组织需要 MANAGE_ORGANIZATION 权限
+        if (nationName != null && !NationManager.getInstance().hasPermission(player, NationPermission.MANAGE_ORGANIZATION)) {
+            return OrganizationCreateResult.NO_NATION_PERMISSION;
+        }
+
         // 扣费
         double cost = plugin.getConfig().getDouble("organization.create-cost", 500.0);
         if (LegacyLand.getEcon() != null) {
@@ -272,6 +279,11 @@ public class OrganizationManager {
     public boolean disbandOrganization(Player player) {
         Organization org = getPlayerOrganization(player.getUniqueId());
         if (org == null || !org.isLeader(player.getUniqueId())) return false;
+
+        // 国家组织需要 MANAGE_ORGANIZATION 权限
+        if (org.isNationalOrganization() && !NationManager.getInstance().hasPermission(player, NationPermission.MANAGE_ORGANIZATION)) {
+            return false;
+        }
 
         // 清理所有据点
         List<String> outpostIds = orgOutpostMap.getOrDefault(org.getId(), List.of());
@@ -355,7 +367,7 @@ public class OrganizationManager {
      * 创建据点
      */
     public OutpostCreateResult createOutpost(Player player, Organization org) {
-        if (!org.hasPermission(player.getUniqueId(), OrganizationPermission.DELETE_OUTPOST)
+        if (!org.hasPermission(player.getUniqueId(), OrganizationPermission.CREATE_OUTPOST)
                 && !org.isLeader(player.getUniqueId())) {
             return OutpostCreateResult.NO_PERMISSION;
         }
@@ -627,7 +639,7 @@ public class OrganizationManager {
     // ===================== 结果枚举 =====================
 
     public enum OrganizationCreateResult {
-        SUCCESS, NAME_EXISTS, ALREADY_IN_ORG, INSUFFICIENT_FUNDS
+        SUCCESS, NAME_EXISTS, ALREADY_IN_ORG, INSUFFICIENT_FUNDS, NO_NATION_PERMISSION
     }
 
     public enum OutpostCreateResult {
