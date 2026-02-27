@@ -6,3 +6,8 @@
 /Authorization/
 /run/
 /.promptx/
+/CHANGELOG.md
+
+/.gradle/8.8/
+/.gradle/buildOutputCleanup/
+/.gradle/vcs-1/
