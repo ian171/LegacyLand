@@ -62,3 +62,11 @@ commands:
     description: 设置销售箱价格
     usage: /price set <价格>
     aliases: [ jiage ]
+  law:
+    description: 法令系统命令
+    usage: /law <enact|propose|vote|repeal|list|proposals>
+    aliases: [ faling ]
+  tech:
+    description: 科技树系统命令
+    usage: /tech <research|list|info|status>
+    aliases: [ keji ]
