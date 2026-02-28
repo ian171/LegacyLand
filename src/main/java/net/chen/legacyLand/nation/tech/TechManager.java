@@ -5,6 +5,7 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import lombok.Getter;
 import net.chen.legacyLand.LegacyLand;
+import net.chen.legacyLand.nation.NationManager;
 import net.chen.legacyLand.nation.law.LawManager;
 import net.chen.legacyLand.nation.law.LawType;
 import org.bukkit.Bukkit;
@@ -227,7 +228,7 @@ public class TechManager {
 
     public boolean isLineLocked(String nationName, String lineId) {
         // 通过 NationManager 获取政体 ID
-        String govId = net.chen.legacyLand.nation.NationManager.getInstance()
+        String govId = NationManager.getInstance()
                 .getPoliticalSystemId(nationName);
         if (govId == null) return false;
         Set<String> locked = governmentLocks.get(govId.toUpperCase());

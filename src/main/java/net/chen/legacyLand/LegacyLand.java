@@ -99,6 +99,7 @@ public final class LegacyLand extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        printBar();
         logger.info("LegacyLand 插件已启用！");
         logger.warning("Unauthorized modification and redistribution prohibited.");
         logger.info("LegacyLand Version: "+version);
@@ -121,7 +122,6 @@ public final class LegacyLand extends JavaPlugin {
 
         // 加载配置
         configManager = new ConfigManager(this);
-        isDev = configManager.isDev;
         virtual.start();
         // 初始化数据库
         databaseManager = new DatabaseManager(this);
@@ -445,6 +445,14 @@ public final class LegacyLand extends JavaPlugin {
         }
         return perms != null;
     }
-
-
+    public static void printBar(){
+        logger.info("""
+                  _                                _                 _\s
+                 | |    ___  __ _  __ _  ___ _   _| | __ _ _ __   __| |
+                 | |   / _ \\/ _` |/ _` |/ __| | | | |/ _` | '_ \\ / _` |
+                 | |__|  __/ (_| | (_| | (__| |_| | | (_| | | | | (_| |
+                 |_____\\___|\\__, |\\__,_|\\___|\\__, |_|\\__,_|_| |_|\\__,_|
+                            |___/            |___/                     \
+                """);
+    }
 }
