@@ -1,7 +1,9 @@
 package net.chen.legacyLand.player.status;
 
+import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.player.PlayerManager;
+import net.chen.legacyLand.util.FoliaScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -28,22 +30,26 @@ public class StatusUpdateTask implements Runnable {
             if (playerData == null) {
                 continue;
             }
-            // 更新温度
-            temperatureManager.updatePlayerTemperature(player, playerData);
 
-            // 检查并应用身体状态
-            statusManager.checkAndApplyBodyStatus(player, playerData);
+            // 在玩家所在区域的线程上执行温度更新（Folia 线程安全）
+            FoliaScheduler.runForPlayer(LegacyLand.getInstance(), player, () -> {
+                // 更新温度
+                temperatureManager.updatePlayerTemperature(player, playerData);
 
-            // 检查饮水值（疾跑累计时间超过2min后，每两分钟掉一滴水滴）
-            if (player.isSprinting()) {
-                //TODO: 实现计时器
-                if (Math.random() < 0.01) { // 小概率触发
-                    playerData.consumeHydration(1);
-                    if (playerData.getHydration() <= 0) {
-                        player.sendMessage("§c你口渴了！需要喝水！");
+                // 检查并应用身体状态
+                statusManager.checkAndApplyBodyStatus(player, playerData);
+
+                // 检查饮水值（疾跑累计时间超过2min后，每两分钟掉一滴水滴）
+                if (player.isSprinting()) {
+                    //TODO: 实现计时器
+                    if (Math.random() < 0.01) { // 小概率触发
+                        playerData.consumeHydration(1);
+                        if (playerData.getHydration() <= 0) {
+                            player.sendMessage("§c你口渴了！需要喝水！");
+                        }
                     }
                 }
-            }
+            });
         }
     }
 }

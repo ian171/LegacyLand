@@ -1,6 +1,7 @@
 package net.chen.legacyLand;
 
 import com.palmergames.bukkit.towny.TownyAPI;
+import de.bluecolored.bluemap.api.BlueMapAPI;
 import lombok.Getter;
 import net.chen.legacyLand.achievements.AchievementManager;
 import net.chen.legacyLand.achievements.listener.PlayerAchievementsListener;
@@ -59,6 +60,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @Getter
@@ -67,6 +69,8 @@ public final class LegacyLand extends JavaPlugin {
     public static Logger logger;
     public static String version = "1.0-Beta2.1";
     public boolean isDev;
+    public Optional<BlueMapAPI> blueMapAPI;
+    public boolean isBlueMap;
     @Getter
     private static LegacyLand instance;
     private ConfigManager configManager;
@@ -224,7 +228,14 @@ public final class LegacyLand extends JavaPlugin {
         } else {
             logger.warning("未找到 PlaceholderAPI，变量功能将不可用！");
         }
-
+        try {
+            Class.forName("de.bluecolored.bluemap.api.BlueMapAPI");
+            blueMapAPI = BlueMapAPI.getInstance();
+            isBlueMap = true;
+        } catch (ClassNotFoundException e) {
+            logger.warning("Not found BlueMap, several functions will not be enabled");
+            isBlueMap = false;
+        }
         // 启动前哨战监控任务（每分钟检查一次）
         FoliaScheduler.runTaskTimerGlobal(instance, new OutpostMonitorTask(instance), 1200L, 1200L);
         // 启动 FlagWar 计时器任务（每秒检查一次）
