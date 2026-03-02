@@ -1,0 +1,217 @@
+# LegacyLand 科技树配置
+# 6条线 × 3级 = 18 节点
+
+government-locks:
+  MILITARY_DICTATORSHIP:
+    locked-lines:
+      - TRADE
+      - DIPLOMACY
+  TRADE_FEDERATION:
+    locked-lines:
+      - MILITARY
+
+nodes:
+  # ===== MILITARY 军事线 =====
+  MILITARY_1:
+    line: MILITARY
+    tier: 1
+    display-name: 基础训练
+    description: 加强士兵基础训练，提升军事力量。
+    cost: 80
+    prerequisites: []
+    effects:
+      military_strength: 10.0
+
+  MILITARY_2:
+    line: MILITARY
+    tier: 2
+    display-name: 精锐部队
+    description: 训练精锐士兵，大幅提升军力与攻城能力。
+    cost: 160
+    prerequisites:
+      - MILITARY_1
+    effects:
+      military_strength: 25.0
+      siege_bonus: 15.0
+
+  MILITARY_3:
+    line: MILITARY
+    tier: 3
+    display-name: 战争机器
+    description: 将国家打造成战争机器，军力与攻城能力达到顶峰。
+    cost: 300
+    prerequisites:
+      - MILITARY_2
+    effects:
+      military_strength: 50.0
+      siege_bonus: 30.0
+
+  # ===== TRADE 贸易线 =====
+  TRADE_1:
+    line: TRADE
+    tier: 1
+    display-name: 商路开拓
+    description: 开拓贸易商路，降低贸易税率。
+    cost: 80
+    prerequisites: []
+    effects:
+      trade_tax_reduction: 2.0
+
+  TRADE_2:
+    line: TRADE
+    tier: 2
+    display-name: 贸易协定
+    description: 签订贸易协定，进一步降低税率并扩大同盟上限。
+    cost: 160
+    prerequisites:
+      - TRADE_1
+    effects:
+      trade_tax_reduction: 5.0
+      max_alliances: 1.0
+
+  TRADE_3:
+    line: TRADE
+    tier: 3
+    display-name: 贸易帝国
+    description: 建立贸易帝国，大幅降低税率并增加国库收入。
+    cost: 300
+    prerequisites:
+      - TRADE_2
+    effects:
+      trade_tax_reduction: 10.0
+      treasury_income_bonus: 20.0
+
+  # ===== DIPLOMACY 外交线 =====
+  DIPLOMACY_1:
+    line: DIPLOMACY
+    tier: 1
+    display-name: 外交礼仪
+    description: 学习外交礼仪，提升国际形象。
+    cost: 80
+    prerequisites: []
+    effects:
+      diplomacy_prestige: 5.0
+
+  DIPLOMACY_2:
+    line: DIPLOMACY
+    tier: 2
+    display-name: 国际影响力
+    description: 扩大国际影响力，缩短战争冷却时间。
+    cost: 160
+    prerequisites:
+      - DIPLOMACY_1
+    effects:
+      war_cooldown_reduction: 10.0
+
+  DIPLOMACY_3:
+    line: DIPLOMACY
+    tier: 3
+    display-name: 霸权外交
+    description: 建立外交霸权，解锁保护战机制。
+    cost: 300
+    prerequisites:
+      - DIPLOMACY_2
+    effects:
+      unlock_protection_war: 1.0
+
+  # ===== AGRICULTURE 农业线 =====
+  AGRICULTURE_1:
+    line: AGRICULTURE
+    tier: 1
+    display-name: 精耕细作
+    description: 改进农业技术，增加国库收入。
+    cost: 80
+    prerequisites: []
+    effects:
+      treasury_income_bonus: 5.0
+
+  AGRICULTURE_2:
+    line: AGRICULTURE
+    tier: 2
+    display-name: 粮食储备
+    description: 建立粮食储备体系，增加国库收入并扩大城镇上限。
+    cost: 160
+    prerequisites:
+      - AGRICULTURE_1
+    effects:
+      treasury_income_bonus: 10.0
+      max_towns: 1.0
+
+  AGRICULTURE_3:
+    line: AGRICULTURE
+    tier: 3
+    display-name: 农业革命
+    description: 引发农业革命，大幅提升国库收入与城镇上限。
+    cost: 300
+    prerequisites:
+      - AGRICULTURE_2
+    effects:
+      treasury_income_bonus: 20.0
+      max_towns: 2.0
+
+  # ===== JUSTICE 司法线 =====
+  JUSTICE_1:
+    line: JUSTICE
+    tier: 1
+    display-name: 法典编纂
+    description: 编纂国家法典，解锁宵禁令。
+    cost: 80
+    prerequisites: []
+    effects:
+      unlock_curfew_law: 1.0
+
+  JUSTICE_2:
+    line: JUSTICE
+    tier: 2
+    display-name: 司法独立
+    description: 建立独立司法体系，延长法令持续时间。
+    cost: 160
+    prerequisites:
+      - JUSTICE_1
+    effects:
+      law_duration_bonus: 25.0
+
+  JUSTICE_3:
+    line: JUSTICE
+    tier: 3
+    display-name: 宪政秩序
+    description: 建立宪政秩序，大幅延长法令持续时间。
+    cost: 300
+    prerequisites:
+      - JUSTICE_2
+    effects:
+      law_duration_bonus: 50.0
+
+  # ===== ENGINEERING 工程线 =====
+  ENGINEERING_1:
+    line: ENGINEERING
+    tier: 1
+    display-name: 基础工事
+    description: 建造基础防御工事，提升防御能力。
+    cost: 80
+    prerequisites: []
+    effects:
+      defense_bonus: 10.0
+
+  ENGINEERING_2:
+    line: ENGINEERING
+    tier: 2
+    display-name: 攻城器械
+    description: 研发攻城器械，提升攻城与防御能力。
+    cost: 160
+    prerequisites:
+      - ENGINEERING_1
+    effects:
+      siege_bonus: 10.0
+      defense_bonus: 20.0
+
+  ENGINEERING_3:
+    line: ENGINEERING
+    tier: 3
+    display-name: 要塞建造
+    description: 建造坚不可摧的要塞，大幅提升防御能力。
+    cost: 300
+    prerequisites:
+      - ENGINEERING_2
+    effects:
+      defense_bonus: 40.0

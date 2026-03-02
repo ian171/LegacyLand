@@ -9,6 +9,7 @@ version = '1.0-Beta2.0'
 
 repositories {
     mavenCentral()
+    maven { url 'https://repo.bluecolored.de/releases' }
     maven {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
@@ -45,6 +46,7 @@ dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'de.bluecolored:bluemap-api:2.7.7'
 }
 
 tasks {

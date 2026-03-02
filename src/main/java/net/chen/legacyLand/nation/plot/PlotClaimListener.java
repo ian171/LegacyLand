@@ -33,10 +33,18 @@ public class PlotClaimListener implements Listener {
         Player player = event.getPlayer();
         WorldCoord worldCoord = event.getTownBlock().getWorldCoord();
 
+        // 检查玩家是否已有城镇，如果没有则说明是创建城镇时的首次声明
+        Town playerTown = TownyAPI.getInstance().getTown(player);
+
+        // 如果是创建城镇时的首次声明，不拦截，让 Towny 正常处理
+        if (playerTown == null) {
+            return;
+        }
+
         // 取消原始 claim
         event.setCancelled(true);
 
-        // 启动 PlotClaim 流程
+        // 启动 PlotClaim 流程（后续的地块扩张）
         manager.startClaim(player, worldCoord);
     }
 

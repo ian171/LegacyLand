@@ -12,6 +12,7 @@ public enum NationPermission {
     NOMINATE_POSITION("提名职位"),
     DISMISS_POSITION("罢免职位"),
     APPOINT_MAYOR("任免市长"),
+    MANAGE_ORGANIZATION("管理国家组织"),
 
     // 外交权限
     DECLARE_WAR("宣战"),
@@ -41,7 +42,12 @@ public enum NationPermission {
 
     // 议会权限
     VOTE_GOVERNOR("投票选举总督"),
-    VOTE_NOMINATION("投票官员提名");
+    VOTE_NOMINATION("投票官员提名"),
+
+    // 法令权限
+    ENACT_LAW("直接颁布法令"),
+    PROPOSE_LAW("提交法令提案"),
+    VOTE_LAW("投票法令提案");
 
     private final String description;
 

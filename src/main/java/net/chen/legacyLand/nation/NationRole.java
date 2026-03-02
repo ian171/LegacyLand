@@ -13,6 +13,7 @@ public enum NationRole {
     KINGDOM("国王", GovernmentType.FEUDAL, Set.of(
         NationPermission.APPOINT_ALL_POSITIONS,
         NationPermission.APPOINT_MAYOR,
+        NationPermission.MANAGE_ORGANIZATION,
         NationPermission.DECLARE_WAR,
         NationPermission.FORM_ALLIANCE,
         NationPermission.ADJUST_TAX_RATE,
@@ -28,7 +29,9 @@ public enum NationRole {
         NationPermission.MANAGE_SUPPLY_LINE,
         NationPermission.ISSUE_SUPPLY_TRANSPORT,
         NationPermission.ADJUST_SUPPLY_REWARD,
-        NationPermission.DECIDE_SIEGE_ROSTER
+        NationPermission.DECIDE_SIEGE_ROSTER,
+        NationPermission.ENACT_LAW,
+        NationPermission.PROPOSE_LAW
     )),
 
     CHANCELLOR("财政大臣", GovernmentType.FEUDAL, Set.of(
@@ -39,7 +42,8 @@ public enum NationRole {
         NationPermission.ALLOCATE_FUNDS_TO_DEFENSE,
         NationPermission.ADJUST_VASSAL_TAX,
         NationPermission.WITHDRAW_TREASURY,
-        NationPermission.APPROVE_TREASURY_REQUEST
+        NationPermission.APPROVE_TREASURY_REQUEST,
+        NationPermission.PROPOSE_LAW
     )),
 
     ATTORNEY_GENERAL("司法大臣", GovernmentType.FEUDAL, Set.of(
@@ -62,6 +66,7 @@ public enum NationRole {
         NationPermission.NOMINATE_POSITION,
         NationPermission.DISMISS_POSITION,
         NationPermission.APPOINT_MAYOR,
+        NationPermission.MANAGE_ORGANIZATION,
         NationPermission.DECLARE_WAR,
         NationPermission.FORM_ALLIANCE,
         NationPermission.ADJUST_TAX_RATE,
@@ -76,7 +81,9 @@ public enum NationRole {
         NationPermission.MANAGE_SUPPLY_LINE,
         NationPermission.ISSUE_SUPPLY_TRANSPORT,
         NationPermission.ADJUST_SUPPLY_REWARD,
-        NationPermission.DECIDE_SIEGE_ROSTER
+        NationPermission.DECIDE_SIEGE_ROSTER,
+        NationPermission.ENACT_LAW,
+        NationPermission.PROPOSE_LAW
     )),
 
     FINANCE_OFFICER("财政官", GovernmentType.REPUBLIC, Set.of(
@@ -107,7 +114,9 @@ public enum NationRole {
         NationPermission.VOTE_GOVERNOR,
         NationPermission.VOTE_NOMINATION,
         NationPermission.PROPOSE_DIPLOMACY,
-        NationPermission.VOTE_DIPLOMACY
+        NationPermission.VOTE_DIPLOMACY,
+        NationPermission.PROPOSE_LAW,
+        NationPermission.VOTE_LAW
     )),
 
     // 通用角色

@@ -202,3 +202,15 @@ experimental:
   auto-supply-line-calculation: false
   # 动态战争区域(Unused)
   dynamic-war-zone: false
+
+# 法令系统配置
+law:
+  # 投票提案默认持续时间（小时）
+  vote-duration-hours: 24
+
+# 科技树系统配置
+tech:
+  # 研究点生成间隔（ticks，6000 = 5分钟）
+  research-tick-interval: 6000
+  # 每个在线成员每次贡献的研究点数
+  points-per-member: 2

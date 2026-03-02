@@ -40,7 +40,7 @@ public class ConfigManager {
         // 加载温度变化速率
         double tempChangeRate = config.getDouble("player-status.temperature-change-rate", 0.5);
         net.chen.legacyLand.player.status.TemperatureManager.getInstance().setTemperatureChangeRate(tempChangeRate);
-
+        LegacyLand.getInstance().isDev = config.getBoolean("experimental.devmode");
         plugin.getLogger().info("配置文件已加载");
     }
 
@@ -96,7 +96,7 @@ public class ConfigManager {
     }
 
     // ========== 数据库配置 ==========
-    public boolean isDev = config.getBoolean("experimental.devmode");
+    //public boolean isDev = config.getBoolean("experimental.devmode");
 
     public String getDatabaseType() {
         return config.getString("database.type", "sqlite");
