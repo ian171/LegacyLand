@@ -1,15 +1,24 @@
 package net.chen.legacyLand.market;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import de.bluecolored.bluemap.api.BlueMapMap;
+import de.bluecolored.bluemap.api.gson.MarkerGson;
+import de.bluecolored.bluemap.api.markers.MarkerSet;
+import de.bluecolored.bluemap.api.markers.POIMarker;
 import net.chen.legacyLand.LegacyLand;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -152,7 +161,7 @@ public class MarketManager {
     /**
      * 在当前地块创建市场（需要城镇权限）
      */
-    public MarketCreateResult createMarket(Player player) {
+    public MarketCreateResult createMarket(Player player, String name) {
         Location loc = player.getLocation();
         TownBlock tb = TownyAPI.getInstance().getTownBlock(loc);
         if (tb == null) return MarketCreateResult.NOT_IN_TOWN;
@@ -177,12 +186,11 @@ public class MarketManager {
 
         if (marketsByChunk.containsKey(key)) return MarketCreateResult.ALREADY_MARKET;
 
-        String id = UUID.randomUUID().toString();
-        Market market = new Market(id, nation.getName(), loc.getWorld().getName(), cx, cz, player.getUniqueId());
-        marketsById.put(id, market);
+        Market market = new Market(name, nation.getName(), loc.getWorld().getName(), cx, cz, player.getUniqueId());
+        marketsById.put(name, market);
         marketsByChunk.put(key, market);
         saveMarket(market);
-
+        createMarketPointOnMap(name,player,cx, loc.blockY(), cz);
         return MarketCreateResult.SUCCESS;
     }
 
@@ -209,7 +217,12 @@ public class MarketManager {
         }
         marketsById.remove(market.getId());
         marketsByChunk.remove(key);
+
+        // 从数据库删除
         deleteMarketFromDb(market.getId());
+
+        // 从 BlueMap 移除标记点
+        removeMarketPointFromMap(market.getId(), market.getWorldName());
 
         return MarketDeleteResult.SUCCESS;
     }
@@ -440,6 +453,85 @@ public class MarketManager {
             ps.executeUpdate();
         } catch (SQLException e) {
             logger.severe("[Market] 删除销售箱失败: " + e.getMessage());
+        }
+    }
+
+    public void createMarketPointOnMap(String name, Player player, double x, double y, double z) {
+       if(!LegacyLand.getInstance().isBlueMap()){
+           return;
+       }
+        File markerFile = new File(plugin.getDataFolder(), "market-markers.json");
+        MarkerSet markerSet;
+
+        // 尝试加载已有的 MarkerSet
+        if (markerFile.exists() && markerFile.length() > 0) {
+            try (FileReader reader = new FileReader(markerFile)) {
+                markerSet = MarkerGson.INSTANCE.fromJson(reader, MarkerSet.class);
+                if (markerSet == null) {
+                    markerSet = MarkerSet.builder().label("Markets").build();
+                }
+            } catch (IOException ex) {
+                logger.warning("Failed to load market markers: " + ex.getMessage());
+                markerSet = MarkerSet.builder().label("Markets").build();
+            }
+        } else {
+            markerSet = MarkerSet.builder().label("Markets").build();
+        }
+
+        // 添加新的市场标记点
+        POIMarker poiMarker = new POIMarker(name, new Vector3d(x, y, z));
+        poiMarker.setMaxDistance(500);
+        markerSet.getMarkers().put(name, poiMarker);
+
+        // 更新到 BlueMap
+        MarkerSet finalMarkerSet = markerSet;
+        LegacyLand.getInstance().blueMapAPI.flatMap(api -> api.getWorld(player.getWorld())).ifPresent(world -> {
+            for (BlueMapMap map : world.getMaps()) {
+                map.getMarkerSets().put("legacy-land-markets", finalMarkerSet);
+            }
+        });
+
+        // 保存到文件
+        try {
+            markerFile.getParentFile().mkdirs();
+            try (FileWriter writer = new FileWriter(markerFile)) {
+                MarkerGson.INSTANCE.toJson(markerSet, writer);
+            }
+        } catch (IOException ex) {
+            logger.severe("Failed to save market markers: " + ex.getMessage());
+        }
+    }
+
+    public void removeMarketPointFromMap(String name, String worldName) {
+        File markerFile = new File(plugin.getDataFolder(), "market-markers.json");
+        if (!markerFile.exists()) return;
+
+        MarkerSet markerSet;
+        try (FileReader reader = new FileReader(markerFile)) {
+            markerSet = MarkerGson.INSTANCE.fromJson(reader, MarkerSet.class);
+            if (markerSet == null) return;
+        } catch (IOException ex) {
+            logger.warning("Failed to load market markers: " + ex.getMessage());
+            logger.warning(ex.getCause().getMessage());
+            return;
+        }
+
+        // 移除标记点
+        markerSet.getMarkers().remove(name);
+
+        // 更新到 BlueMap
+        MarkerSet finalMarkerSet = markerSet;
+        LegacyLand.getInstance().blueMapAPI.flatMap(api -> api.getWorld(Bukkit.getWorld(worldName))).ifPresent(world -> {
+            for (BlueMapMap map : world.getMaps()) {
+                map.getMarkerSets().put("legacy-land-markets", finalMarkerSet);
+            }
+        });
+
+        // 保存到文件
+        try (FileWriter writer = new FileWriter(markerFile)) {
+            MarkerGson.INSTANCE.toJson(markerSet, writer);
+        } catch (IOException ex) {
+            logger.severe("Failed to save market markers: " + ex.getMessage());
         }
     }
 

@@ -4,7 +4,7 @@ main: net.chen.legacyLand.LegacyLand
 api-version: '1.21'
 authors: [ Chen ]
 depend: [Towny,Vault]
-softdepend: [PlaceholderAPI, CraftEngine,ItemsAdder]
+softdepend: [PlaceholderAPI, CraftEngine,ItemsAdder,BlueMap]
 folia-supported: true
 
 commands:

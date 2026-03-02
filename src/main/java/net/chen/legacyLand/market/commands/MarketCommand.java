@@ -30,7 +30,7 @@ public class MarketCommand implements CommandExecutor, TabCompleter {
 
         switch (args[0].toLowerCase()) {
             case "create" -> {
-                var result = marketManager.createMarket(player);
+                var result = marketManager.createMarket(player,args[1]);
                 switch (result) {
                     case SUCCESS ->
                             player.sendMessage("§a已在当前地块创建市场！玩家可以在此地块放置箱子进行销售。");

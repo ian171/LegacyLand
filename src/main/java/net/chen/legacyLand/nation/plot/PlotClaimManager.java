@@ -125,8 +125,6 @@ public class PlotClaimManager {
 
             // 调用 Towny API 完成真正的占领
             try {
-                //town.addTownBlock(TownyAPI.getInstance().getTownBlock(claim.getWorldCoord()));
-                //town.addTownBlock(TownyAPI.getInstance().getTownBlock(player).setClaimedAt(player.get););
                 if (player != null) {
                     // 检查玩家是否具有声明领地的权限
                     Resident resident = TownyAPI.getInstance().getResident(player);
