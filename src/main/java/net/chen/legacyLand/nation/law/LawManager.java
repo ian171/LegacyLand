@@ -10,6 +10,7 @@ import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.nation.NationManager;
 import net.chen.legacyLand.nation.NationPermission;
 import net.chen.legacyLand.nation.NationRole;
+import net.chen.legacyLand.nation.law.event.LawEnactEvent;
 import org.bukkit.entity.Player;
 
 import java.sql.*;
@@ -205,6 +206,8 @@ public class LawManager {
             return EnactResult.DB_ERROR;
         }
         activeLaws.computeIfAbsent(nationName, k -> new ArrayList<>()).add(law);
+        LawEnactEvent lawEnactEvent = new LawEnactEvent(law.type(),player,System.currentTimeMillis());
+        lawEnactEvent.callEvent();
         logger.info("[Law] " + player.getName() + " 在 " + nationName + " 颁布了 " + type.getDisplayName());
         return EnactResult.SUCCESS;
     }

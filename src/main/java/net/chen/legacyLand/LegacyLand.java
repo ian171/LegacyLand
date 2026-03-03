@@ -16,6 +16,7 @@ import net.chen.legacyLand.nation.commands.DiplomacyCommand;
 import net.chen.legacyLand.nation.commands.LegacyCommand;
 import net.chen.legacyLand.nation.commands.TaxCommand;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
+import net.chen.legacyLand.nation.law.listener.LawExecutingListener;
 import net.chen.legacyLand.nation.plot.PlotClaimListener;
 import net.chen.legacyLand.nation.plot.PlotClaimManager;
 import net.chen.legacyLand.nation.plot.PlotClaimTimerTask;
@@ -30,6 +31,7 @@ import net.chen.legacyLand.player.commands.PlayerCommand;
 import net.chen.legacyLand.player.listeners.PlayerEventListener;
 import net.chen.legacyLand.player.status.*;
 import net.chen.legacyLand.season.SeasonManager;
+import net.chen.legacyLand.util.LanguageManager;
 import net.chen.legacyLand.war.WarManager;
 import net.chen.legacyLand.war.commands.SiegeCommand;
 import net.chen.legacyLand.war.commands.WarCommand;
@@ -88,6 +90,14 @@ public final class LegacyLand extends JavaPlugin {
     private NationTradeManager nationTradeManager;
     private LawManager lawManager;
     private TechManager techManager;
+    private LanguageManager languageManager;
+    private net.chen.legacyLand.economy.EconomyDatabase economyDatabase;
+    private net.chen.legacyLand.economy.TreasuryManager treasuryManager;
+    private net.chen.legacyLand.economy.BankManager bankManager;
+    private net.chen.legacyLand.economy.LoanManager loanManager;
+    private net.chen.legacyLand.economy.FuturesManager futuresManager;
+    private net.chen.legacyLand.economy.EconomyStatsManager economyStatsManager;
+    private net.chen.legacyLand.economy.EconomyWarManager economyWarManager;
 
     @Override
     public void onLoad() {
@@ -114,23 +124,34 @@ public final class LegacyLand extends JavaPlugin {
             return;
         }
         //incompatiblePluginsChecker();
-        Thread virtual = Thread.ofVirtual().unstarted(() -> {
-            // 注册命令
-            registerCommands();
-            // 注册监听器
-            registerListeners();
-
-            // 注册 PlaceholderAPI
-
-        });
 
         // 加载配置
         configManager = new ConfigManager(this);
-        virtual.start();
+
+        // 初始化语言系统
+        this.languageManager = LanguageManager.getInstance(this);
+        languageManager.init();
+
         // 初始化数据库
         databaseManager = new DatabaseManager(this);
         databaseManager.connect();
 
+        // 初始化经济系统（独立数据库）- 必须在 registerCommands 之前
+        economyDatabase = net.chen.legacyLand.economy.EconomyDatabase.getInstance(this);
+        economyDatabase.connect();
+        treasuryManager = net.chen.legacyLand.economy.TreasuryManager.getInstance(this);
+        treasuryManager.init();
+        bankManager = net.chen.legacyLand.economy.BankManager.getInstance(this, treasuryManager);
+        bankManager.init();
+        loanManager = net.chen.legacyLand.economy.LoanManager.getInstance(this, bankManager);
+        loanManager.init();
+        futuresManager = net.chen.legacyLand.economy.FuturesManager.getInstance(this, bankManager);
+        futuresManager.init();
+        economyStatsManager = net.chen.legacyLand.economy.EconomyStatsManager.getInstance(this, treasuryManager, bankManager);
+        economyStatsManager.init();
+        economyWarManager = net.chen.legacyLand.economy.EconomyWarManager.getInstance(this, treasuryManager);
+        economyWarManager.init();
+        logger.info("经济系统已加载。");
         // 初始化管理器
         nationManager = NationManager.getInstance();
         if (isDev) {
@@ -213,7 +234,16 @@ public final class LegacyLand extends JavaPlugin {
         } else {
             logger.warning("无法获取数据库连接，组织/市场/法令/科技系统将无法持久化（MongoDB 暂不支持）。");
         }
+        Thread virtual = Thread.ofVirtual().unstarted(() -> {
+            // 注册命令
+            registerCommands();
+            // 注册监听器
+            registerListeners();
 
+            // 注册 PlaceholderAPI
+
+        });
+        virtual.start();
         try {
             LegacyLand.initItemsadderItems();
         } catch (IOException e) {
@@ -302,6 +332,10 @@ public final class LegacyLand extends JavaPlugin {
         if (databaseManager != null) {
             databaseManager.disconnect();
         }
+        // 断开经济数据库连接
+        if (economyDatabase != null) {
+            economyDatabase.disconnect();
+        }
     }
 
     private void registerCommands(){
@@ -363,6 +397,27 @@ public final class LegacyLand extends JavaPlugin {
         TechCommand techCommand = new TechCommand();
         instance.getCommand("tech").setExecutor(techCommand);
         instance.getCommand("tech").setTabCompleter(techCommand);
+
+        // 注册经济系统命令
+        net.chen.legacyLand.economy.commands.EconomyCommand economyCommand =
+            new net.chen.legacyLand.economy.commands.EconomyCommand(treasuryManager);
+        instance.getCommand("economy").setExecutor(economyCommand);
+        instance.getCommand("economy").setTabCompleter(economyCommand);
+
+        net.chen.legacyLand.economy.commands.BankCommand bankCommand =
+            new net.chen.legacyLand.economy.commands.BankCommand(bankManager);
+        instance.getCommand("bank").setExecutor(bankCommand);
+        instance.getCommand("bank").setTabCompleter(bankCommand);
+
+        net.chen.legacyLand.economy.commands.FinanceCommand financeCommand =
+            new net.chen.legacyLand.economy.commands.FinanceCommand(loanManager, futuresManager);
+        instance.getCommand("finance").setExecutor(financeCommand);
+        instance.getCommand("finance").setTabCompleter(financeCommand);
+
+        net.chen.legacyLand.economy.commands.EcoWarCommand ecoWarCommand =
+            new net.chen.legacyLand.economy.commands.EcoWarCommand(economyStatsManager, economyWarManager);
+        instance.getCommand("ecowar").setExecutor(ecoWarCommand);
+        instance.getCommand("ecowar").setTabCompleter(ecoWarCommand);
     }
 
     private void registerListeners() {
@@ -376,6 +431,11 @@ public final class LegacyLand extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlotClaimListener(), this);
         getServer().getPluginManager().registerEvents(new PoliticalEffectListener(), this);
         getServer().getPluginManager().registerEvents(new MarketListener(this), this);
+        getServer().getPluginManager().registerEvents(new LawExecutingListener(),this);
+
+        // 注册经济系统监听器
+        getServer().getPluginManager().registerEvents(new net.chen.legacyLand.economy.listeners.CurrencyCraftListener(treasuryManager), this);
+        getServer().getPluginManager().registerEvents(new net.chen.legacyLand.economy.listeners.CurrencyMintChatListener(), this);
     }
     public static void initItemsadderItems() throws IOException {
         // 修正资源路径（去掉 /resources/）

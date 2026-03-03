@@ -1,0 +1,50 @@
+# English (United States) Language File
+lang.now: English (US)
+
+# Common Messages
+msg.prefix: "&7[&6LegacyLand&7]&r"
+msg.no_permission: "&cYou don't have permission to do that!"
+msg.player_only: "&cThis command can only be used by players!"
+msg.invalid_args: "&cInvalid arguments! Usage: {0}"
+msg.reload_success: "&aConfiguration reloaded successfully!"
+
+# Nation Messages
+nation.created: "&aSuccessfully created nation: &e{0}"
+nation.deleted: "&cNation &e{0}&c has been deleted"
+nation.not_found: "&cNation not found: {0}"
+nation.already_exists: "&cA nation with that name already exists!"
+nation.joined: "&aYou have joined nation: &e{0}"
+nation.left: "&cYou have left nation: &e{0}"
+
+# Town Messages
+town.created: "&aSuccessfully created town: &e{0}"
+town.deleted: "&cTown &e{0}&c has been deleted"
+town.not_found: "&cTown not found: {0}"
+town.claim_started: "&eStarting to claim this chunk, please stay for {0} seconds..."
+town.claim_completed: "&a[Territory] &e{0}&a successfully claimed a chunk!"
+town.claim_cancelled: "&cClaim cancelled! You left the chunk."
+town.claim_paused: "&eEnemy player entered the chunk, claim paused!"
+town.claim_resumed: "&aClaim resumed!"
+
+# Market Messages
+market.created: "&aMarket &e{0}&a created successfully!"
+market.deleted: "&cMarket &e{0}&c has been deleted"
+market.not_in_town: "&cYou must be in a town to create a market!"
+market.no_permission: "&cYou don't have permission to manage this market!"
+market.no_nation: "&cYour town must be part of a nation!"
+market.already_exists: "&cA market already exists in this chunk!"
+
+# Temperature Messages
+temp.too_hot: "&cYou are overheating! Find shade or water!"
+temp.too_cold: "&bYou are freezing! Find warmth!"
+temp.normal: "&aYour body temperature has returned to normal."
+
+# War Messages
+war.declared: "&c[WAR] &e{0}&c has declared war on &e{1}&c!"
+war.ended: "&a[WAR] The war between &e{0}&a and &e{1}&a has ended!"
+war.victory: "&a[WAR] &e{0}&a has won the war!"
+
+# Error Messages
+error.database: "&cDatabase error occurred! Please contact an administrator."
+error.internal: "&cAn internal error occurred! Please try again later."
+error.not_implemented: "&cThis feature is not yet implemented."

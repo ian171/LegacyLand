@@ -2,6 +2,7 @@ package net.chen.legacyLand.player.status;
 
 import lombok.Data;
 import net.chen.legacyLand.player.PlayerData;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -350,6 +351,10 @@ public class TemperatureManager {
         // 检查是否在水中（强冷却效果）
         if (player.isInWater()) {
             result.coldValue += 3.0;
+        }
+        Biome biome = player.getWorld().getBiome(player.getLocation());
+        if(biome == Biome.FROZEN_OCEAN||biome == Biome.DEEP_COLD_OCEAN||biome == Biome.FROZEN_RIVER||biome == Biome.DEEP_FROZEN_OCEAN||biome == Biome.SNOWY_PLAINS||biome == Biome.SNOWY_BEACH||biome == Biome.SNOWY_TAIGA||biome == Biome.SNOWY_SLOPES){
+            result.coldValue += 4.0;
         }
 
         return result;

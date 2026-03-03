@@ -9,6 +9,7 @@ import net.chen.legacyLand.nation.diplomacy.RelationType;
 import net.chen.legacyLand.nation.law.LawManager;
 import net.chen.legacyLand.nation.law.LawType;
 import net.chen.legacyLand.nation.tech.TechManager;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -138,6 +139,7 @@ public class NationTradeManager {
             // 物品已完成转移，仅记录日志，不中断流程
             LegacyLand.logger.severe("[Trade] 卖方收款失败！"
                     + source.getName() + " 应收 " + sellerReceives + " - " + e.getMessage());
+            source.sendMessage(Component.text("交易失败"+source.getName()+"应收"+sellerReceives));
         }
 
         LegacyLand.logger.info(String.format("[Trade] %s → %s | %dx%s | 价格:%d | 税率:%.1f%% | 操作者:%s",
