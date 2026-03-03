@@ -69,7 +69,7 @@ import java.util.logging.Logger;
 public final class LegacyLand extends JavaPlugin {
 
     public static Logger logger;
-    public static String version = "1.0-Beta2.1";
+    public static String version = "1.0-Beta2.2";
     public boolean isDev;
     public Optional<BlueMapAPI> blueMapAPI;
     public boolean isBlueMap;
