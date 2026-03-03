@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'net.chen'
-version = '1.0-Beta2.0'
+version = '1.0-Beta2.1'
 
 
 repositories {
