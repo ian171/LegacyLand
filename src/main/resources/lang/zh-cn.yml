@@ -1,0 +1,51 @@
+# 简体中文语言文件
+lang.now: 简体中文
+
+# 通用消息
+msg.prefix: "&7[&6遗迹之地&7]&r"
+msg.no_permission: "&c你没有权限执行此操作！"
+msg.player_only: "&c此命令只能由玩家使用！"
+msg.invalid_args: "&c参数错误！用法：{0}"
+msg.reload_success: "&a配置已重新加载！"
+
+# 国家消息
+nation.created: "&a成功创建国家：&e{0}"
+nation.nobelongs: "&c你不属于任何一个国家"
+nation.deleted: "&c国家 &e{0}&c 已被删除"
+nation.not_found: "&c未找到国家：{0}"
+nation.already_exists: "&c该名称的国家已存在！"
+nation.joined: "&a你已加入国家：&e{0}"
+nation.left: "&c你已离开国家：&e{0}"
+
+# 城镇消息
+town.created: "&a成功创建城镇：&e{0}"
+town.deleted: "&c城镇 &e{0}&c 已被删除"
+town.not_found: "&c未找到城镇：{0}"
+town.claim_started: "&e开始占领此区块，请在区块内停留 {0} 秒..."
+town.claim_completed: "&a[领地] &e{0}&a 成功占领了一块地块！"
+town.claim_cancelled: "&c占领已取消！你离开了区块。"
+town.claim_paused: "&e敌方玩家进入区块，占领已暂停！"
+town.claim_resumed: "&a占领已恢复！"
+
+# 市场消息
+market.created: "&a市场 &e{0}&a 创建成功！"
+market.deleted: "&c市场 &e{0}&c 已被删除"
+market.not_in_town: "&c你必须在城镇内才能创建市场！"
+market.no_permission: "&c你没有权限管理此市场！"
+market.no_nation: "&c你的城镇必须属于一个国家！"
+market.already_exists: "&c此区块已存在市场！"
+
+# 温度消息
+temp.too_hot: "&c你过热了！快找阴凉处或水源！"
+temp.too_cold: "&b你冻僵了！快找温暖的地方！"
+temp.normal: "&a你的体温已恢复正常。"
+
+# 战争消息
+war.declared: "&c[战争] &e{0}&c 向 &e{1}&c 宣战！"
+war.ended: "&a[战争] &e{0}&a 与 &e{1}&a 之间的战争已结束！"
+war.victory: "&a[战争] &e{0}&a 赢得了战争！"
+
+# 错误消息
+error.database: "&c数据库错误！请联系管理员。"
+error.internal: "&c发生内部错误！请稍后重试。"
+error.not_implemented: "&c此功能尚未实现。"

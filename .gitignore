@@ -6,8 +6,9 @@
 /Authorization/
 /run/
 /.promptx/
-/CHANGELOG.md
 
 /.gradle/8.8/
 /.gradle/buildOutputCleanup/
 /.gradle/vcs-1/
+/I18N_GUIDE.md
+/eco.txt

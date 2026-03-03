@@ -70,3 +70,19 @@ commands:
     description: 科技树系统命令
     usage: /tech <research|list|info|status>
     aliases: [ keji ]
+  economy:
+    description: 经济系统命令
+    usage: /economy <create|seal|mint|info|deposit|withdraw|rate>
+    aliases: [ eco, jingji ]
+  bank:
+    description: 银行系统命令
+    usage: /bank <deposit|withdraw|balance|transfer|exchange>
+    aliases: [ yinhang ]
+  finance:
+    description: 金融系统命令（贷款、期货）
+    usage: /finance <loan|repay|loans|future|buy|deliver|claim|futures>
+    aliases: [ jinrong ]
+  ecowar:
+    description: 经济统计与战争命令
+    usage: /ecowar <stats|gdp|inflation|embargo|lift|sanction|wars>
+    aliases: [ jingjizhanzhen ]

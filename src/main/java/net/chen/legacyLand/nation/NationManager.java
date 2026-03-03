@@ -9,6 +9,7 @@ import lombok.Setter;
 import net.chen.legacyLand.database.DatabaseManager;
 import net.chen.legacyLand.nation.politics.PoliticalSystem;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
+import net.chen.legacyLand.util.Translatable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -109,10 +110,10 @@ public class NationManager {
     public void donateToTreasury(Player player, ItemStack item) {
         Nation nation = getPlayerNation(player);
         if (nation == null) {
-            player.sendMessage("§c你不属于任何国家。");
+            //player.sendMessage("§c你不属于任何国家。");
+            Translatable.of("nation.nobelongs").forLocale(player);
             return;
         }
-
         Chest chest = getTreasuryChest(nation.getName());
         if (chest == null) {
             player.sendMessage("§c国库箱子未设置或已被破坏。");
