@@ -8,6 +8,7 @@ import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 战争管理器
@@ -18,13 +19,17 @@ public class WarManager {
     private final Map<UUID, String> playerWarMap;
 
     private WarManager() {
-        this.wars = new HashMap<>();
-        this.playerWarMap = new HashMap<>();
+        this.wars = new ConcurrentHashMap<>();
+        this.playerWarMap = new ConcurrentHashMap<>();
     }
 
     public static WarManager getInstance() {
         if (instance == null) {
-            instance = new WarManager();
+            synchronized (WarManager.class) {
+                if (instance == null) {
+                    instance = new WarManager();
+                }
+            }
         }
         return instance;
     }

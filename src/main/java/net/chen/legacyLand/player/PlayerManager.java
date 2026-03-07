@@ -5,6 +5,7 @@ import net.chen.legacyLand.database.DatabaseManager;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 玩家管理器
@@ -17,12 +18,16 @@ public class PlayerManager {
     private DatabaseManager database;
 
     private PlayerManager() {
-        this.players = new HashMap<>();
+        this.players = new ConcurrentHashMap<>();
     }
 
     public static PlayerManager getInstance() {
         if (instance == null) {
-            instance = new PlayerManager();
+            synchronized (PlayerManager.class) {
+                if (instance == null) {
+                    instance = new PlayerManager();
+                }
+            }
         }
         return instance;
     }

@@ -36,7 +36,11 @@ public class TemperatureManager {
 
     public static TemperatureManager getInstance() {
         if (instance == null) {
-            instance = new TemperatureManager();
+            synchronized (TemperatureManager.class) {
+                if (instance == null) {
+                    instance = new TemperatureManager();
+                }
+            }
         }
         return instance;
     }

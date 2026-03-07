@@ -34,7 +34,11 @@ public class EconomyStatsManager {
 
     public static EconomyStatsManager getInstance(LegacyLand plugin, TreasuryManager treasuryManager, BankManager bankManager) {
         if (instance == null) {
-            instance = new EconomyStatsManager(plugin, treasuryManager, bankManager);
+            synchronized (EconomyStatsManager.class) {
+                if (instance == null) {
+                    instance = new EconomyStatsManager(plugin, treasuryManager, bankManager);
+                }
+            }
         }
         return instance;
     }

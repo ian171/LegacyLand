@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 国家扩展数据管理器 - 存储 Towny 国家的扩展信息
@@ -38,17 +39,21 @@ public class NationManager {
     private final TownyAPI townyAPI;
 
     private NationManager() {
-        this.nationGovernments = new HashMap<>();
-        this.nationPoliticalSystems = new HashMap<>();
-        this.nationRoles = new HashMap<>();
+        this.nationGovernments = new ConcurrentHashMap<>();
+        this.nationPoliticalSystems = new ConcurrentHashMap<>();
+        this.nationRoles = new ConcurrentHashMap<>();
         this.townyAPI = TownyAPI.getInstance();
-        this.nationTreasury = new HashMap<>();
-        this.treasuryRequests = new HashMap<>();
+        this.nationTreasury = new ConcurrentHashMap<>();
+        this.treasuryRequests = new ConcurrentHashMap<>();
     }
 
     public static NationManager getInstance() {
         if (instance == null) {
-            instance = new NationManager();
+            synchronized (NationManager.class) {
+                if (instance == null) {
+                    instance = new NationManager();
+                }
+            }
         }
         return instance;
     }
