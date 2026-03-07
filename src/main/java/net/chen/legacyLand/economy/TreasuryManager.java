@@ -1,5 +1,6 @@
 package net.chen.legacyLand.economy;
 
+import lombok.Getter;
 import lombok.Setter;
 import net.chen.legacyLand.LegacyLand;
 import org.bukkit.Location;
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
  * 管理各国的国库位置、储备金、货币发行
  */
 public class TreasuryManager {
+    @Getter
     private static TreasuryManager instance;
     private final LegacyLand plugin;
     private final Logger logger;
@@ -33,10 +35,6 @@ public class TreasuryManager {
         if (instance == null) {
             instance = new TreasuryManager(plugin);
         }
-        return instance;
-    }
-
-    public static TreasuryManager getInstance() {
         return instance;
     }
 
@@ -307,6 +305,7 @@ public class TreasuryManager {
     /**
      * 国库数据类
      */
+    @Getter
     public static class Treasury {
         private final String nationName;
         private final Location location;
@@ -317,7 +316,7 @@ public class TreasuryManager {
         @Setter
         private double creditScore;
         private final long createdAt;
-        private long lastUpdated;
+        private final long lastUpdated;
 
         public Treasury(String nationName, Location location, double sbcReserve,
                        double currencyIssued, double creditScore, long createdAt, long lastUpdated) {
@@ -329,17 +328,6 @@ public class TreasuryManager {
             this.createdAt = createdAt;
             this.lastUpdated = lastUpdated;
         }
-
-        public String getNationName() { return nationName; }
-        public Location getLocation() { return location; }
-        public double getSbcReserve() { return sbcReserve; }
-
-        public double getCurrencyIssued() { return currencyIssued; }
-
-        public double getCreditScore() { return creditScore; }
-
-        public long getCreatedAt() { return createdAt; }
-        public long getLastUpdated() { return lastUpdated; }
 
         public double calculateExchangeRate() {
             if (currencyIssued <= 0) {

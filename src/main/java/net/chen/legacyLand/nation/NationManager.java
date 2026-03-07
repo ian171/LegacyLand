@@ -21,7 +21,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * 国家扩展数据管理器 - 存储 Towny 国家的扩展信息
@@ -256,19 +255,19 @@ public class NationManager {
             return;
         }
 
-        Chest chest = getTreasuryChest(request.getNationName());
+        Chest chest = getTreasuryChest(request.nationName());
         if (chest == null) {
             approver.sendMessage("§c国库箱子未设置或已被破坏。");
             return;
         }
 
-        ItemStack item = request.getRequestedItem();
+        ItemStack item = request.requestedItem();
         if (!chest.getInventory().containsAtLeast(item, item.getAmount())) {
             approver.sendMessage("§c国库中没有足够的该物品。");
             return;
         }
 
-        Player requester = Bukkit.getPlayer(request.getPlayerId());
+        Player requester = Bukkit.getPlayer(request.playerId());
         if (requester == null || !requester.isOnline()) {
             approver.sendMessage("§c申请人不在线，无法转交物品。");
             return;
@@ -278,13 +277,13 @@ public class NationManager {
         requester.getInventory().addItem(item);
 
         // 移除已处理的申请
-        List<TreasuryRequest> requests = treasuryRequests.get(request.getNationName());
+        List<TreasuryRequest> requests = treasuryRequests.get(request.nationName());
         if (requests != null) {
             requests.remove(request);
         }
 
-        approver.sendMessage("§a已批准申请 " + request.getRequestId() + "，物品已转交给 " + requester.getName() + "。");
-        requester.sendMessage("§a你的国库取物申请 " + request.getRequestId() + " 已被批准。");
+        approver.sendMessage("§a已批准申请 " + request.requestId() + "，物品已转交给 " + requester.getName() + "。");
+        requester.sendMessage("§a你的国库取物申请 " + request.requestId() + " 已被批准。");
     }
 
     /**
@@ -298,16 +297,16 @@ public class NationManager {
             return;
         }
 
-        List<TreasuryRequest> requests = treasuryRequests.get(request.getNationName());
+        List<TreasuryRequest> requests = treasuryRequests.get(request.nationName());
         if (requests != null) {
             requests.remove(request);
         }
 
-        approver.sendMessage("§a已拒绝申请 " + request.getRequestId() + "。");
+        approver.sendMessage("§a已拒绝申请 " + request.requestId() + "。");
 
-        Player requester = Bukkit.getPlayer(request.getPlayerId());
+        Player requester = Bukkit.getPlayer(request.playerId());
         if (requester != null && requester.isOnline()) {
-            requester.sendMessage("§c你的国库取物申请 " + request.getRequestId() + " 已被拒绝。");
+            requester.sendMessage("§c你的国库取物申请 " + request.requestId() + " 已被拒绝。");
         }
     }
 
