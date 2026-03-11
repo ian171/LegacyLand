@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 玩家状态管理器
@@ -36,18 +37,22 @@ public class PlayerStatusManager {
     private final Map<UUID, Long> lastMeatFishTime;
 
     private PlayerStatusManager() {
-        this.playerBodyStatus = new HashMap<>();
-        this.playerInjuryStatus = new HashMap<>();
-        this.playerLifeInjuryStatus = new HashMap<>();
-        this.statusCooldowns = new HashMap<>();
-        this.joyfulCooldown = new HashMap<>();
-        this.foodConsumption = new HashMap<>();
-        this.lastMeatFishTime = new HashMap<>();
+        this.playerBodyStatus = new ConcurrentHashMap<>();
+        this.playerInjuryStatus = new ConcurrentHashMap<>();
+        this.playerLifeInjuryStatus = new ConcurrentHashMap<>();
+        this.statusCooldowns = new ConcurrentHashMap<>();
+        this.joyfulCooldown = new ConcurrentHashMap<>();
+        this.foodConsumption = new ConcurrentHashMap<>();
+        this.lastMeatFishTime = new ConcurrentHashMap<>();
     }
 
     public static PlayerStatusManager getInstance() {
         if (instance == null) {
-            instance = new PlayerStatusManager();
+            synchronized (PlayerStatusManager.class) {
+                if (instance == null) {
+                    instance = new PlayerStatusManager();
+                }
+            }
         }
         return instance;
     }
@@ -195,7 +200,7 @@ public class PlayerStatusManager {
      */
     public void recordFoodConsumption(Player player, String foodType) {
         UUID playerId = player.getUniqueId();
-        Map<String, Integer> consumption = foodConsumption.computeIfAbsent(playerId, k -> new HashMap<>());
+        Map<String, Integer> consumption = foodConsumption.computeIfAbsent(playerId, k -> new ConcurrentHashMap<>());
 
         int count = consumption.getOrDefault(foodType, 0) + 1;
         consumption.put(foodType, count);
@@ -253,7 +258,7 @@ public class PlayerStatusManager {
      * 设置冷却
      */
     private void setCooldown(UUID playerId, String statusName, long durationMillis) {
-        Map<String, Long> cooldowns = statusCooldowns.computeIfAbsent(playerId, k -> new HashMap<>());
+        Map<String, Long> cooldowns = statusCooldowns.computeIfAbsent(playerId, k -> new ConcurrentHashMap<>());
         cooldowns.put(statusName, System.currentTimeMillis() + durationMillis);
     }
 

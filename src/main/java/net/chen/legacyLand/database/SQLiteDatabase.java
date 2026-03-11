@@ -701,6 +701,127 @@ public class SQLiteDatabase implements IDatabase {
         }
     }
 
+    // ========== 市场数据 ==========
+
+    @Override
+    public void saveMarket(net.chen.legacyLand.market.Market market) {
+        String sql = "INSERT OR REPLACE INTO markets (id, nation_name, world, chunk_x, chunk_z, approved_by, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, market.getId());
+            pstmt.setString(2, market.getNationName());
+            pstmt.setString(3, market.getWorldName());
+            pstmt.setInt(4, market.getChunkX());
+            pstmt.setInt(5, market.getChunkZ());
+            pstmt.setString(6, market.getApprovedBy().toString());
+            pstmt.setLong(7, market.getCreatedAt());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存市场数据失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<net.chen.legacyLand.market.Market> loadAllMarkets() {
+        List<net.chen.legacyLand.market.Market> markets = new ArrayList<>();
+        String sql = "SELECT * FROM markets";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                net.chen.legacyLand.market.Market market = new net.chen.legacyLand.market.Market(
+                        rs.getString("id"),
+                        rs.getString("nation_name"),
+                        rs.getString("world"),
+                        rs.getInt("chunk_x"),
+                        rs.getInt("chunk_z"),
+                        UUID.fromString(rs.getString("approved_by"))
+                );
+                markets.add(market);
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载市场数据失败: " + e.getMessage());
+        }
+        return markets;
+    }
+
+    @Override
+    public void deleteMarket(String marketId) {
+        String sql1 = "DELETE FROM markets WHERE id = ?";
+        String sql2 = "DELETE FROM market_chests WHERE market_id = ?";
+        try (PreparedStatement pstmt1 = connection.prepareStatement(sql1);
+             PreparedStatement pstmt2 = connection.prepareStatement(sql2)) {
+            pstmt1.setString(1, marketId);
+            pstmt1.executeUpdate();
+            pstmt2.setString(1, marketId);
+            pstmt2.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("删除市场数据失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void saveMarketChest(net.chen.legacyLand.market.MarketChest chest) {
+        String sql = "INSERT OR REPLACE INTO market_chests (id, market_id, world, x, y, z, owner_uuid, price_per_item, price_set, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, chest.getId());
+            pstmt.setString(2, chest.getMarketId());
+            pstmt.setString(3, chest.getWorldName());
+            pstmt.setInt(4, chest.getX());
+            pstmt.setInt(5, chest.getY());
+            pstmt.setInt(6, chest.getZ());
+            pstmt.setString(7, chest.getOwnerUuid().toString());
+            pstmt.setDouble(8, chest.getPricePerItem());
+            pstmt.setInt(9, chest.isPriceSet() ? 1 : 0);
+            pstmt.setLong(10, chest.getCreatedAt());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存市场箱子数据失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<net.chen.legacyLand.market.MarketChest> loadMarketChests(String marketId) {
+        List<net.chen.legacyLand.market.MarketChest> chests = new ArrayList<>();
+        String sql = "SELECT * FROM market_chests WHERE market_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, marketId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    org.bukkit.Location loc = new org.bukkit.Location(
+                            org.bukkit.Bukkit.getWorld(rs.getString("world")),
+                            rs.getInt("x"),
+                            rs.getInt("y"),
+                            rs.getInt("z")
+                    );
+                    net.chen.legacyLand.market.MarketChest chest = new net.chen.legacyLand.market.MarketChest(
+                            rs.getString("id"),
+                            rs.getString("market_id"),
+                            loc,
+                            UUID.fromString(rs.getString("owner_uuid"))
+                    );
+                    chest.setPricePerItem(rs.getDouble("price_per_item"));
+                    chest.setPriceSet(rs.getInt("price_set") == 1);
+                    chests.add(chest);
+                }
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载市场箱子数据失败: " + e.getMessage());
+        }
+        return chests;
+    }
+
+    @Override
+    public void deleteMarketChest(String chestId) {
+        String sql = "DELETE FROM market_chests WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, chestId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("删除市场箱子数据失败: " + e.getMessage());
+        }
+    }
+
     private String serializeLocation(org.bukkit.Location loc) {
         return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
     }

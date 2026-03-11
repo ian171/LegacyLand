@@ -487,6 +487,101 @@ public class MongoDatabase implements IDatabase {
         database.getCollection("flag_wars").deleteOne(new Document("flag_war_id", flagWarId));
     }
 
+    // ========== 市场数据 ==========
+
+    @Override
+    public void saveMarket(net.chen.legacyLand.market.Market market) {
+        MongoCollection<Document> collection = database.getCollection("markets");
+        Document filter = new Document("id", market.getId());
+        Document doc = new Document("id", market.getId())
+                .append("nation_name", market.getNationName())
+                .append("world", market.getWorldName())
+                .append("chunk_x", market.getChunkX())
+                .append("chunk_z", market.getChunkZ())
+                .append("approved_by", market.getApprovedBy().toString())
+                .append("created_at", market.getCreatedAt());
+        collection.replaceOne(filter, doc, new com.mongodb.client.model.ReplaceOptions().upsert(true));
+    }
+
+    @Override
+    public List<net.chen.legacyLand.market.Market> loadAllMarkets() {
+        List<net.chen.legacyLand.market.Market> markets = new ArrayList<>();
+        MongoCollection<Document> collection = database.getCollection("markets");
+
+        try (MongoCursor<Document> cursor = collection.find().iterator()) {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                net.chen.legacyLand.market.Market market = new net.chen.legacyLand.market.Market(
+                        doc.getString("id"),
+                        doc.getString("nation_name"),
+                        doc.getString("world"),
+                        doc.getInteger("chunk_x"),
+                        doc.getInteger("chunk_z"),
+                        UUID.fromString(doc.getString("approved_by"))
+                );
+                markets.add(market);
+            }
+        }
+        return markets;
+    }
+
+    @Override
+    public void deleteMarket(String marketId) {
+        database.getCollection("markets").deleteOne(new Document("id", marketId));
+        database.getCollection("market_chests").deleteMany(new Document("market_id", marketId));
+    }
+
+    @Override
+    public void saveMarketChest(net.chen.legacyLand.market.MarketChest chest) {
+        MongoCollection<Document> collection = database.getCollection("market_chests");
+        Document filter = new Document("id", chest.getId());
+        Document doc = new Document("id", chest.getId())
+                .append("market_id", chest.getMarketId())
+                .append("world", chest.getWorldName())
+                .append("x", chest.getX())
+                .append("y", chest.getY())
+                .append("z", chest.getZ())
+                .append("owner_uuid", chest.getOwnerUuid().toString())
+                .append("price_per_item", chest.getPricePerItem())
+                .append("price_set", chest.isPriceSet() ? 1 : 0)
+                .append("created_at", chest.getCreatedAt());
+        collection.replaceOne(filter, doc, new com.mongodb.client.model.ReplaceOptions().upsert(true));
+    }
+
+    @Override
+    public List<net.chen.legacyLand.market.MarketChest> loadMarketChests(String marketId) {
+        List<net.chen.legacyLand.market.MarketChest> chests = new ArrayList<>();
+        MongoCollection<Document> collection = database.getCollection("market_chests");
+        Document filter = new Document("market_id", marketId);
+
+        try (MongoCursor<Document> cursor = collection.find(filter).iterator()) {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                Location loc = new Location(
+                        Bukkit.getWorld(doc.getString("world")),
+                        doc.getInteger("x"),
+                        doc.getInteger("y"),
+                        doc.getInteger("z")
+                );
+                net.chen.legacyLand.market.MarketChest chest = new net.chen.legacyLand.market.MarketChest(
+                        doc.getString("id"),
+                        doc.getString("market_id"),
+                        loc,
+                        UUID.fromString(doc.getString("owner_uuid"))
+                );
+                chest.setPricePerItem(doc.getDouble("price_per_item"));
+                chest.setPriceSet(doc.getInteger("price_set") == 1);
+                chests.add(chest);
+            }
+        }
+        return chests;
+    }
+
+    @Override
+    public void deleteMarketChest(String chestId) {
+        database.getCollection("market_chests").deleteOne(new Document("id", chestId));
+    }
+
     private String serializeLocation(Location loc) {
         return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
     }

@@ -5,24 +5,29 @@ import net.chen.legacyLand.database.DatabaseManager;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 玩家管理器
  */
 public class PlayerManager {
-    private static PlayerManager instance;
+    private static volatile PlayerManager instance;
     protected final Map<UUID, PlayerData> players;
 
     @Setter
     private DatabaseManager database;
 
     private PlayerManager() {
-        this.players = new HashMap<>();
+        this.players = new ConcurrentHashMap<>();
     }
 
     public static PlayerManager getInstance() {
         if (instance == null) {
-            instance = new PlayerManager();
+            synchronized (PlayerManager.class) {
+                if (instance == null) {
+                    instance = new PlayerManager();
+                }
+            }
         }
         return instance;
     }

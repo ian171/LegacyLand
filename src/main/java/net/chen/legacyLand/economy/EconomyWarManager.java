@@ -2,7 +2,10 @@ package net.chen.legacyLand.economy;
 
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
+import lombok.Getter;
 import net.chen.legacyLand.LegacyLand;
+import net.chen.legacyLand.util.FoliaSchedule;
+import net.chen.legacyLand.util.FoliaScheduler;
 import org.bukkit.Bukkit;
 
 import java.sql.*;
@@ -15,6 +18,7 @@ import java.util.logging.Logger;
  * 实现通胀攻击、资源禁运、经济制裁
  */
 public class EconomyWarManager {
+    @Getter
     private static EconomyWarManager instance;
     private final LegacyLand plugin;
     private final Logger logger;
@@ -35,10 +39,6 @@ public class EconomyWarManager {
         if (instance == null) {
             instance = new EconomyWarManager(plugin, treasuryManager);
         }
-        return instance;
-    }
-
-    public static EconomyWarManager getInstance() {
         return instance;
     }
 

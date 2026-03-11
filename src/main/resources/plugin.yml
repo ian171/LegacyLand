@@ -86,3 +86,7 @@ commands:
     description: 经济统计与战争命令
     usage: /ecowar <stats|gdp|inflation|embargo|lift|sanction|wars>
     aliases: [ jingjizhanzhen ]
+  resource:
+    description: 资源系统命令
+    usage: /resource <give|zone|transport|info>
+    aliases: [ ziyuan ]

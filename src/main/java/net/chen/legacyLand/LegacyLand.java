@@ -98,6 +98,7 @@ public final class LegacyLand extends JavaPlugin {
     private net.chen.legacyLand.economy.FuturesManager futuresManager;
     private net.chen.legacyLand.economy.EconomyStatsManager economyStatsManager;
     private net.chen.legacyLand.economy.EconomyWarManager economyWarManager;
+    private net.chen.legacyLand.resource.ResourceSystemManager resourceSystemManager;
 
     @Override
     public void onLoad() {
@@ -152,6 +153,12 @@ public final class LegacyLand extends JavaPlugin {
         economyWarManager = net.chen.legacyLand.economy.EconomyWarManager.getInstance(this, treasuryManager);
         economyWarManager.init();
         logger.info("经济系统已加载。");
+
+        // 初始化资源系统
+        resourceSystemManager = net.chen.legacyLand.resource.ResourceSystemManager.getInstance(this, econ);
+        resourceSystemManager.init();
+        logger.info("资源系统已加载。");
+
         // 初始化管理器
         nationManager = NationManager.getInstance();
         if (isDev) {
@@ -418,6 +425,12 @@ public final class LegacyLand extends JavaPlugin {
             new net.chen.legacyLand.economy.commands.EcoWarCommand(economyStatsManager, economyWarManager);
         instance.getCommand("ecowar").setExecutor(ecoWarCommand);
         instance.getCommand("ecowar").setTabCompleter(ecoWarCommand);
+
+        // 注册资源系统命令
+        net.chen.legacyLand.resource.commands.ResourceCommand resourceCommand =
+            new net.chen.legacyLand.resource.commands.ResourceCommand(resourceSystemManager);
+        instance.getCommand("resource").setExecutor(resourceCommand);
+        instance.getCommand("resource").setTabCompleter(resourceCommand);
     }
 
     private void registerListeners() {
