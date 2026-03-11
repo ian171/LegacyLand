@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -26,10 +27,12 @@ public class BiomeResourceListener implements Listener {
 
     private final LegacyLand plugin;
     private final Logger logger;
+    private final Random random;
 
     public BiomeResourceListener(LegacyLand plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
+        this.random = new Random();
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -45,6 +48,7 @@ public class BiomeResourceListener implements Listener {
 
         // 只处理矿石
         if (!isOre(blockType)) {
+            handleNormalDrop(event, block.getLocation());
             return;
         }
 
@@ -72,7 +76,21 @@ public class BiomeResourceListener implements Listener {
             }
         }
     }
-
+    private void handleNormalDrop(BlockBreakEvent event, Location location){
+        int amount = random.nextInt(13);
+        if (event.getBlock().getType() == Material.STONE){
+            if (amount == 12) {
+                event.setDropItems(false);
+                location.getWorld().dropItemNaturally(location,ItemStack.of(Material.RAW_GOLD));
+                return;
+            }else if (amount % 4 == 3){
+                event.setDropItems(false);
+                location.getWorld().dropItemNaturally(location,ItemStack.of(Material.RAW_IRON));
+                return;
+            }
+            event.setDropItems(true);
+        }
+    }
     /**
      * 处理特殊掉落（高纯度资源）
      */

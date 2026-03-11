@@ -60,8 +60,10 @@ public class IndustrialRefineListener implements Listener {
             event.setCancelled(true);
 
             // 通知附近玩家
-            notifyNearbyPlayers(furnaceLocation,
-                    "§c§l[工业系统] §c" + resourceType.getColoredName() + " §c只能在国家熔炉中精炼！");
+            if (resourceType != null) {
+                notifyNearbyPlayers(furnaceLocation,
+                        "§c§l[工业系统] §c" + resourceType.getColoredName() + " §c只能在国家熔炉中精炼！");
+            }
 
             return;
         }

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 玩家管理器
  */
 public class PlayerManager {
-    private static PlayerManager instance;
+    private static volatile PlayerManager instance;
     protected final Map<UUID, PlayerData> players;
 
     @Setter

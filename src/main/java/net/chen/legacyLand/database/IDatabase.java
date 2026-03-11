@@ -118,4 +118,36 @@ public interface IDatabase {
     List<net.chen.legacyLand.war.flagwar.FlagWarData> loadActiveFlagWars();
 
     void deleteFlagWar(String flagWarId);
+
+    // ========== 市场数据 ==========
+
+    /**
+     * 保存市场数据
+     */
+    void saveMarket(net.chen.legacyLand.market.Market market);
+
+    /**
+     * 加载所有市场数据
+     */
+    List<net.chen.legacyLand.market.Market> loadAllMarkets();
+
+    /**
+     * 删除市场数据
+     */
+    void deleteMarket(String marketId);
+
+    /**
+     * 保存市场箱子数据
+     */
+    void saveMarketChest(net.chen.legacyLand.market.MarketChest chest);
+
+    /**
+     * 加载指定市场的所有箱子
+     */
+    List<net.chen.legacyLand.market.MarketChest> loadMarketChests(String marketId);
+
+    /**
+     * 删除市场箱子数据
+     */
+    void deleteMarketChest(String chestId);
 }

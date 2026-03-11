@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class ResourceSystemManager {
     @Getter
-    private static ResourceSystemManager instance;
+    private static volatile ResourceSystemManager instance;
 
     private final LegacyLand plugin;
     private final Logger logger;
@@ -126,6 +126,10 @@ public class ResourceSystemManager {
      * 给玩家发放资源物品
      */
     public boolean giveResourceToPlayer(Player player, ResourceType resourceType, int amount) {
+        if (player == null){
+            logger.severe("玩家不能为空");
+            return false;
+        }
         try {
             ItemStack item = createResourceItem(resourceType, amount);
             player.getInventory().addItem(item);

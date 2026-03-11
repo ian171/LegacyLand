@@ -185,6 +185,32 @@ public class DatabaseManager {
         database.deleteFlagWar(flagWarId);
     }
 
+    // ========== 市场数据 ==========
+
+    public void saveMarket(net.chen.legacyLand.market.Market market) {
+        database.saveMarket(market);
+    }
+
+    public List<net.chen.legacyLand.market.Market> loadAllMarkets() {
+        return database.loadAllMarkets();
+    }
+
+    public void deleteMarket(String marketId) {
+        database.deleteMarket(marketId);
+    }
+
+    public void saveMarketChest(net.chen.legacyLand.market.MarketChest chest) {
+        database.saveMarketChest(chest);
+    }
+
+    public List<net.chen.legacyLand.market.MarketChest> loadMarketChests(String marketId) {
+        return database.loadMarketChests(marketId);
+    }
+
+    public void deleteMarketChest(String chestId) {
+        database.deleteMarketChest(chestId);
+    }
+
     /**
      * 获取底层 JDBC 连接（供组织/市场等扩展模块直接使用）
      */
