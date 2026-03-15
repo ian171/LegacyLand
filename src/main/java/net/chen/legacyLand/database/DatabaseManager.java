@@ -217,4 +217,26 @@ public class DatabaseManager {
     public java.sql.Connection getConnection() throws SQLException {
         return database.getConnection();
     }
+
+    // ========== 外交保卫关系 ==========
+
+    public void saveGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        database.saveGuaranteeRelation(relation);
+    }
+
+    public Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> loadAllGuarantees() {
+        return database.loadAllGuarantees();
+    }
+
+    public void updateGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        database.updateGuaranteeRelation(relation);
+    }
+
+    public void deleteGuaranteeRelation(String guarantorNation, String protectedNation) {
+        database.deleteGuaranteeRelation(guarantorNation, protectedNation);
+    }
+
+    public void deleteNationGuarantees(String nationName) {
+        database.deleteNationGuarantees(nationName);
+    }
 }

@@ -174,6 +174,17 @@ public class SQLiteDatabase implements IDatabase {
                     "is_home_block INTEGER DEFAULT 0" +
                     ")";
 
+            // 外交保卫关系表
+            String guaranteeRelationsTable = "CREATE TABLE IF NOT EXISTS guarantee_relations (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "guarantor_nation TEXT NOT NULL," +
+                    "protected_nation TEXT NOT NULL," +
+                    "established_time BIGINT NOT NULL," +
+                    "last_maintenance_time BIGINT NOT NULL," +
+                    "active INTEGER DEFAULT 1," +
+                    "UNIQUE(guarantor_nation, protected_nation)" +
+                    ")";
+
             stmt.execute(nationExtTable);
             stmt.execute(playerRolesTable);
             stmt.execute(diplomacyTable);
@@ -184,6 +195,7 @@ public class SQLiteDatabase implements IDatabase {
             stmt.execute(playerAchievementsTable);
             stmt.execute(seasonTable);
             stmt.execute(flagWarsTable);
+            stmt.execute(guaranteeRelationsTable);
 
             stmt.close();
             LegacyLand.logger.info("SQLite 数据库表创建成功！");
@@ -835,6 +847,94 @@ public class SQLiteDatabase implements IDatabase {
         } catch (Exception e) {
             getLogger().severe("反序列化 Location 失败: " + str);
             return null;
+        }
+    }
+
+    // ========== 外交保卫关系 ==========
+
+    @Override
+    public void saveGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        String sql = "INSERT OR REPLACE INTO guarantee_relations " +
+                "(guarantor_nation, protected_nation, established_time, last_maintenance_time, active) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, relation.getGuarantorNation());
+            pstmt.setString(2, relation.getProtectedNation());
+            pstmt.setLong(3, relation.getEstablishedTime());
+            pstmt.setLong(4, relation.getLastMaintenanceTime());
+            pstmt.setInt(5, relation.isActive() ? 1 : 0);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> loadAllGuarantees() {
+        Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> guarantees = new HashMap<>();
+        String sql = "SELECT * FROM guarantee_relations";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                String guarantorNation = rs.getString("guarantor_nation");
+                String protectedNation = rs.getString("protected_nation");
+                long establishedTime = rs.getLong("established_time");
+                long lastMaintenanceTime = rs.getLong("last_maintenance_time");
+                boolean active = rs.getInt("active") == 1;
+
+                net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation =
+                        new net.chen.legacyLand.nation.diplomacy.GuaranteeRelation(
+                                guarantorNation, protectedNation, establishedTime, lastMaintenanceTime, active);
+
+                guarantees.computeIfAbsent(guarantorNation, k -> new ArrayList<>()).add(relation);
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return guarantees;
+    }
+
+    @Override
+    public void updateGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        String sql = "UPDATE guarantee_relations SET last_maintenance_time = ?, active = ? " +
+                "WHERE guarantor_nation = ? AND protected_nation = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setLong(1, relation.getLastMaintenanceTime());
+            pstmt.setInt(2, relation.isActive() ? 1 : 0);
+            pstmt.setString(3, relation.getGuarantorNation());
+            pstmt.setString(4, relation.getProtectedNation());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("更新保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteGuaranteeRelation(String guarantorNation, String protectedNation) {
+        String sql = "DELETE FROM guarantee_relations WHERE guarantor_nation = ? AND protected_nation = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, guarantorNation);
+            pstmt.setString(2, protectedNation);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("删除保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteNationGuarantees(String nationName) {
+        String sql = "DELETE FROM guarantee_relations WHERE guarantor_nation = ? OR protected_nation = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, nationName);
+            pstmt.setString(2, nationName);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("删除国家保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

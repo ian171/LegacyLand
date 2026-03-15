@@ -1,6 +1,19 @@
+import proguard.gradle.ProGuardTask
+
+// ProGuard 通过 classpath 方式引入（官方推荐方式，必须在 plugins {} 之前）
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.6.1'
+    }
+}
+
 plugins {
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
 group = 'net.chen'
@@ -51,11 +64,45 @@ dependencies {
 
 tasks {
     runServer {
-        // Configure the Minecraft version for our task.
-        // This is the only required configuration besides applying the plugin.
-        // Your plugin's jar (or shadowJar if present) will be used automatically.
         minecraftVersion("1.21")
     }
+
+    shadowJar {
+        // 重定向依赖包名，避免与其他插件冲突
+        relocate 'com.zaxxer.hikari',   'net.chen.legacyLand.libs.hikari'
+        relocate 'org.sqlite',          'net.chen.legacyLand.libs.sqlite'
+        relocate 'com.mysql',           'net.chen.legacyLand.libs.mysql'
+        relocate 'com.mongodb',         'net.chen.legacyLand.libs.mongodb'
+        relocate 'org.bson',            'net.chen.legacyLand.libs.bson'
+
+        archiveClassifier.set('')   // 不加 -all 后缀
+        minimize()                  // 移除未使用的依赖类
+    }
+
+    // 让 build 触发 shadowJar
+    build {
+        dependsOn shadowJar
+    }
+}
+
+// ProGuard 混淆任务（classpath 方式注册，在 shadowJar 之后执行）
+tasks.register('obfuscate', ProGuardTask) {
+    dependsOn tasks.shadowJar
+
+    injars(tasks.shadowJar.archiveFile)
+    outjars(layout.buildDirectory.file(
+            "libs/${project.name}-${project.version}-obf.jar"
+    ))
+
+    // Java 21 模块运行时库
+    libraryjars("${System.getProperty('java.home')}/jmods")
+
+    // Paper API 等 compileOnly 依赖作为 library（不混淆）
+    libraryjars(configurations.compileClasspath.filter {
+        !configurations.runtimeClasspath.contains(it)
+    })
+
+    configuration('proguard-rules.pro')
 }
 
 def targetJavaVersion = 21

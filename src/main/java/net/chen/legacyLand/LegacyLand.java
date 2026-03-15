@@ -180,6 +180,12 @@ public final class LegacyLand extends JavaPlugin {
             logger.info("外交系统已加载。");
             logger.info("税收系统已加载。");
         }
+        // 初始化外交保卫系统
+        net.chen.legacyLand.nation.diplomacy.GuaranteeManager guaranteeManager =
+            net.chen.legacyLand.nation.diplomacy.GuaranteeManager.getInstance();
+        guaranteeManager.loadAll();
+        logger.info("外交保卫系统已加载。");
+
         warManager = WarManager.getInstance();
         siegeWarManager = SiegeWarManager.getInstance();
         if (isDev) {
@@ -286,6 +292,11 @@ public final class LegacyLand extends JavaPlugin {
         // 启动科技研究点生成任务
         int techInterval = getConfig().getInt("tech.research-tick-interval", 6000);
         FoliaScheduler.runTaskTimerGlobal(instance, new TechPointTask(), techInterval, techInterval);
+
+        // 启动外交保卫维持费用任务（每小时检查一次）
+        FoliaScheduler.runTaskTimerGlobal(instance,
+            new net.chen.legacyLand.nation.diplomacy.GuaranteeMaintenanceTask(),
+            72000L, 72000L);
 
         // 根据配置决定是否启用 ActionBar
         boolean enableActionBar = getConfig().getBoolean("player-status.enable-actionbar", true);
@@ -405,6 +416,12 @@ public final class LegacyLand extends JavaPlugin {
         instance.getCommand("tech").setExecutor(techCommand);
         instance.getCommand("tech").setTabCompleter(techCommand);
 
+        // 注册外交保卫命令
+        net.chen.legacyLand.nation.commands.GuaranteeCommand guaranteeCommand =
+            new net.chen.legacyLand.nation.commands.GuaranteeCommand();
+        instance.getCommand("guarantee").setExecutor(guaranteeCommand);
+        instance.getCommand("guarantee").setTabCompleter(guaranteeCommand);
+
         // 注册经济系统命令
         net.chen.legacyLand.economy.commands.EconomyCommand economyCommand =
             new net.chen.legacyLand.economy.commands.EconomyCommand(treasuryManager);
@@ -445,6 +462,9 @@ public final class LegacyLand extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PoliticalEffectListener(), this);
         getServer().getPluginManager().registerEvents(new MarketListener(this), this);
         getServer().getPluginManager().registerEvents(new LawExecutingListener(),this);
+
+        // 注册外交保卫监听器
+        getServer().getPluginManager().registerEvents(new net.chen.legacyLand.nation.listeners.GuaranteeListener(), this);
 
         // 注册经济系统监听器
         getServer().getPluginManager().registerEvents(new net.chen.legacyLand.economy.listeners.CurrencyCraftListener(treasuryManager), this);
