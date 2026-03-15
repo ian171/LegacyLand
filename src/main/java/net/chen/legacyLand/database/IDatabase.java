@@ -150,4 +150,42 @@ public interface IDatabase {
      * 删除市场箱子数据
      */
     void deleteMarketChest(String chestId);
+
+    // ========== 外交保卫关系 ==========
+
+    /**
+     * 保存保卫关系
+     */
+    default void saveGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        // 默认实现：不做任何操作
+    }
+
+    /**
+     * 加载所有保卫关系
+     */
+    default Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> loadAllGuarantees() {
+        // 默认实现：返回空 Map
+        return new java.util.HashMap<>();
+    }
+
+    /**
+     * 更新保卫关系
+     */
+    default void updateGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        // 默认实现：不做任何操作
+    }
+
+    /**
+     * 删除保卫关系
+     */
+    default void deleteGuaranteeRelation(String guarantorNation, String protectedNation) {
+        // 默认实现：不做任何操作
+    }
+
+    /**
+     * 删除国家的所有保卫关系
+     */
+    default void deleteNationGuarantees(String nationName) {
+        // 默认实现：不做任何操作
+    }
 }

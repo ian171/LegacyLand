@@ -197,6 +197,17 @@ public class MySQLDatabase implements IDatabase {
                     "is_home_block TINYINT DEFAULT 0" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
+            // 外交保卫关系表
+            String guaranteeRelationsTable = "CREATE TABLE IF NOT EXISTS guarantee_relations (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "guarantor_nation VARCHAR(255) NOT NULL," +
+                    "protected_nation VARCHAR(255) NOT NULL," +
+                    "established_time BIGINT NOT NULL," +
+                    "last_maintenance_time BIGINT NOT NULL," +
+                    "active TINYINT DEFAULT 1," +
+                    "UNIQUE KEY unique_guarantee (guarantor_nation, protected_nation)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(nationExtTable);
                 stmt.execute(playerRolesTable);
@@ -208,6 +219,7 @@ public class MySQLDatabase implements IDatabase {
                 stmt.execute(playerAchievementsTable);
                 stmt.execute(seasonTable);
                 stmt.execute(flagWarsTable);
+                stmt.execute(guaranteeRelationsTable);
                 LegacyLand.logger.info("MySQL 数据库表创建成功！");
             }
         } catch (SQLException e) {
@@ -954,6 +966,102 @@ public class MySQLDatabase implements IDatabase {
         } catch (Exception e) {
             LegacyLand.logger.severe("反序列化 Location 失败: " + str);
             return null;
+        }
+    }
+
+    // ========== 外交保卫关系 ==========
+
+    @Override
+    public void saveGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        String sql = "INSERT INTO guarantee_relations " +
+                "(guarantor_nation, protected_nation, established_time, last_maintenance_time, active) " +
+                "VALUES (?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "last_maintenance_time = VALUES(last_maintenance_time), " +
+                "active = VALUES(active)";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, relation.getGuarantorNation());
+            pstmt.setString(2, relation.getProtectedNation());
+            pstmt.setLong(3, relation.getEstablishedTime());
+            pstmt.setLong(4, relation.getLastMaintenanceTime());
+            pstmt.setInt(5, relation.isActive() ? 1 : 0);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> loadAllGuarantees() {
+        Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> guarantees = new HashMap<>();
+        String sql = "SELECT * FROM guarantee_relations";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                String guarantorNation = rs.getString("guarantor_nation");
+                String protectedNation = rs.getString("protected_nation");
+                long establishedTime = rs.getLong("established_time");
+                long lastMaintenanceTime = rs.getLong("last_maintenance_time");
+                boolean active = rs.getInt("active") == 1;
+
+                net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation =
+                        new net.chen.legacyLand.nation.diplomacy.GuaranteeRelation(
+                                guarantorNation, protectedNation, establishedTime, lastMaintenanceTime, active);
+
+                guarantees.computeIfAbsent(guarantorNation, k -> new ArrayList<>()).add(relation);
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return guarantees;
+    }
+
+    @Override
+    public void updateGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        String sql = "UPDATE guarantee_relations SET last_maintenance_time = ?, active = ? " +
+                "WHERE guarantor_nation = ? AND protected_nation = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, relation.getLastMaintenanceTime());
+            pstmt.setInt(2, relation.isActive() ? 1 : 0);
+            pstmt.setString(3, relation.getGuarantorNation());
+            pstmt.setString(4, relation.getProtectedNation());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("更新保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteGuaranteeRelation(String guarantorNation, String protectedNation) {
+        String sql = "DELETE FROM guarantee_relations WHERE guarantor_nation = ? AND protected_nation = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, guarantorNation);
+            pstmt.setString(2, protectedNation);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("删除保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteNationGuarantees(String nationName) {
+        String sql = "DELETE FROM guarantee_relations WHERE guarantor_nation = ? OR protected_nation = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nationName);
+            pstmt.setString(2, nationName);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("删除国家保卫关系失败: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

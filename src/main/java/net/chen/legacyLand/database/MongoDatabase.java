@@ -115,6 +115,12 @@ public class MongoDatabase implements IDatabase {
             database.getCollection("flag_wars").createIndex(new Document("flag_war_id", 1));
             database.getCollection("flag_wars").createIndex(new Document("status", 1));
 
+            // 为外交保卫关系创建索引
+            database.getCollection("guarantee_relations").createIndex(
+                    new Document("guarantor_nation", 1).append("protected_nation", 1));
+            database.getCollection("guarantee_relations").createIndex(new Document("guarantor_nation", 1));
+            database.getCollection("guarantee_relations").createIndex(new Document("protected_nation", 1));
+
             LegacyLand.logger.info("MongoDB 索引创建成功！");
         } catch (Exception e) {
             getLogger().severe("创建 MongoDB 索引失败: " + e.getMessage());
@@ -580,6 +586,71 @@ public class MongoDatabase implements IDatabase {
     @Override
     public void deleteMarketChest(String chestId) {
         database.getCollection("market_chests").deleteOne(new Document("id", chestId));
+    }
+
+    // ========== 外交保卫关系 ==========
+
+    @Override
+    public void saveGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        MongoCollection<Document> collection = database.getCollection("guarantee_relations");
+        Document filter = new Document("guarantor_nation", relation.getGuarantorNation())
+                .append("protected_nation", relation.getProtectedNation());
+        Document doc = new Document("guarantor_nation", relation.getGuarantorNation())
+                .append("protected_nation", relation.getProtectedNation())
+                .append("established_time", relation.getEstablishedTime())
+                .append("last_maintenance_time", relation.getLastMaintenanceTime())
+                .append("active", relation.isActive());
+        collection.replaceOne(filter, doc, new com.mongodb.client.model.ReplaceOptions().upsert(true));
+    }
+
+    @Override
+    public Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> loadAllGuarantees() {
+        Map<String, List<net.chen.legacyLand.nation.diplomacy.GuaranteeRelation>> guarantees = new java.util.HashMap<>();
+        MongoCollection<Document> collection = database.getCollection("guarantee_relations");
+
+        try (MongoCursor<Document> cursor = collection.find().iterator()) {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                String guarantorNation = doc.getString("guarantor_nation");
+                String protectedNation = doc.getString("protected_nation");
+                long establishedTime = doc.getLong("established_time");
+                long lastMaintenanceTime = doc.getLong("last_maintenance_time");
+                boolean active = doc.getBoolean("active", true);
+
+                net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation =
+                        new net.chen.legacyLand.nation.diplomacy.GuaranteeRelation(
+                                guarantorNation, protectedNation,
+                                establishedTime, lastMaintenanceTime, active);
+                guarantees.computeIfAbsent(guarantorNation, k -> new ArrayList<>()).add(relation);
+            }
+        }
+        return guarantees;
+    }
+
+    @Override
+    public void updateGuaranteeRelation(net.chen.legacyLand.nation.diplomacy.GuaranteeRelation relation) {
+        MongoCollection<Document> collection = database.getCollection("guarantee_relations");
+        Document filter = new Document("guarantor_nation", relation.getGuarantorNation())
+                .append("protected_nation", relation.getProtectedNation());
+        Document update = new Document("$set", new Document("last_maintenance_time", relation.getLastMaintenanceTime())
+                .append("active", relation.isActive()));
+        collection.updateOne(filter, update);
+    }
+
+    @Override
+    public void deleteGuaranteeRelation(String guarantorNation, String protectedNation) {
+        MongoCollection<Document> collection = database.getCollection("guarantee_relations");
+        collection.deleteOne(new Document("guarantor_nation", guarantorNation)
+                .append("protected_nation", protectedNation));
+    }
+
+    @Override
+    public void deleteNationGuarantees(String nationName) {
+        MongoCollection<Document> collection = database.getCollection("guarantee_relations");
+        collection.deleteMany(new Document("$or", Arrays.asList(
+                new Document("guarantor_nation", nationName),
+                new Document("protected_nation", nationName)
+        )));
     }
 
     private String serializeLocation(Location loc) {

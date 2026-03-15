@@ -294,4 +294,46 @@ public class TechManager {
     private NationTechState getOrCreateState(String nationName) {
         return techStates.computeIfAbsent(nationName, n -> new NationTechState(n, 0));
     }
+
+    /**
+     * 检查玩家是否可以访问科技（包括保卫国的科技溢出）
+     * @param player 玩家
+     * @param effectKey 科技效果键
+     * @return 科技效果值（如果玩家所属国家被保卫，返回保卫国科技等级的 50%）
+     */
+    public double hasTechAccess(org.bukkit.entity.Player player, String effectKey) {
+        com.palmergames.bukkit.towny.object.Resident resident = TownyAPI.getInstance().getResident(player);
+        if (resident == null || !resident.hasNation()) {
+            return 0.0;
+        }
+
+        com.palmergames.bukkit.towny.object.Nation playerNation = resident.getNationOrNull();
+        if (playerNation == null) {
+            return 0.0;
+        }
+
+        // 获取玩家所属国家的科技效果
+        double ownTechEffect = getTotalEffect(playerNation.getName(), effectKey);
+
+        // 检查是否被保卫
+        net.chen.legacyLand.nation.diplomacy.GuaranteeManager guaranteeManager =
+                net.chen.legacyLand.nation.diplomacy.GuaranteeManager.getInstance();
+        java.util.List<String> guarantors = guaranteeManager.getGuarantors(playerNation.getName());
+
+        if (guarantors.isEmpty()) {
+            return ownTechEffect;
+        }
+
+        // 获取所有保卫国的科技效果，取最大值的 50%
+        double maxGuarantorTechEffect = 0.0;
+        for (String guarantorName : guarantors) {
+            double guarantorEffect = getTotalEffect(guarantorName, effectKey);
+            if (guarantorEffect > maxGuarantorTechEffect) {
+                maxGuarantorTechEffect = guarantorEffect;
+            }
+        }
+
+        // 返回自己的科技效果 + 保卫国科技效果的 50%
+        return ownTechEffect + (maxGuarantorTechEffect * 0.5);
+    }
 }

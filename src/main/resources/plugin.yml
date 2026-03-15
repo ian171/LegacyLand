@@ -90,3 +90,7 @@ commands:
     description: 资源系统命令
     usage: /resource <give|zone|transport|info>
     aliases: [ ziyuan ]
+  guarantee:
+    description: 外交保卫系统命令
+    usage: /guarantee <add|remove|list> [国家名]
+    aliases: [ baowei ]
