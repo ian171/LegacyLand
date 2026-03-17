@@ -469,6 +469,10 @@ public final class LegacyLand extends JavaPlugin {
         // 注册经济系统监听器
         getServer().getPluginManager().registerEvents(new net.chen.legacyLand.economy.listeners.CurrencyCraftListener(treasuryManager), this);
         getServer().getPluginManager().registerEvents(new net.chen.legacyLand.economy.listeners.CurrencyMintChatListener(), this);
+
+        // 初始化自定义物品注册表并注册全局事件分发器
+        net.chen.legacyLand.item.items.ModItems.init();
+        getServer().getPluginManager().registerEvents(new net.chen.legacyLand.item.GlobalItemListener(), this);
     }
     public static void initItemsadderItems() throws IOException {
         // 修正资源路径（去掉 /resources/）

@@ -14,3 +14,5 @@
 /eco.txt
 /src/main/java/net/chen/legacyLand/resource/ResourceSystemExample.java
 /.gitignore
+/proguard-rules.pro
+/proguard-dictionary.txt
