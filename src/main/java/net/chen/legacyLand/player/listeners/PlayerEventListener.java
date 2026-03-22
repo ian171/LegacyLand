@@ -3,6 +3,7 @@ package net.chen.legacyLand.player.listeners;
 import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.player.PlayerManager;
 import net.chen.legacyLand.player.status.TemperatureManager;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -44,8 +45,8 @@ public class PlayerEventListener implements Listener {
 
         // 欢迎消息
         if (data.getMainProfession() == null) {
-            player.sendMessage("§e欢迎来到 LegacyLand！");
-            player.sendMessage("§e使用 §6/player profession main <职业> §e选择你的主职业。");
+            player.sendMessage(LanguageManager.getInstance().translate("player.welcome"));
+            player.sendMessage(LanguageManager.getInstance().translate("player.choose_profession"));
         }
     }
 

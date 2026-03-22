@@ -3,6 +3,7 @@ package net.chen.legacyLand.item.items;
 import net.chen.legacyLand.item.CustomItem;
 import net.chen.legacyLand.item.attribute.AttributeEvaluator;
 import net.chen.legacyLand.item.attribute.ItemAttributes;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -42,6 +43,6 @@ public class BleedSpear implements CustomItem {
 
         // 附加流血（用中毒模拟），持续 3 秒
         target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 60, 0, false, true));
-        player.sendActionBar("§c⚔ 放血！");
+        player.sendActionBar(LanguageManager.getInstance().translate("item.bleed_spear.action"));
     }
 }

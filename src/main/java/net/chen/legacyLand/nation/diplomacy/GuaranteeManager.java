@@ -4,6 +4,7 @@ import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.database.DatabaseManager;
+import net.chen.legacyLand.util.LanguageManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 
@@ -164,8 +165,7 @@ public class GuaranteeManager {
                 if (relation.isActive() && relation.needsMaintenance()) {
                     if (!payMaintenanceCost(relation)) {
                         // 支付失败，通知相关国家
-                        Bukkit.broadcastMessage("§c[外交保卫] " + relation.getGuarantorNation() +
-                                " 无法支付对 " + relation.getProtectedNation() + " 的保卫维持费用，保卫关系已失效！");
+                        Bukkit.broadcastMessage(LanguageManager.getInstance().translate("guarantee.maintenance_failed", relation.getGuarantorNation(), relation.getProtectedNation()));
                     }
                 }
             }
@@ -190,9 +190,9 @@ public class GuaranteeManager {
         removeGuarantee(guarantorNation, protectedNation);
 
         // 全服公告
-        Bukkit.broadcastMessage("§c§l[外交保卫] 背信弃义！");
-        Bukkit.broadcastMessage("§c" + guarantorNation + " 攻击了其保卫的国家 " + protectedNation + "！");
-        Bukkit.broadcastMessage("§c" + guarantorNation + " 被判定为法外之徒，国库被扣除 " + String.format("%.2f", penalty) + " 金币！");
+        Bukkit.broadcastMessage(LanguageManager.getInstance().translate("guarantee.betrayal_title"));
+        Bukkit.broadcastMessage(LanguageManager.getInstance().translate("guarantee.betrayal_attack", guarantorNation, protectedNation));
+        Bukkit.broadcastMessage(LanguageManager.getInstance().translate("guarantee.betrayal_penalty", guarantorNation, String.format("%.2f", penalty)));
     }
 
     /**

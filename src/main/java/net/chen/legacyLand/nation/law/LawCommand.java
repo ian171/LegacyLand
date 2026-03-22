@@ -3,6 +3,7 @@ package net.chen.legacyLand.nation.law;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
 import net.chen.legacyLand.nation.NationManager;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -48,7 +49,7 @@ public class LawCommand implements CommandExecutor, TabCompleter {
     // /law enact <type> [duration_hours] [key=value ...]
     private void handleEnact(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(PREFIX + "用法: /law enact <类型> [持续小时] [参数...]");
+            player.sendMessage(LanguageManager.getInstance().translate("law.enact_usage"));
             return;
         }
         LawType type = parseLawType(player, args[1]);
@@ -69,9 +70,9 @@ public class LawCommand implements CommandExecutor, TabCompleter {
         LawManager.EnactResult result = LawManager.getInstance()
                 .enactLaw(player, nation.getName(), type, paramsJson, duration);
         switch (result) {
-            case SUCCESS      -> player.sendMessage(PREFIX + "§a法令 §e" + type.getDisplayName() + " §a已颁布，持续 " + duration + " 小时。");
-            case NO_PERMISSION -> player.sendMessage(PREFIX + "§c你没有颁布法令的权限。");
-            case INVALID_PARAMS -> player.sendMessage(PREFIX + "§c参数无效。");
+            case SUCCESS      -> player.sendMessage(LanguageManager.getInstance().translate("law.enacted", type.getDisplayName(), duration));
+            case NO_PERMISSION -> player.sendMessage(LanguageManager.getInstance().translate("law.no_enact_permission"));
+            case INVALID_PARAMS -> player.sendMessage(LanguageManager.getInstance().translate("law.invalid_params"));
             case DB_ERROR     -> player.sendMessage(PREFIX + "§c数据库错误，请联系管理员。");
         }
     }
@@ -79,7 +80,7 @@ public class LawCommand implements CommandExecutor, TabCompleter {
     // /law propose <type> [vote_hours] [key=value ...]
     private void handlePropose(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(PREFIX + "用法: /law propose <类型> [投票小时] [参数...]");
+            player.sendMessage(LanguageManager.getInstance().translate("law.propose_usage"));
             return;
         }
         LawType type = parseLawType(player, args[1]);
@@ -100,9 +101,9 @@ public class LawCommand implements CommandExecutor, TabCompleter {
         LawManager.ProposeResult result = LawManager.getInstance()
                 .proposeLaw(player, nation.getName(), type, paramsJson, voteHours);
         switch (result) {
-            case SUCCESS      -> player.sendMessage(PREFIX + "§a提案 §e" + type.getDisplayName() + " §a已提交，投票截止 " + voteHours + " 小时后。");
+            case SUCCESS      -> player.sendMessage(LanguageManager.getInstance().translate("law.proposed", type.getDisplayName(), voteHours));
             case NO_PERMISSION -> player.sendMessage(PREFIX + "§c你没有提交提案的权限。");
-            case INVALID_PARAMS -> player.sendMessage(PREFIX + "§c参数无效。");
+            case INVALID_PARAMS -> player.sendMessage(LanguageManager.getInstance().translate("law.invalid_params"));
             case DB_ERROR     -> player.sendMessage(PREFIX + "§c数据库错误，请联系管理员。");
         }
     }
@@ -110,31 +111,31 @@ public class LawCommand implements CommandExecutor, TabCompleter {
     // /law vote <proposalId> <yes|no>
     private void handleVote(Player player, String[] args) {
         if (args.length < 3) {
-            player.sendMessage(PREFIX + "用法: /law vote <提案ID> <yes|no>");
+            player.sendMessage(LanguageManager.getInstance().translate("law.vote_usage"));
             return;
         }
         boolean approve = args[2].equalsIgnoreCase("yes") || args[2].equalsIgnoreCase("y");
         LawManager.VoteResult result = LawManager.getInstance().castVote(player, args[1], approve);
         switch (result) {
-            case SUCCESS      -> player.sendMessage(PREFIX + "§a投票成功：" + (approve ? "§a赞成" : "§c反对"));
-            case NOT_FOUND    -> player.sendMessage(PREFIX + "§c找不到该提案。");
-            case ALREADY_VOTED -> player.sendMessage(PREFIX + "§c你已经投过票了。");
-            case NO_PERMISSION -> player.sendMessage(PREFIX + "§c你没有投票权限。");
-            case CLOSED       -> player.sendMessage(PREFIX + "§c该提案已关闭。");
+            case SUCCESS      -> player.sendMessage(approve ? LanguageManager.getInstance().translate("law.vote_success_yes") : LanguageManager.getInstance().translate("law.vote_success_no"));
+            case NOT_FOUND    -> player.sendMessage(LanguageManager.getInstance().translate("law.proposal_not_found"));
+            case ALREADY_VOTED -> player.sendMessage(LanguageManager.getInstance().translate("law.already_voted"));
+            case NO_PERMISSION -> player.sendMessage(LanguageManager.getInstance().translate("law.no_vote_permission"));
+            case CLOSED       -> player.sendMessage(LanguageManager.getInstance().translate("law.proposal_closed"));
         }
     }
 
     // /law repeal <lawId>
     private void handleRepeal(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(PREFIX + "用法: /law repeal <法令ID>");
+            player.sendMessage(LanguageManager.getInstance().translate("law.repeal_usage"));
             return;
         }
         Nation nation = NationManager.getInstance().getPlayerNation(player);
         if (nation == null) { player.sendMessage(PREFIX + "§c你不属于任何国家。"); return; }
 
         boolean ok = LawManager.getInstance().repealLaw(player, nation.getName(), args[1]);
-        player.sendMessage(ok ? PREFIX + "§a法令已废除。" : PREFIX + "§c废除失败，请检查法令ID或权限。");
+        player.sendMessage(ok ? LanguageManager.getInstance().translate("law.repealed") : PREFIX + "§c废除失败，请检查法令ID或权限。");
     }
 
     // /law list [nation]

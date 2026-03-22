@@ -9,6 +9,7 @@ import lombok.Setter;
 import net.chen.legacyLand.database.DatabaseManager;
 import net.chen.legacyLand.nation.politics.PoliticalSystem;
 import net.chen.legacyLand.nation.politics.PoliticalSystemManager;
+import net.chen.legacyLand.util.LanguageManager;
 import net.chen.legacyLand.util.Translatable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -120,19 +121,19 @@ public class NationManager {
         }
         Chest chest = getTreasuryChest(nation.getName());
         if (chest == null) {
-            player.sendMessage("§c国库箱子未设置或已被破坏。");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.treasury_not_found"));
             return;
         }
 
         Inventory chestInv = chest.getInventory();
         HashMap<Integer, ItemStack> remaining = chestInv.addItem(item.clone());
         if (!remaining.isEmpty()) {
-            player.sendMessage("§c国库箱子已满，无法捐赠。");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.treasury_full"));
             return;
         }
 
         player.getInventory().removeItem(item);
-        player.sendMessage("§a成功向国库捐赠了 " + item.getAmount() + " 个 " + item.getType().name() + "。");
+        player.sendMessage(LanguageManager.getInstance().translate("nation.donation_success", item.getAmount(), item.getType().name()));
     }
     /**
      * 向指定国家的国库存入物品（用于交易等系统调用）

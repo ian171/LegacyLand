@@ -3,6 +3,7 @@ package net.chen.legacyLand.player.commands;
 import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.player.PlayerManager;
 import net.chen.legacyLand.player.Profession;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -50,7 +51,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
      * 显示帮助信息
      */
     private void showHelp(Player player) {
-        player.sendMessage("§6========== 玩家系统 ==========");
+        player.sendMessage(LanguageManager.getInstance().translate("player.help_header"));
         player.sendMessage("§e/player info §7- 查看个人信息");
         player.sendMessage("§e/player profession <main|sub> <职业> §7- 选择职业");
         player.sendMessage("§e/player stats §7- 查看详细属性");

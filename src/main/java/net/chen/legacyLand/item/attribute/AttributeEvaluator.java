@@ -5,6 +5,7 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import net.chen.legacyLand.nation.tech.TechManager;
 import net.chen.legacyLand.nation.tech.TechNode;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -86,7 +87,6 @@ public final class AttributeEvaluator {
         if (req.isMet(nationTier)) return null;
 
         int pct = (int) ((1.0 - req.efficiencyRatio(nationTier)) * 100);
-        return "§c⚠ 科技不足 [" + req.lineId() + " Tier " + req.requiredTier()
-                + "]，攻击力降低 " + pct + "%";
+        return LanguageManager.getInstance().translate("item.tech_insufficient", req.lineId(), req.requiredTier(), pct);
     }
 }

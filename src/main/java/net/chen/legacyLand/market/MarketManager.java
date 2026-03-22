@@ -10,6 +10,7 @@ import de.bluecolored.bluemap.api.gson.MarkerGson;
 import de.bluecolored.bluemap.api.markers.MarkerSet;
 import de.bluecolored.bluemap.api.markers.POIMarker;
 import net.chen.legacyLand.LegacyLand;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -267,8 +268,8 @@ public class MarketManager {
      */
     public void startPriceSet(Player player) {
         pendingPriceSet.put(player.getUniqueId(), null);
-        player.sendMessage("§e请手持要定价的物品，然后右键点击你的销售箱来设置价格。");
-        player.sendMessage("§7使用 §f/price set <金额> §7来确认价格。");
+        player.sendMessage(LanguageManager.getInstance().translate("market.price_set_instruction"));
+        player.sendMessage(LanguageManager.getInstance().translate("market.price_set_instruction2"));
     }
 
     /**
@@ -352,7 +353,7 @@ public class MarketManager {
         Player seller = Bukkit.getPlayer(chest.getOwnerUuid());
         if (seller != null && seller.isOnline()) {
             LegacyLand.getEcon().depositPlayer(seller, price);
-            seller.sendMessage("§a[市场] §f" + buyer.getName() + " §7购买了你的物品，获得 §6" + price + " §7金币。");
+            seller.sendMessage(LanguageManager.getInstance().translate("market.item_sold", buyer.getName(), price));
         } else {
             // 卖家离线，仍然转账（Vault 支持离线）
             LegacyLand.getEcon().depositPlayer(Bukkit.getOfflinePlayer(chest.getOwnerUuid()), price);

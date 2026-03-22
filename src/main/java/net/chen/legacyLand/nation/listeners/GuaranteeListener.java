@@ -5,6 +5,7 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import net.chen.legacyLand.events.WarStartEvent;
 import net.chen.legacyLand.nation.diplomacy.GuaranteeManager;
+import net.chen.legacyLand.util.LanguageManager;
 import net.chen.legacyLand.war.War;
 import net.chen.legacyLand.war.WarManager;
 import net.chen.legacyLand.war.WarParticipant;
@@ -64,8 +65,7 @@ public class GuaranteeListener implements Listener {
             }
 
             // 通知保卫国
-            Bukkit.broadcastMessage("§e[外交保卫] " + guarantorNationName +
-                    " 履行对 " + defenderNation + " 的保卫承诺，加入战争！");
+            Bukkit.broadcastMessage(LanguageManager.getInstance().translate("guarantee.join_war", guarantorNationName, defenderNation));
 
             // 将保卫国的在线玩家加入防守方
             for (Resident resident : guarantorNation.getResidents()) {
@@ -83,7 +83,7 @@ public class GuaranteeListener implements Listener {
                             100 // 初始补给
                     );
                     war.getDefenders().put(player.getUniqueId(), participant);
-                    player.sendMessage("§a你的国家履行了对 " + defenderNation + " 的保卫承诺，你已加入战争！");
+                    player.sendMessage(LanguageManager.getInstance().translate("guarantee.joined_war", defenderNation));
                 }
             }
         }
@@ -121,7 +121,7 @@ public class GuaranteeListener implements Listener {
         if (guaranteeManager.hasGuarantee(attackerNation.getName(), victimNation.getName())) {
             // 触发违约惩罚
             guaranteeManager.handleBetrayal(attackerNation.getName(), victimNation.getName());
-            attacker.sendMessage("§c你攻击了你的国家保卫的国家！你的国家被判定为法外之徒！");
+            attacker.sendMessage(LanguageManager.getInstance().translate("guarantee.betrayal_warning"));
         }
     }
 
@@ -149,7 +149,7 @@ public class GuaranteeListener implements Listener {
         List<String> guarantors = guaranteeManager.getGuarantors(playerNation.getName());
         if (!guarantors.isEmpty()) {
             // 显示 BossBar
-            showBossBar(player, "§a受到 " + String.join(", ", guarantors) + " 的外交保卫");
+            showBossBar(player, LanguageManager.getInstance().translate("guarantee.protected_status", String.join(", ", guarantors)));
         } else {
             removeBossBar(player);
         }
