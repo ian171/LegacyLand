@@ -6,6 +6,7 @@ import net.chen.legacyLand.nation.NationManager;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
 import net.chen.legacyLand.nation.diplomacy.GuaranteeManager;
 import net.chen.legacyLand.nation.diplomacy.GuaranteeRelation;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,7 +37,7 @@ public class GuaranteeCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§c此命令只能由玩家执行！");
+            sender.sendMessage(LanguageManager.getInstance().translate("msg.player_only"));
             return true;
         }
 
@@ -62,45 +63,45 @@ public class GuaranteeCommand implements CommandExecutor, TabCompleter {
         // 检查是否是国王
         Nation myNation = nationManager.getPlayerNation(player);
         if (myNation == null) {
-            player.sendMessage("§c你不在任何国家中！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.nobelongs"));
             return true;
         }
 
         if (!myNation.getKing().getUUID().equals(player.getUniqueId())) {
-            player.sendMessage("§c只有国王才能建立外交保卫关系！");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.king_only"));
             return true;
         }
 
         if (args.length < 2) {
-            player.sendMessage("§c用法: /guarantee add <国家名>");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.add_usage"));
             return true;
         }
 
         String targetName = args[1];
         if (targetName.equals(myNation.getName())) {
-            player.sendMessage("§c不能保卫自己的国家！");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.cannot_self"));
             return true;
         }
 
         Nation targetNation = townyAPI.getNation(targetName);
         if (targetNation == null) {
-            player.sendMessage("§c国家 " + targetName + " 不存在！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.not_found", targetName));
             return true;
         }
 
         // 检查是否已经存在保卫关系
         if (guaranteeManager.hasGuarantee(myNation.getName(), targetName)) {
-            player.sendMessage("§c你的国家已经在保卫 " + targetName + " 了！");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.already_protecting", targetName));
             return true;
         }
 
         // 建立保卫关系
         if (guaranteeManager.establishGuarantee(myNation.getName(), targetName)) {
-            player.sendMessage("§a成功建立对 " + targetName + " 的外交保卫关系！");
-            player.sendMessage("§e每小时需支付 500 金币 + 10 Trade_XP 维持费用。");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.established", targetName));
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.maintenance_cost"));
             return true;
         } else {
-            player.sendMessage("§c建立保卫关系失败！");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.establish_failed"));
             return true;
         }
     }
@@ -109,33 +110,33 @@ public class GuaranteeCommand implements CommandExecutor, TabCompleter {
         // 检查是否是国王
         Nation myNation = nationManager.getPlayerNation(player);
         if (myNation == null) {
-            player.sendMessage("§c你不在任何国家中！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.nobelongs"));
             return true;
         }
 
         if (!myNation.getKing().getUUID().equals(player.getUniqueId())) {
-            player.sendMessage("§c只有国王才能取消外交保卫关系！");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.king_only_remove"));
             return true;
         }
 
         if (args.length < 2) {
-            player.sendMessage("§c用法: /guarantee remove <国家名>");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.remove_usage"));
             return true;
         }
 
         String targetName = args[1];
         Nation targetNation = townyAPI.getNation(targetName);
         if (targetNation == null) {
-            player.sendMessage("§c国家 " + targetName + " 不存在！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.not_found", targetName));
             return true;
         }
 
         // 取消保卫关系
         if (guaranteeManager.removeGuarantee(myNation.getName(), targetName)) {
-            player.sendMessage("§a已取消对 " + targetName + " 的外交保卫关系！");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.removed", targetName));
             return true;
         } else {
-            player.sendMessage("§c你的国家没有保卫 " + targetName + "！");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.not_protecting", targetName));
             return true;
         }
     }
@@ -146,36 +147,36 @@ public class GuaranteeCommand implements CommandExecutor, TabCompleter {
         if (args.length >= 2) {
             nation = townyAPI.getNation(args[1]);
             if (nation == null) {
-                player.sendMessage("§c国家 " + args[1] + " 不存在！");
+                player.sendMessage(LanguageManager.getInstance().translate("nation.not_found", args[1]));
                 return true;
             }
         } else {
             nation = nationManager.getPlayerNation(player);
             if (nation == null) {
-                player.sendMessage("§c你不在任何国家中！");
+                player.sendMessage(LanguageManager.getInstance().translate("nation.nobelongs"));
                 return true;
             }
         }
 
-        player.sendMessage("§6========== " + nation.getName() + " 外交保卫关系 ==========");
+        player.sendMessage(LanguageManager.getInstance().translate("guarantee.relations_header", nation.getName()));
 
         // 显示保卫的国家
         List<String> guaranteed = guaranteeManager.getGuaranteedNations(nation.getName());
         if (!guaranteed.isEmpty()) {
-            player.sendMessage("§e保卫的国家:");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.protecting_nations"));
             for (String protectedNation : guaranteed) {
                 GuaranteeRelation relation = guaranteeManager.getGuarantee(nation.getName(), protectedNation);
-                String status = relation.isActive() ? "§a激活" : "§c失效";
+                String status = relation.isActive() ? LanguageManager.getInstance().translate("status.active") : LanguageManager.getInstance().translate("status.inactive");
                 player.sendMessage("  §7- §f" + protectedNation + " " + status);
             }
         } else {
-            player.sendMessage("§7暂无保卫任何国家");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.no_protecting"));
         }
 
         // 显示被保卫的国家
         List<String> guarantors = guaranteeManager.getGuarantors(nation.getName());
         if (!guarantors.isEmpty()) {
-            player.sendMessage("§e被以下国家保卫:");
+            player.sendMessage(LanguageManager.getInstance().translate("guarantee.protected_by"));
             for (String guarantorNation : guarantors) {
                 player.sendMessage("  §7- §f" + guarantorNation);
             }
@@ -185,10 +186,10 @@ public class GuaranteeCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelp(Player player) {
-        player.sendMessage("§6========== 外交保卫命令 ==========");
-        player.sendMessage("§e/guarantee add <国家名> §7- 建立保卫关系（仅国王）");
-        player.sendMessage("§e/guarantee remove <国家名> §7- 取消保卫关系（仅国王）");
-        player.sendMessage("§e/guarantee list [国家名] §7- 查看保卫关系");
+        player.sendMessage(LanguageManager.getInstance().translate("guarantee.help_header"));
+        player.sendMessage(LanguageManager.getInstance().translate("guarantee.help_add"));
+        player.sendMessage(LanguageManager.getInstance().translate("guarantee.help_remove"));
+        player.sendMessage(LanguageManager.getInstance().translate("guarantee.help_list"));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package net.chen.legacyLand.market.commands;
 
 import net.chen.legacyLand.market.MarketManager;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,11 +24,11 @@ public class PriceCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("§c此命令只能由玩家执行！");
+            sender.sendMessage(LanguageManager.getInstance().translate("msg.player_only"));
             return true;
         }
         if (args.length == 0) {
-            player.sendMessage("§c用法: /price set <金额>");
+            player.sendMessage(LanguageManager.getInstance().translate("market.price_usage"));
             return true;
         }
         if (args[0].equalsIgnoreCase("set")) {
@@ -40,26 +41,26 @@ public class PriceCommand implements CommandExecutor, TabCompleter {
             try {
                 price = Double.parseDouble(args[1]);
             } catch (NumberFormatException e) {
-                player.sendMessage("§c金额必须是有效数字！");
+                player.sendMessage(LanguageManager.getInstance().translate("error.invalid_amount"));
                 return true;
             }
             var result = marketManager.setPrice(player, price);
             switch (result) {
                 case SUCCESS ->
-                        player.sendMessage("§a价格已设置为 §6" + price + " §a金币/个！箱子现在对外开放销售。");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.price_set", price));
                 case NOT_PENDING ->
-                        player.sendMessage("§c请先右键点击你的销售箱，再使用此命令。");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.select_chest_first"));
                 case NO_CHEST_SELECTED ->
-                        player.sendMessage("§c请先右键点击你的销售箱！");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.click_chest"));
                 case CHEST_NOT_FOUND ->
-                        player.sendMessage("§c找不到该销售箱，可能已被删除。");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.chest_not_found"));
                 case NOT_OWNER ->
-                        player.sendMessage("§c你只能为自己的销售箱设置价格！");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.not_owner"));
                 case INVALID_PRICE ->
-                        player.sendMessage("§c价格必须大于0！");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.price_positive"));
             }
         } else {
-            player.sendMessage("§c用法: /price set <金额>");
+            player.sendMessage(LanguageManager.getInstance().translate("market.price_usage"));
         }
         return true;
     }

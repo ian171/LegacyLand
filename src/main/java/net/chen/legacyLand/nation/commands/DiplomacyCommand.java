@@ -7,6 +7,7 @@ import net.chen.legacyLand.nation.NationPermission;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyRelation;
 import net.chen.legacyLand.nation.diplomacy.RelationType;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -35,7 +36,7 @@ public class DiplomacyCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§c此命令只能由玩家执行！");
+            sender.sendMessage(LanguageManager.getInstance().translate("msg.player_only"));
             return true;
         }
 
@@ -66,22 +67,22 @@ public class DiplomacyCommand implements CommandExecutor, TabCompleter {
         if (args.length >= 2) {
             nation = townyAPI.getNation(args[1]);
             if (nation == null) {
-                player.sendMessage("§c国家 " + args[1] + " 不存在！");
+                player.sendMessage(LanguageManager.getInstance().translate("nation.not_found", args[1]));
                 return true;
             }
         } else {
             nation = nationManager.getPlayerNation(player);
             if (nation == null) {
-                player.sendMessage("§c你不在任何国家中！");
+                player.sendMessage(LanguageManager.getInstance().translate("nation.nobelongs"));
                 return true;
             }
         }
 
-        player.sendMessage("§6========== " + nation.getName() + " 外交关系 ==========");
+        player.sendMessage(LanguageManager.getInstance().translate("diplomacy.relations_header", nation.getName()));
 
         List<DiplomacyRelation> relations = diplomacyManager.getNationRelations(nation.getName());
         if (relations.isEmpty()) {
-            player.sendMessage("§7暂无外交关系");
+            player.sendMessage(LanguageManager.getInstance().translate("diplomacy.no_relations"));
         } else {
             for (DiplomacyRelation relation : relations) {
                 String otherNation = relation.getNation1().equals(nation.getName()) ?
@@ -95,60 +96,60 @@ public class DiplomacyCommand implements CommandExecutor, TabCompleter {
 
     private boolean handleWar(Player player, String[] args) {
         if (!nationManager.hasPermission(player, NationPermission.DECLARE_WAR)) {
-            player.sendMessage("§c你没有权限宣战！");
+            player.sendMessage(LanguageManager.getInstance().translate("diplomacy.no_war_permission"));
             return true;
         }
 
         if (args.length < 2) {
-            player.sendMessage("§c用法: /diplomacy war <国家名>");
+            player.sendMessage(LanguageManager.getInstance().translate("diplomacy.war_usage"));
             return true;
         }
 
         Nation myNation = nationManager.getPlayerNation(player);
         if (myNation == null) {
-            player.sendMessage("§c你不在任何国家中！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.nobelongs"));
             return true;
         }
 
         String targetName = args[1];
         if (targetName.equals(myNation.getName())) {
-            player.sendMessage("§c不能对自己的国家宣战！");
+            player.sendMessage(LanguageManager.getInstance().translate("diplomacy.cannot_war_self"));
             return true;
         }
 
         Nation targetNation = townyAPI.getNation(targetName);
         if (targetNation == null) {
-            player.sendMessage("§c国家 " + targetName + " 不存在！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.not_found", targetName));
             return true;
         }
 
         diplomacyManager.setRelation(myNation.getName(), targetName, RelationType.WAR);
-        player.sendMessage("§a已向 " + targetName + " 宣战！");
+        player.sendMessage(LanguageManager.getInstance().translate("diplomacy.war_declared", targetName));
 
         return true;
     }
 
     private boolean handlePeace(Player player, String[] args) {
         if (!nationManager.hasPermission(player, NationPermission.DECLARE_WAR)) {
-            player.sendMessage("§c你没有权限进行和谈！");
+            player.sendMessage(LanguageManager.getInstance().translate("diplomacy.no_peace_permission"));
             return true;
         }
 
         if (args.length < 2) {
-            player.sendMessage("§c用法: /diplomacy peace <国家名>");
+            player.sendMessage(LanguageManager.getInstance().translate("diplomacy.peace_usage"));
             return true;
         }
 
         Nation myNation = nationManager.getPlayerNation(player);
         if (myNation == null) {
-            player.sendMessage("§c你不在任何国家中！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.nobelongs"));
             return true;
         }
 
         String targetName = args[1];
         Nation targetNation = townyAPI.getNation(targetName);
         if (targetNation == null) {
-            player.sendMessage("§c国家 " + targetName + " 不存在！");
+            player.sendMessage(LanguageManager.getInstance().translate("nation.not_found", targetName));
             return true;
         }
 

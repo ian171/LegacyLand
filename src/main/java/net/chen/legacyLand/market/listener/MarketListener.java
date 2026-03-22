@@ -3,6 +3,7 @@ package net.chen.legacyLand.market.listener;
 import net.chen.legacyLand.market.MarketChest;
 import net.chen.legacyLand.market.MarketManager;
 import net.chen.legacyLand.util.FoliaScheduler;
+import net.chen.legacyLand.util.LanguageManager;
 import net.chen.legacyLand.LegacyLand;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -50,7 +51,7 @@ public class MarketListener implements Listener {
 
         boolean registered = marketManager.registerChest(player, loc);
         if (registered) {
-            player.sendMessage("§a已将箱子注册为销售箱！使用 §f/price set §a来为手持物品定价，然后右键点击此箱子。");
+            player.sendMessage(LanguageManager.getInstance().translate("market.chest_registered"));
         }
     }
 
@@ -70,13 +71,13 @@ public class MarketListener implements Listener {
         if (chest != null && !chest.getOwnerUuid().equals(event.getPlayer().getUniqueId())
                 && !event.getPlayer().hasPermission("legacyland.admin")) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage("§c你只能破坏自己的销售箱！");
+            event.getPlayer().sendMessage(LanguageManager.getInstance().translate("market.cannot_break_others"));
             return;
         }
 
         marketManager.unregisterChest(loc);
         if (chest != null) {
-            event.getPlayer().sendMessage("§7销售箱已注销。");
+            event.getPlayer().sendMessage(LanguageManager.getInstance().translate("market.chest_unregistered"));
         }
     }
 
@@ -109,7 +110,7 @@ public class MarketListener implements Listener {
             if (marketManager.hasPendingPriceSet(player.getUniqueId())) {
                 marketManager.setPendingChest(player.getUniqueId(), chest.getLocationKey());
                 event.setCancelled(true);
-                player.sendMessage("§e已选中此销售箱。现在输入 §f/price set <金额> §e来确认价格。");
+                player.sendMessage(LanguageManager.getInstance().translate("market.chest_selected"));
             }
             // 否则正常打开箱子（卖家可以直接补货/取货），不拦截
             return;
@@ -119,7 +120,7 @@ public class MarketListener implements Listener {
         event.setCancelled(true);
 
         if (!chest.isActive()) {
-            player.sendMessage("§c此销售箱尚未开放销售！");
+            player.sendMessage(LanguageManager.getInstance().translate("market.not_active"));
             return;
         }
 
@@ -128,19 +129,19 @@ public class MarketListener implements Listener {
             var result = marketManager.purchaseFromChest(player, loc);
             switch (result) {
                 case SUCCESS ->
-                        player.sendMessage("§a购买成功！花费 §6" + chest.getPricePerItem() + " §a金币。");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.purchase_success", chest.getPricePerItem()));
                 case CHEST_EMPTY ->
-                        player.sendMessage("§c此销售箱已售罄！");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.chest_empty"));
                 case INSUFFICIENT_FUNDS ->
-                        player.sendMessage("§c余额不足！此物品售价 §6" + chest.getPricePerItem() + " §c金币。");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.insufficient_funds", chest.getPricePerItem()));
                 case INVENTORY_FULL ->
-                        player.sendMessage("§c你的背包已满！");
+                        player.sendMessage(LanguageManager.getInstance().translate("error.inventory_full"));
                 case OWN_CHEST ->
-                        player.sendMessage("§c你不能购买自己的销售箱中的物品！");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.cannot_buy_own"));
                 case ECON_ERROR ->
-                        player.sendMessage("§c经济系统错误，请联系管理员！");
+                        player.sendMessage(LanguageManager.getInstance().translate("error.economy_error"));
                 default ->
-                        player.sendMessage("§c购买失败！");
+                        player.sendMessage(LanguageManager.getInstance().translate("market.purchase_failed"));
             }
         });
     }
