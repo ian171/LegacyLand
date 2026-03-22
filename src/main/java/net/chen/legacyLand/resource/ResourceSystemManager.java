@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.resource.listeners.BiomeResourceListener;
 import net.chen.legacyLand.resource.listeners.IndustrialRefineListener;
+import net.chen.legacyLand.util.LanguageManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -133,8 +134,7 @@ public class ResourceSystemManager {
         try {
             ItemStack item = createResourceItem(resourceType, amount);
             player.getInventory().addItem(item);
-            player.sendMessage("§a§l[资源系统] §a你获得了 " +
-                    resourceType.getColoredName() + " §ax" + amount);
+            player.sendMessage(LanguageManager.getInstance().translate("resource.obtained", resourceType.getColoredName(), amount));
             return true;
         } catch (Exception e) {
             logger.warning("给予玩家资源时出错: " + e.getMessage());
@@ -168,7 +168,7 @@ public class ResourceSystemManager {
         double weight = getPlayerInventoryWeight(player);
         double cost = calculateSimpleTransportCost(from, to, weight);
 
-        player.sendMessage("§e§l=== 运输成本预览 ===");
+        player.sendMessage(LanguageManager.getInstance().translate("resource.transport_preview_header"));
         player.sendMessage("§7起点: §f" + formatLocation(from));
         player.sendMessage("§7终点: §f" + formatLocation(to));
         player.sendMessage("§7距离: §f" + String.format("%.1f", from.distance(to)) + " 格");

@@ -2,6 +2,7 @@ package net.chen.legacyLand.player.status;
 
 import lombok.Data;
 import net.chen.legacyLand.player.PlayerData;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
@@ -116,7 +117,7 @@ public class PlayerStatusManager {
 
         // 发送消息
         if (status != BodyStatus.NORMAL) {
-            player.sendMessage("§e你进入了 §c" + status.getDisplayName() + " §e状态！");
+            player.sendMessage(LanguageManager.getInstance().translate("player.status_entered", status.getDisplayName()));
         }
     }
 
@@ -143,7 +144,7 @@ public class PlayerStatusManager {
         setCooldown(playerId, status.name(), status.getCooldownSeconds() * 1000L);
 
         // 发送消息
-        player.sendMessage("§c你受到了 " + status.getDisplayName() + "！");
+        player.sendMessage(LanguageManager.getInstance().translate("player.injury_received", status.getDisplayName()));
 
         // 特殊处理：斧伤和投具砸伤有概率触发骨折
         if (status == InjuryStatus.AXE_WOUND && Math.random() < 0.1) {
@@ -178,7 +179,7 @@ public class PlayerStatusManager {
         }
 
         // 发送消息
-        player.sendMessage("§c你受到了 " + status.getDisplayName() + "！");
+        player.sendMessage(LanguageManager.getInstance().translate("player.injury_received", status.getDisplayName()));
     }
 
     /**
@@ -191,7 +192,7 @@ public class PlayerStatusManager {
         if (statuses != null && statuses.contains(LifeInjuryStatus.FRACTURE)) {
             statuses.remove(LifeInjuryStatus.FRACTURE);
             player.removePotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS);
-            player.sendMessage("§a你的骨折已经治愈！");
+            player.sendMessage(LanguageManager.getInstance().translate("player.fracture_healed"));
         }
     }
 

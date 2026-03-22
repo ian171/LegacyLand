@@ -6,6 +6,7 @@ import com.palmergames.bukkit.towny.object.Resident;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.resource.*;
 import net.chen.legacyLand.util.FoliaScheduler;
+import net.chen.legacyLand.util.LanguageManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -62,7 +63,7 @@ public class IndustrialRefineListener implements Listener {
             // 通知附近玩家
             if (resourceType != null) {
                 notifyNearbyPlayers(furnaceLocation,
-                        "§c§l[工业系统] §c" + resourceType.getColoredName() + " §c只能在国家熔炉中精炼！");
+                        LanguageManager.getInstance().translate("resource.furnace_only", resourceType.getColoredName()));
             }
 
             return;
@@ -100,7 +101,7 @@ public class IndustrialRefineListener implements Listener {
         double taxAmount = resourceValue * REFINE_TAX_RATE;
 
         if (balance < taxAmount) {
-            player.sendMessage("§c§l[工业系统] §c余额不足，无法支付精炼税（需要 $" + String.format("%.2f", taxAmount) + "）");
+            player.sendMessage(LanguageManager.getInstance().translate("resource.insufficient_tax", String.format("%.2f", taxAmount)));
             return;
         }
 
@@ -118,8 +119,8 @@ public class IndustrialRefineListener implements Listener {
         }
 
         // 通知玩家
-        player.sendMessage("§a§l[工业系统] §a精炼成功！已支付精炼税 §e$" + String.format("%.2f", taxAmount));
-        player.sendMessage("§7税费已转入 " + nationName + " 国库");
+        player.sendMessage(LanguageManager.getInstance().translate("resource.refined", String.format("%.2f", taxAmount)));
+        player.sendMessage(LanguageManager.getInstance().translate("resource.tax_transferred", nationName));
     }
 
     /**

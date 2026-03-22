@@ -3,6 +3,7 @@ package net.chen.legacyLand.war.flagwar;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.*;
 import net.chen.legacyLand.LegacyLand;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -49,7 +50,7 @@ public class FlagWarListener implements Listener {
         Location location = event.getBlock().getLocation();
         // 检查玩家是否已经有进行中的 FlagWar
         if (flagWarManager.getPlayerFlagWar(player.getUniqueId()) != null) {
-            player.sendMessage("§c你已经有一个进行中的旗帜战争！");
+            player.sendMessage(LanguageManager.getInstance().translate("war.flagwar_already_active"));
             event.setCancelled(true);
             return;
         }
