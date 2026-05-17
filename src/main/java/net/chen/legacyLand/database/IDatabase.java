@@ -216,6 +216,6 @@ public interface IDatabase {
      * P2 预留：递减 currentValue。当前未被调用。
      */
     default void decrementChunkResource(String world, int chunkX, int chunkZ, double delta) {
-        // TODO(P2): 在 SQLite/MySQL/Mongo 中以原子操作（UPDATE ... SET current_value = current_value - ?）实现
+
     }
 }
