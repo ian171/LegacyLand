@@ -39,6 +39,8 @@ import net.chen.legacyLand.resource.commands.LandPriceCommand;
 import net.chen.legacyLand.resource.commands.ResourceCommand;
 import net.chen.legacyLand.resource.pricing.ChunkResourceManager;
 import net.chen.legacyLand.resource.pricing.ChunkResourceRecalcTask;
+import net.chen.legacyLand.resource.pricing.LandPriceManager;
+import net.chen.legacyLand.resource.pricing.map.ChunkPriceMap;
 import net.chen.legacyLand.season.SeasonManager;
 import net.chen.legacyLand.util.LanguageManager;
 import net.chen.legacyLand.war.WarManager;
@@ -80,7 +82,7 @@ public final class LegacyLand extends JavaPlugin {
     public static Logger logger;
     public static String version = "1.0-Beta2.2";
     public boolean isDev;
-    public Optional<BlueMapAPI> blueMapAPI;
+    public BlueMapAPI blueMapAPI;
     public boolean isBlueMap;
     @Getter
     private static LegacyLand instance;
@@ -100,6 +102,7 @@ public final class LegacyLand extends JavaPlugin {
     private LawManager lawManager;
     private TechManager techManager;
     private LanguageManager languageManager;
+    private ChunkPriceMap chunkPriceMap;
     private net.chen.legacyLand.economy.EconomyDatabase economyDatabase;
     private net.chen.legacyLand.economy.TreasuryManager treasuryManager;
     private net.chen.legacyLand.economy.BankManager bankManager;
@@ -161,6 +164,7 @@ public final class LegacyLand extends JavaPlugin {
         economyStatsManager.init();
         economyWarManager = net.chen.legacyLand.economy.EconomyWarManager.getInstance(this, treasuryManager);
         economyWarManager.init();
+
         logger.info("经济系统已加载。");
 
         // 初始化资源系统
@@ -168,13 +172,14 @@ public final class LegacyLand extends JavaPlugin {
         resourceSystemManager.init();
         logger.info("资源系统已加载。");
 
-        // 初始化区块资源稀缺度定价（P1 普查）
-        net.chen.legacyLand.resource.pricing.ChunkResourceManager.init(this);
-        logger.info("区块资源定价系统（P1 普查）已加载。");
 
-        // 初始化地价交互管理器（P3）
-        net.chen.legacyLand.resource.pricing.LandPriceManager.init(this);
-        logger.info("地价交互管理器（P3）已加载。");
+        ChunkResourceManager.init(this);
+        LandPriceManager.init(this);
+
+        chunkPriceMap = new ChunkPriceMap();
+        //保证第一次加载的时候有数据
+        chunkPriceMap.updateAllChunkPriceMarkers();
+        chunkPriceMap.updateAllNationMarkers();
 
         // 初始化管理器
         nationManager = NationManager.getInstance();
@@ -290,12 +295,28 @@ public final class LegacyLand extends JavaPlugin {
         }
         try {
             Class.forName("de.bluecolored.bluemap.api.BlueMapAPI");
-            blueMapAPI = BlueMapAPI.getInstance();
             isBlueMap = true;
+            // BlueMap-Towny 兼容：使用 onEnable/onDisable 生命周期回调，确保 BlueMap 后加载也能拿到 API
+            BlueMapAPI.onEnable(api -> {
+                blueMapAPI = api;
+                try {
+                    chunkPriceMap.onBlueMapEnable(api);
+                } catch (Throwable t) {
+                    logger.warning("[BlueMap] 初始化地价 MarkerSet 失败: " + t.getMessage());
+                }
+                logger.info("BlueMap API 已就绪，地价标记集已注册");
+            });
+            BlueMapAPI.onDisable(api -> {
+                try {
+                    chunkPriceMap.onBlueMapDisable(api);
+                } catch (Throwable ignored) {}
+                blueMapAPI = null;
+            });
         } catch (ClassNotFoundException e) {
             logger.warning("Not found BlueMap, several functions will not be enabled");
             isBlueMap = false;
         }
+
         // 启动前哨战监控任务（每分钟检查一次）
         FoliaScheduler.runTaskTimerGlobal(instance, new OutpostMonitorTask(instance), 1200L, 1200L);
         // 启动 FlagWar 计时器任务（每秒检查一次）
@@ -306,6 +327,10 @@ public final class LegacyLand extends JavaPlugin {
         FoliaScheduler.runTaskTimerGlobal(instance, new StatusUpdateTask(), 10L, 10L);
         // 启动法令定时任务（每分钟检查一次）
         FoliaScheduler.runTaskTimerGlobal(instance, new LawTimerTask(), 1200L, 1200L);
+        FoliaScheduler.runTaskTimerGlobal(instance, () -> {
+            chunkPriceMap.updateAllChunkPriceMarkers();
+            chunkPriceMap.updateAllNationMarkers();
+        },1200L,1200L);
         // 启动科技研究点生成任务
         int techInterval = getConfig().getInt("tech.research-tick-interval", 6000);
         FoliaScheduler.runTaskTimerGlobal(instance, new TechPointTask(), techInterval, techInterval);
@@ -590,9 +615,9 @@ public final class LegacyLand extends JavaPlugin {
         }
         return perms != null;
     }
-    public static void printBar(){
+    private static void printBar(){
         logger.info("""
-                  
+                
                   _                                _                 _\s
                  | |    ___  __ _  __ _  ___ _   _| | __ _ _ __   __| |
                  | |   / _ \\/ _` |/ _` |/ __| | | | |/ _` | '_ \\ / _` |

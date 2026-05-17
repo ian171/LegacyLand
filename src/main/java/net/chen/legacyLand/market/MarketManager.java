@@ -5,6 +5,7 @@ import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import de.bluecolored.bluemap.api.BlueMapAPI;
 import de.bluecolored.bluemap.api.BlueMapMap;
 import de.bluecolored.bluemap.api.gson.MarkerGson;
 import de.bluecolored.bluemap.api.markers.MarkerSet;
@@ -486,11 +487,14 @@ public class MarketManager {
 
         // 更新到 BlueMap
         MarkerSet finalMarkerSet = markerSet;
-        LegacyLand.getInstance().blueMapAPI.flatMap(api -> api.getWorld(player.getWorld())).ifPresent(world -> {
-            for (BlueMapMap map : world.getMaps()) {
-                map.getMarkerSets().put("legacy-land-markets", finalMarkerSet);
-            }
-        });
+        BlueMapAPI api = LegacyLand.getInstance().blueMapAPI;
+        if (api != null) {
+            api.getWorld(player.getWorld()).ifPresent(world -> {
+                for (BlueMapMap map : world.getMaps()) {
+                    map.getMarkerSets().put("legacy-land-markets", finalMarkerSet);
+                }
+            });
+        }
 
         // 保存到文件
         try {
@@ -522,11 +526,18 @@ public class MarketManager {
 
         // 更新到 BlueMap
         MarkerSet finalMarkerSet = markerSet;
-        LegacyLand.getInstance().blueMapAPI.flatMap(api -> api.getWorld(Bukkit.getWorld(worldName))).ifPresent(world -> {
-            for (BlueMapMap map : world.getMaps()) {
-                map.getMarkerSets().put("legacy-land-markets", finalMarkerSet);
+        BlueMapAPI api = LegacyLand.getInstance().blueMapAPI;
+        if (api != null) {
+            org.bukkit.World bw = Bukkit.getWorld(worldName);
+            if (bw != null) {
+                api.getWorld(bw).ifPresent(world -> {
+                    for (BlueMapMap map : world.getMaps()) {
+                        map.getMarkerSets().put("legacy-land-markets", finalMarkerSet);
+                    }
+                });
             }
-        });
+        }
+
 
         // 保存到文件
         try (FileWriter writer = new FileWriter(markerFile)) {

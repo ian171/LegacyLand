@@ -164,9 +164,6 @@ public class ChunkResourceManager {
     public long getExhaustedEventCount() { return exhaustedEventCount.get(); }
     public int getPendingDecrementCount() { return pendingDecrements.size(); }
 
-    // -----------------------------------------------------------------------
-    // P2: 采集追踪 + 定时衰减
-    // -----------------------------------------------------------------------
 
     /**
      * 累加一个待 flush 的衰减量。仅写内存，不触发 DB 与价格计算。
@@ -281,5 +278,9 @@ public class ChunkResourceManager {
      */
     public void decrementCurrentValue(String world, int x, int z, double delta) {
         accumulateDecrement(world, x, z, delta);
+    }
+
+    public LegacyLand getPlugin() {
+        return plugin;
     }
 }

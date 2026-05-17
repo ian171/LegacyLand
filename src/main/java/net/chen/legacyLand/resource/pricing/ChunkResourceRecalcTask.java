@@ -1,5 +1,6 @@
 package net.chen.legacyLand.resource.pricing;
 
+import net.chen.legacyLand.resource.pricing.map.ChunkPriceMap;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -17,5 +18,6 @@ public class ChunkResourceRecalcTask extends BukkitRunnable {
         ChunkResourceManager manager = ChunkResourceManager.getInstance();
         if (manager == null) return;
         manager.flushPendingDecrements();
+
     }
 }
