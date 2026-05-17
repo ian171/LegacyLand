@@ -104,9 +104,11 @@ public class ChunkResourceManager {
         // 必须在调用线程获取快照与 worldMinY（事件线程上下文，ChunkSnapshot 不暴露 minY）
         ChunkSnapshot snapshot;
         int worldMinY;
+        int worldMaxY;
         try {
             snapshot = chunk.getChunkSnapshot(false, true, false);
             worldMinY = chunk.getWorld().getMinHeight();
+            worldMaxY = chunk.getWorld().getMaxHeight();
         } catch (Throwable t) {
             scanLock.remove(key);
             LegacyLand.logger.warning("[ResourcePricing] 获取区块快照失败: " + t.getMessage());
@@ -115,7 +117,7 @@ public class ChunkResourceManager {
 
         Thread.ofVirtual()
                 .name("LegacyLand-ChunkScan-" + key)
-                .start(new ChunkScanTask(snapshot, world, worldMinY, config));
+                .start(new ChunkScanTask(snapshot, world, worldMinY, worldMaxY, config));
     }
 
     /** 由 {@link ChunkScanTask} 在扫描完成后回调。 */

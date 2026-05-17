@@ -20,12 +20,14 @@ public class ChunkScanTask implements Runnable {
     private final ChunkSnapshot snapshot;
     private final String worldName;
     private final int worldMinY;
+    private final int worldMaxY;
     private final ResourcePricingConfig config;
 
-    public ChunkScanTask(ChunkSnapshot snapshot, String worldName, int worldMinY, ResourcePricingConfig config) {
+    public ChunkScanTask(ChunkSnapshot snapshot, String worldName, int worldMinY, int worldMaxY, ResourcePricingConfig config) {
         this.snapshot = snapshot;
         this.worldName = worldName;
         this.worldMinY = worldMinY;
+        this.worldMaxY = worldMaxY;
         this.config = config;
     }
 
@@ -42,8 +44,16 @@ public class ChunkScanTask implements Runnable {
     }
 
     private ChunkResourceData scan() {
-        int yMin = config.getScanYMin();
-        int yMax = config.getScanYMax();
+        // 按世界高度上下限钳制配置范围，避免 Nether/End 等非主世界越界
+        int yMin = Math.max(config.getScanYMin(), worldMinY);
+        int yMax = Math.min(config.getScanYMax(), worldMaxY - 1);
+        if (yMin > yMax) {
+            String biome0 = sampleBiome(Math.max(worldMinY, Math.min(64, worldMaxY - 1)));
+            double biomeFactor0 = config.biomeFactorOf(biome0);
+            return new ChunkResourceData(
+                    worldName, snapshot.getX(), snapshot.getZ(),
+                    biome0, 0.0, 0.0, biomeFactor0, System.currentTimeMillis());
+        }
 
         // Palette Early-Exit: 按 section 跳过纯空气段
         int sectionMin = Math.floorDiv(yMin - worldMinY, 16);

@@ -6,6 +6,7 @@ import net.chen.legacyLand.LegacyLand;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -52,12 +53,8 @@ public class LanguageManager {
     public void init() {
         // 创建 lang 目录
         File langDir = new File(plugin.getDataFolder(), "lang");
-        boolean r = false;
-        if (!langDir.exists()) {
-            r = langDir.mkdirs();
-        }
-        if (!r) {
-            logger.severe("无法创建文件，请检查各个文件夹权限");
+        if (!langDir.exists() && !langDir.mkdirs()) {
+            logger.severe("无法创建 lang 目录，请检查文件夹权限");
         }
         // 保存默认语言文件
         saveDefaultLanguageFiles();
@@ -69,7 +66,7 @@ public class LanguageManager {
     }
 
     /**
-     * 保存默认语言文件到插件目录
+     * 保存默认语言文件到插件目录；若已存在则补齐 jar 内新增的键。
      */
     private void saveDefaultLanguageFiles() {
         String[] defaultLangs = {"zh-cn.yml", "en-us.yml"};
@@ -79,7 +76,37 @@ public class LanguageManager {
             if (!file.exists()) {
                 plugin.saveResource("lang/" + langFile, false);
                 logger.info("已创建默认语言文件: " + langFile);
+                continue;
             }
+            mergeMissingKeys(file, langFile);
+        }
+    }
+
+    /**
+     * 合并 jar 内默认语言文件中缺失的键到磁盘文件。
+     * 避免每次新增 i18n 键时玩家需要手动删除旧 lang 文件。
+     */
+    private void mergeMissingKeys(File diskFile, String resourcePath) {
+        try (InputStream in = plugin.getResource("lang/" + resourcePath)) {
+            if (in == null) return;
+            YamlConfiguration jarCfg = YamlConfiguration.loadConfiguration(
+                    new InputStreamReader(in, StandardCharsets.UTF_8));
+            YamlConfiguration diskCfg = YamlConfiguration.loadConfiguration(diskFile);
+
+            int added = 0;
+            for (String key : jarCfg.getKeys(true)) {
+                if (jarCfg.isConfigurationSection(key)) continue;
+                if (!diskCfg.contains(key)) {
+                    diskCfg.set(key, jarCfg.get(key));
+                    added++;
+                }
+            }
+            if (added > 0) {
+                diskCfg.save(diskFile);
+                logger.info("已为 " + resourcePath + " 补齐 " + added + " 个缺失键");
+            }
+        } catch (IOException e) {
+            logger.warning("合并语言文件失败: " + resourcePath + " - " + e.getMessage());
         }
     }
 
@@ -152,6 +179,7 @@ public class LanguageManager {
         for (int i = 0; i < args.length; i++) {
             translation = translation.replace("{" + i + "}", String.valueOf(args[i]));
         }
+        translation = translation.replace("&","§");
 
         return translation;
     }

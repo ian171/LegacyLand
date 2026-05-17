@@ -6,8 +6,8 @@ import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import lombok.Getter;
 import net.chen.legacyLand.LegacyLand;
-import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -183,11 +183,9 @@ public class LandPriceManager {
     private void notifyAsker(LandPriceInquiry q, Player replier, double price) {
         Player asker = Bukkit.getPlayer(q.askerId());
         if (asker == null || !asker.isOnline()) return;
-        asker.sendMessage(LanguageManager.getInstance().translate(
-                "landprice.reply_received",
-                replier.getName(),
-                q.chunkX() + "," + q.chunkZ(),
-                String.format("%.2f", price)));
+        String msg = String.format("&e[地价回复] &f%s &7对 [%d,%d] 报价: &f%.2f",
+                replier.getName(), q.chunkX(), q.chunkZ(), price);
+        asker.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
     }
 
     /** 清理过期询问。 */

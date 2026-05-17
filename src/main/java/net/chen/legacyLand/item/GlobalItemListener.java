@@ -1,6 +1,7 @@
 package net.chen.legacyLand.item;
 
 import net.chen.legacyLand.item.attribute.ItemAttributes;
+import net.chen.legacyLand.util.FoliaScheduler;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -64,22 +65,21 @@ public class GlobalItemListener implements Listener {
 
     @EventHandler
     public void onItemHeld(PlayerItemHeldEvent event) {
-        // 下一 tick 更新，确保物品已切换
-        new BukkitRunnable() {
+        FoliaScheduler.runTaskGlobal(LegacyLand.getInstance(),new BukkitRunnable() {
             @Override public void run() {
                 updateWalkSpeed(event.getPlayer());
             }
-        }.runTask(LegacyLand.getInstance());
+        });
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        new BukkitRunnable() {
+        FoliaScheduler.runTaskGlobal(LegacyLand.getInstance(),new BukkitRunnable() {
             @Override public void run() {
                 updateWalkSpeed(player);
             }
-        }.runTask(LegacyLand.getInstance());
+        });
     }
 
     /**
