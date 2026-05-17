@@ -2,6 +2,7 @@ package net.chen.legacyLand.war;
 
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.events.WarEndEvent;
+import net.chen.legacyLand.util.LanguageManager;
 import net.chen.legacyLand.war.siege.SiegeWar;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -155,7 +156,7 @@ public class WarManager {
             if (player != null && player.isOnline()) {
                 if (player.getGameMode() == GameMode.SPECTATOR) {
                     player.setGameMode(GameMode.SURVIVAL);
-                    player.sendMessage("§a战争已结束，你的游戏模式已恢复为生存模式。");
+                    player.sendMessage(LanguageManager.getInstance().translate("war.gamemode_restored"));
                 }
             }
         }
@@ -166,7 +167,7 @@ public class WarManager {
             if (player != null && player.isOnline()) {
                 if (player.getGameMode() == GameMode.SPECTATOR) {
                     player.setGameMode(GameMode.SURVIVAL);
-                    player.sendMessage("§a战争已结束，你的游戏模式已恢复为生存模式。");
+                    player.sendMessage(LanguageManager.getInstance().translate("war.gamemode_restored"));
                 }
             }
         }

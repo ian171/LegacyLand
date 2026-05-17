@@ -61,5 +61,10 @@ public class PlayerEventListener implements Listener {
 
         // 清理 TemperatureManager 中的温度数据
         temperatureManager.getPlayerTemperature().remove(player.getUniqueId());
+
+        // 清理地价公开标记（P3）
+        net.chen.legacyLand.resource.pricing.LandPriceManager lpm =
+                net.chen.legacyLand.resource.pricing.LandPriceManager.getInstance();
+        if (lpm != null) lpm.onPlayerQuit(player.getUniqueId());
     }
 }

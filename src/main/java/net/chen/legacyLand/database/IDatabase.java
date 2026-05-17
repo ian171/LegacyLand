@@ -188,4 +188,34 @@ public interface IDatabase {
     default void deleteNationGuarantees(String nationName) {
         // 默认实现：不做任何操作
     }
+
+    // ========== 区块资源稀缺度（P1 普查） ==========
+
+    /**
+     * 保存或更新区块储量数据（upsert）。
+     */
+    default void saveChunkResource(net.chen.legacyLand.resource.pricing.ChunkResourceData data) {
+        // 默认实现：不做任何操作，由具体数据库覆盖
+    }
+
+    /**
+     * 加载单个区块的储量数据，未找到返回 null。
+     */
+    default net.chen.legacyLand.resource.pricing.ChunkResourceData loadChunkResource(String world, int chunkX, int chunkZ) {
+        return null;
+    }
+
+    /**
+     * 加载所有已扫描区块（用于全量统计/导出，谨慎在大数据集下调用）。
+     */
+    default java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> loadAllChunkResources() {
+        return new java.util.ArrayList<>();
+    }
+
+    /**
+     * P2 预留：递减 currentValue。当前未被调用。
+     */
+    default void decrementChunkResource(String world, int chunkX, int chunkZ, double delta) {
+
+    }
 }

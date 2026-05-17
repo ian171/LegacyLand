@@ -121,6 +121,11 @@ public class MongoDatabase implements IDatabase {
             database.getCollection("guarantee_relations").createIndex(new Document("guarantor_nation", 1));
             database.getCollection("guarantee_relations").createIndex(new Document("protected_nation", 1));
 
+            // 区块资源储量（P1 普查）：复合主键索引
+            database.getCollection("chunk_resources").createIndex(
+                    new Document("world", 1).append("chunk_x", 1).append("chunk_z", 1),
+                    new com.mongodb.client.model.IndexOptions().unique(true));
+
             LegacyLand.logger.info("MongoDB 索引创建成功！");
         } catch (Exception e) {
             getLogger().severe("创建 MongoDB 索引失败: " + e.getMessage());
@@ -667,5 +672,68 @@ public class MongoDatabase implements IDatabase {
             getLogger().severe("反序列化 Location 失败: " + str);
             return null;
         }
+    }
+
+    // ========== 区块资源储量（P1 普查） ==========
+
+    @Override
+    public void saveChunkResource(net.chen.legacyLand.resource.pricing.ChunkResourceData data) {
+        MongoCollection<Document> coll = database.getCollection("chunk_resources");
+        Document filter = new Document("world", data.getWorld())
+                .append("chunk_x", data.getChunkX())
+                .append("chunk_z", data.getChunkZ());
+        Document doc = new Document()
+                .append("world", data.getWorld())
+                .append("chunk_x", data.getChunkX())
+                .append("chunk_z", data.getChunkZ())
+                .append("biome", data.getBiome())
+                .append("initial_value", data.getInitialValue())
+                .append("current_value", data.getCurrentValue())
+                .append("biome_factor", data.getBiomeFactor())
+                .append("last_scan", data.getLastScan());
+        coll.replaceOne(filter, doc, new com.mongodb.client.model.ReplaceOptions().upsert(true));
+    }
+
+    @Override
+    public net.chen.legacyLand.resource.pricing.ChunkResourceData loadChunkResource(String world, int chunkX, int chunkZ) {
+        MongoCollection<Document> coll = database.getCollection("chunk_resources");
+        Document filter = new Document("world", world).append("chunk_x", chunkX).append("chunk_z", chunkZ);
+        Document doc = coll.find(filter).first();
+        if (doc == null) return null;
+        return new net.chen.legacyLand.resource.pricing.ChunkResourceData(
+                world, chunkX, chunkZ,
+                doc.getString("biome"),
+                doc.getDouble("initial_value"),
+                doc.getDouble("current_value"),
+                doc.getDouble("biome_factor"),
+                doc.getLong("last_scan"));
+    }
+
+    @Override
+    public java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> loadAllChunkResources() {
+        java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> list = new java.util.ArrayList<>();
+        try (MongoCursor<Document> cur = database.getCollection("chunk_resources").find().iterator()) {
+            while (cur.hasNext()) {
+                Document doc = cur.next();
+                list.add(new net.chen.legacyLand.resource.pricing.ChunkResourceData(
+                        doc.getString("world"),
+                        doc.getInteger("chunk_x"),
+                        doc.getInteger("chunk_z"),
+                        doc.getString("biome"),
+                        doc.getDouble("initial_value"),
+                        doc.getDouble("current_value"),
+                        doc.getDouble("biome_factor"),
+                        doc.getLong("last_scan")));
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public void decrementChunkResource(String world, int chunkX, int chunkZ, double delta) {
+        MongoCollection<Document> coll = database.getCollection("chunk_resources");
+        Document filter = new Document("world", world).append("chunk_x", chunkX).append("chunk_z", chunkZ);
+        // 原子 $inc 负值后通过单独的 floor 阻止低于 0；简化处理：依赖应用层保证 delta 合理
+        coll.updateOne(filter, new Document("$inc", new Document("current_value", -delta)));
     }
 }

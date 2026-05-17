@@ -63,11 +63,11 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
     private void handleInfo(Player player) {
         PlayerData data = playerManager.getPlayerData(player);
         if (data == null) {
-            player.sendMessage("§c未找到玩家数据！");
+            player.sendMessage(LanguageManager.getInstance().translate("player.no_data"));
             return;
         }
 
-        player.sendMessage("§6========== 个人信息 ==========");
+        player.sendMessage(LanguageManager.getInstance().translate("player.info_header"));
         player.sendMessage("§e玩家: §f" + data.getPlayerName());
         player.sendMessage("§e最大血量: §f" + data.getMaxHealth() + " ❤");
         player.sendMessage("§e饮水值: §f" + data.getHydration() + " 💧");
@@ -101,7 +101,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
 
         PlayerData data = playerManager.getPlayerData(player);
         if (data == null) {
-            player.sendMessage("§c未找到玩家数据！");
+            player.sendMessage(LanguageManager.getInstance().translate("player.no_data"));
             return;
         }
 
@@ -113,22 +113,22 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
 
             if (type.equals("main")) {
                 if (playerManager.setMainProfession(player.getUniqueId(), profession)) {
-                    player.sendMessage("§a成功选择主职业: " + profession.getDisplayName());
+                    player.sendMessage(LanguageManager.getInstance().translate("player.profession_chosen", profession.getDisplayName()));
                     player.setMaxHealth(data.getMaxHealth());
                 } else {
-                    player.sendMessage("§c你已经选择过主职业了！");
+                    player.sendMessage(LanguageManager.getInstance().translate("player.profession_already_chosen"));
                 }
             } else if (type.equals("sub")) {
                 if (playerManager.setSubProfession(player.getUniqueId(), profession)) {
-                    player.sendMessage("§a成功选择副职业: " + profession.getDisplayName());
+                    player.sendMessage(LanguageManager.getInstance().translate("player.sub_profession_chosen", profession.getDisplayName()));
                 } else {
-                    player.sendMessage("§c你还不能选择副职业！需要主职业达到20级。");
+                    player.sendMessage(LanguageManager.getInstance().translate("player.sub_profession_level_requirement"));
                 }
             } else {
-                player.sendMessage("§c无效的职业类型！使用 main 或 sub");
+                player.sendMessage(LanguageManager.getInstance().translate("error.invalid_profession_type"));
             }
         } catch (IllegalArgumentException e) {
-            player.sendMessage("§c无效的职业名称！");
+            player.sendMessage(LanguageManager.getInstance().translate("error.invalid_profession_name"));
             showProfessions(player);
         }
     }
@@ -137,7 +137,7 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
      * 显示所有职业
      */
     private void showProfessions(Player player) {
-        player.sendMessage("§6可用职业:");
+        player.sendMessage(LanguageManager.getInstance().translate("player.available_professions"));
         for (Profession profession : Profession.values()) {
             player.sendMessage("§e- " + profession.name() + " §7(" + profession.getDisplayName() + ")");
         }
@@ -149,11 +149,11 @@ public class PlayerCommand implements CommandExecutor, TabCompleter {
     private void handleStats(Player player) {
         PlayerData data = playerManager.getPlayerData(player);
         if (data == null) {
-            player.sendMessage("§c未找到玩家数据！");
+            player.sendMessage(LanguageManager.getInstance().translate("player.no_data"));
             return;
         }
 
-        player.sendMessage("§6========== 详细属性 ==========");
+        player.sendMessage(LanguageManager.getInstance().translate("player.stats_header"));
         player.sendMessage("§e最大血量: §f" + data.getMaxHealth() + " ❤");
         player.sendMessage("§e饮水值: §f" + data.getHydration() + "/10 💧");
         player.sendMessage("§e体温: §f" + String.format("%.1f", data.getTemperature()) + "°C");

@@ -208,6 +208,20 @@ public class MySQLDatabase implements IDatabase {
                     "UNIQUE KEY unique_guarantee (guarantor_nation, protected_nation)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
+            // 区块资源储量表（P1 普查）
+            String chunkResourceTable = "CREATE TABLE IF NOT EXISTS chunk_resources (" +
+                    "world VARCHAR(64) NOT NULL," +
+                    "chunk_x INT NOT NULL," +
+                    "chunk_z INT NOT NULL," +
+                    "biome VARCHAR(64)," +
+                    "initial_value DOUBLE NOT NULL," +
+                    "current_value DOUBLE NOT NULL," +
+                    "biome_factor DOUBLE NOT NULL," +
+                    "last_scan BIGINT NOT NULL," +
+                    "PRIMARY KEY (world, chunk_x, chunk_z)," +
+                    "INDEX idx_chunk_world (world)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(nationExtTable);
                 stmt.execute(playerRolesTable);
@@ -220,6 +234,7 @@ public class MySQLDatabase implements IDatabase {
                 stmt.execute(seasonTable);
                 stmt.execute(flagWarsTable);
                 stmt.execute(guaranteeRelationsTable);
+                stmt.execute(chunkResourceTable);
                 LegacyLand.logger.info("MySQL 数据库表创建成功！");
             }
         } catch (SQLException e) {
@@ -1062,6 +1077,97 @@ public class MySQLDatabase implements IDatabase {
         } catch (SQLException e) {
             getLogger().severe("删除国家保卫关系失败: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    // ========== 区块资源储量（P1 普查） ==========
+
+    @Override
+    public void saveChunkResource(net.chen.legacyLand.resource.pricing.ChunkResourceData data) {
+        String sql = "INSERT INTO chunk_resources " +
+                "(world, chunk_x, chunk_z, biome, initial_value, current_value, biome_factor, last_scan) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE biome = VALUES(biome), initial_value = VALUES(initial_value), " +
+                "current_value = VALUES(current_value), biome_factor = VALUES(biome_factor), last_scan = VALUES(last_scan)";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, data.getWorld());
+            pstmt.setInt(2, data.getChunkX());
+            pstmt.setInt(3, data.getChunkZ());
+            pstmt.setString(4, data.getBiome());
+            pstmt.setDouble(5, data.getInitialValue());
+            pstmt.setDouble(6, data.getCurrentValue());
+            pstmt.setDouble(7, data.getBiomeFactor());
+            pstmt.setLong(8, data.getLastScan());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存区块储量失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public net.chen.legacyLand.resource.pricing.ChunkResourceData loadChunkResource(String world, int chunkX, int chunkZ) {
+        String sql = "SELECT biome, initial_value, current_value, biome_factor, last_scan " +
+                "FROM chunk_resources WHERE world = ? AND chunk_x = ? AND chunk_z = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, world);
+            pstmt.setInt(2, chunkX);
+            pstmt.setInt(3, chunkZ);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new net.chen.legacyLand.resource.pricing.ChunkResourceData(
+                            world, chunkX, chunkZ,
+                            rs.getString("biome"),
+                            rs.getDouble("initial_value"),
+                            rs.getDouble("current_value"),
+                            rs.getDouble("biome_factor"),
+                            rs.getLong("last_scan"));
+                }
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载区块储量失败: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> loadAllChunkResources() {
+        java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> list = new java.util.ArrayList<>();
+        String sql = "SELECT world, chunk_x, chunk_z, biome, initial_value, current_value, biome_factor, last_scan FROM chunk_resources";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                list.add(new net.chen.legacyLand.resource.pricing.ChunkResourceData(
+                        rs.getString("world"),
+                        rs.getInt("chunk_x"),
+                        rs.getInt("chunk_z"),
+                        rs.getString("biome"),
+                        rs.getDouble("initial_value"),
+                        rs.getDouble("current_value"),
+                        rs.getDouble("biome_factor"),
+                        rs.getLong("last_scan")));
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载所有区块储量失败: " + e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
+    public void decrementChunkResource(String world, int chunkX, int chunkZ, double delta) {
+        String sql = "UPDATE chunk_resources SET current_value = GREATEST(0, current_value - ?) " +
+                "WHERE world = ? AND chunk_x = ? AND chunk_z = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDouble(1, delta);
+            pstmt.setString(2, world);
+            pstmt.setInt(3, chunkX);
+            pstmt.setInt(4, chunkZ);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("递减区块储量失败: " + e.getMessage());
         }
     }
 }

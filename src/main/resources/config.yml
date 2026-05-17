@@ -214,3 +214,70 @@ tech:
   research-tick-interval: 6000
   # 每个在线成员每次贡献的研究点数
   points-per-member: 2
+
+# 资源稀缺度定价（P1 普查 + P2 采集追踪占位）
+resource-pricing:
+  # 是否启用整个定价系统（关闭则不监听区块加载、不执行扫描）
+  enabled: true
+  # 是否输出每次扫描的详细日志（生产环境建议 false）
+  log-verbose: false
+  # 扫描参数
+  scan:
+    # 扫描的 Y 范围（含端点）。-64 ~ 64 覆盖主世界绝大多数矿脉，
+    # 同时避免下挖到岩浆海与基岩浪费循环；下界/末地世界请按需调整
+    y-min: -64
+    y-max: 64
+    # 已扫描的区块再次加载时是否重新扫描（默认 false，仅初次普查）
+    rescan-on-load: false
+    # 强制重扫间隔毫秒（0 表示永不强制重扫）
+    rescan-interval-ms: 0
+  # 矿物权重：raw_value += weights[material] 累加，越高代表越稀缺/越值钱
+  weights:
+    ANCIENT_DEBRIS: 500
+    DIAMOND_ORE: 200
+    DEEPSLATE_DIAMOND_ORE: 250
+    EMERALD_ORE: 150
+    DEEPSLATE_EMERALD_ORE: 200
+    GOLD_ORE: 30
+    DEEPSLATE_GOLD_ORE: 35
+    NETHER_GOLD_ORE: 8
+    LAPIS_ORE: 10
+    DEEPSLATE_LAPIS_ORE: 12
+    IRON_ORE: 5
+    DEEPSLATE_IRON_ORE: 6
+    REDSTONE_ORE: 4
+    DEEPSLATE_REDSTONE_ORE: 5
+    COPPER_ORE: 3
+    DEEPSLATE_COPPER_ORE: 3
+    NETHER_QUARTZ_ORE: 2
+    COAL_ORE: 1
+    DEEPSLATE_COAL_ORE: 1
+  # 群系系数：初始储量 = raw_value × biome_factor
+  biome-factors:
+    default: 0.7
+    DESERT: 0.3
+    BADLANDS: 0.4
+    PLAINS: 0.8
+    FOREST: 0.8
+    JUNGLE: 1.0
+    MUSHROOM_FIELDS: 1.0
+    DEEP_DARK: 1.5
+    LUSH_CAVES: 1.2
+    DRIPSTONE_CAVES: 1.1
+  # P2：采集追踪 & 衰减
+  # 定时刷库 / 衰减计算间隔（ticks，20 ticks = 1 秒；1200 = 60 秒）
+  # BlockBreak 仅在内存累加，到周期才批量写库并触发耗竭事件
+  recalc-interval-ticks: 1200
+  # 爆炸（TNT、苦力怕、末影水晶等）衰减系数：weight × factor 计入耗竭，避免 TNT 全产出
+  explosion-decay-factor: 0.5
+  # P3：地价公式 V = base × (α·R + β·biomeFactor + γ·locationFactor)
+  # R 为剩余储量；locationFactor = 1 - min(1, dist/location-max-distance)，无所属城镇时为 0
+  valuation:
+    alpha: 1.0
+    beta: 200.0
+    gamma: 100.0
+    base: 1.0
+    # 距离衰减上限（方块），到此距离 location-factor 衰减至 0
+    location-max-distance: 1000.0
+  # /landprice ask 询问的有效期（秒），过期自动清理
+  inquiry-ttl-seconds: 3600

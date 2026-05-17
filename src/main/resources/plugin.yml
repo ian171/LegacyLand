@@ -94,3 +94,9 @@ commands:
     description: 外交保卫系统命令
     usage: /guarantee <add|remove|list> [国家名]
     aliases: [ baowei ]
+  landprice:
+    description: 地价系统
+    usage: /ld [position]
+    aliases:
+      - ld
+      - landp

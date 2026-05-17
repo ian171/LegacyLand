@@ -8,11 +8,16 @@ import net.chen.legacyLand.achievements.listener.PlayerAchievementsListener;
 import net.chen.legacyLand.command.AdministrationCommands;
 import net.chen.legacyLand.config.ConfigManager;
 import net.chen.legacyLand.database.DatabaseManager;
+import net.chen.legacyLand.economy.commands.BankCommand;
+import net.chen.legacyLand.economy.commands.EcoWarCommand;
+import net.chen.legacyLand.economy.commands.EconomyCommand;
+import net.chen.legacyLand.economy.commands.FinanceCommand;
 import net.chen.legacyLand.listeners.TownyEventListener;
 import net.chen.legacyLand.listeners.WarEventListener;
 import net.chen.legacyLand.listeners.WarProtectionListener;
 import net.chen.legacyLand.nation.NationManager;
 import net.chen.legacyLand.nation.commands.DiplomacyCommand;
+import net.chen.legacyLand.nation.commands.GuaranteeCommand;
 import net.chen.legacyLand.nation.commands.LegacyCommand;
 import net.chen.legacyLand.nation.commands.TaxCommand;
 import net.chen.legacyLand.nation.diplomacy.DiplomacyManager;
@@ -30,6 +35,10 @@ import net.chen.legacyLand.player.PlayerManager;
 import net.chen.legacyLand.player.commands.PlayerCommand;
 import net.chen.legacyLand.player.listeners.PlayerEventListener;
 import net.chen.legacyLand.player.status.*;
+import net.chen.legacyLand.resource.commands.LandPriceCommand;
+import net.chen.legacyLand.resource.commands.ResourceCommand;
+import net.chen.legacyLand.resource.pricing.ChunkResourceManager;
+import net.chen.legacyLand.resource.pricing.ChunkResourceRecalcTask;
 import net.chen.legacyLand.season.SeasonManager;
 import net.chen.legacyLand.util.LanguageManager;
 import net.chen.legacyLand.war.WarManager;
@@ -158,6 +167,14 @@ public final class LegacyLand extends JavaPlugin {
         resourceSystemManager = net.chen.legacyLand.resource.ResourceSystemManager.getInstance(this, econ);
         resourceSystemManager.init();
         logger.info("资源系统已加载。");
+
+        // 初始化区块资源稀缺度定价（P1 普查）
+        net.chen.legacyLand.resource.pricing.ChunkResourceManager.init(this);
+        logger.info("区块资源定价系统（P1 普查）已加载。");
+
+        // 初始化地价交互管理器（P3）
+        net.chen.legacyLand.resource.pricing.LandPriceManager.init(this);
+        logger.info("地价交互管理器（P3）已加载。");
 
         // 初始化管理器
         nationManager = NationManager.getInstance();
@@ -298,6 +315,16 @@ public final class LegacyLand extends JavaPlugin {
             new net.chen.legacyLand.nation.diplomacy.GuaranteeMaintenanceTask(),
             72000L, 72000L);
 
+        // 启动区块资源衰减刷库任务（P2，默认 60 秒）
+        ChunkResourceManager crm = ChunkResourceManager.getInstance();
+        if (crm != null && crm.getConfig().isEnabled()) {
+            int recalcTicks = crm.getConfig().getRecalcIntervalTicks();
+            FoliaScheduler.runTaskTimerGlobal(instance,
+                    new ChunkResourceRecalcTask(),
+                    recalcTicks, recalcTicks);
+            logger.info("区块资源定价系统（P2 衰减）已加载，刷库周期 " + recalcTicks + " ticks。");
+        }
+
         // 根据配置决定是否启用 ActionBar
         boolean enableActionBar = getConfig().getBoolean("player-status.enable-actionbar", true);
         if (enableActionBar) {
@@ -417,37 +444,40 @@ public final class LegacyLand extends JavaPlugin {
         instance.getCommand("tech").setTabCompleter(techCommand);
 
         // 注册外交保卫命令
-        net.chen.legacyLand.nation.commands.GuaranteeCommand guaranteeCommand =
+        GuaranteeCommand guaranteeCommand =
             new net.chen.legacyLand.nation.commands.GuaranteeCommand();
         instance.getCommand("guarantee").setExecutor(guaranteeCommand);
         instance.getCommand("guarantee").setTabCompleter(guaranteeCommand);
 
         // 注册经济系统命令
-        net.chen.legacyLand.economy.commands.EconomyCommand economyCommand =
+        EconomyCommand economyCommand =
             new net.chen.legacyLand.economy.commands.EconomyCommand(treasuryManager);
         instance.getCommand("economy").setExecutor(economyCommand);
         instance.getCommand("economy").setTabCompleter(economyCommand);
 
-        net.chen.legacyLand.economy.commands.BankCommand bankCommand =
+        BankCommand bankCommand =
             new net.chen.legacyLand.economy.commands.BankCommand(bankManager);
         instance.getCommand("bank").setExecutor(bankCommand);
         instance.getCommand("bank").setTabCompleter(bankCommand);
 
-        net.chen.legacyLand.economy.commands.FinanceCommand financeCommand =
+        FinanceCommand financeCommand =
             new net.chen.legacyLand.economy.commands.FinanceCommand(loanManager, futuresManager);
         instance.getCommand("finance").setExecutor(financeCommand);
         instance.getCommand("finance").setTabCompleter(financeCommand);
 
-        net.chen.legacyLand.economy.commands.EcoWarCommand ecoWarCommand =
+        EcoWarCommand ecoWarCommand =
             new net.chen.legacyLand.economy.commands.EcoWarCommand(economyStatsManager, economyWarManager);
         instance.getCommand("ecowar").setExecutor(ecoWarCommand);
         instance.getCommand("ecowar").setTabCompleter(ecoWarCommand);
 
         // 注册资源系统命令
-        net.chen.legacyLand.resource.commands.ResourceCommand resourceCommand =
+        ResourceCommand resourceCommand =
             new net.chen.legacyLand.resource.commands.ResourceCommand(resourceSystemManager);
         instance.getCommand("resource").setExecutor(resourceCommand);
         instance.getCommand("resource").setTabCompleter(resourceCommand);
+        LandPriceCommand landPriceCommand = new LandPriceCommand();
+        instance.getCommand("landprice").setExecutor(landPriceCommand);
+        instance.getCommand("landprice").setTabCompleter(landPriceCommand);
     }
 
     private void registerListeners() {
@@ -473,6 +503,13 @@ public final class LegacyLand extends JavaPlugin {
         // 初始化自定义物品注册表并注册全局事件分发器
         net.chen.legacyLand.item.items.ModItems.init();
         getServer().getPluginManager().registerEvents(new net.chen.legacyLand.item.GlobalItemListener(), this);
+
+        // 注册区块资源普查监听器（P1）
+        getServer().getPluginManager().registerEvents(
+                new net.chen.legacyLand.resource.pricing.listener.ChunkLoadResourceListener(), this);
+        // 注册区块资源采集追踪监听器（P2）
+        getServer().getPluginManager().registerEvents(
+                new net.chen.legacyLand.resource.pricing.listener.ResourceBlockBreakListener(), this);
     }
     public static void initItemsadderItems() throws IOException {
         // 修正资源路径（去掉 /resources/）
@@ -555,6 +592,7 @@ public final class LegacyLand extends JavaPlugin {
     }
     public static void printBar(){
         logger.info("""
+                  
                   _                                _                 _\s
                  | |    ___  __ _  __ _  ___ _   _| | __ _ _ __   __| |
                  | |   / _ \\/ _` |/ _` |/ __| | | | |/ _` | '_ \\ / _` |

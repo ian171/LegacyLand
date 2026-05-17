@@ -1,6 +1,7 @@
 package net.chen.legacyLand.util;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.chen.legacyLand.LegacyLand;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -22,6 +23,15 @@ public class LanguageManager {
     private final LegacyLand plugin;
     private final Logger logger;
     private final Map<Locale, YamlConfiguration> languages = new HashMap<>();
+    /**
+     * -- SETTER --
+     *  设置默认语言
+     * -- GETTER --
+     *  获取默认语言
+
+     */
+    @Getter
+    @Setter
     private Locale defaultLocale = Locale.SIMPLIFIED_CHINESE;
 
     private LanguageManager(LegacyLand plugin) {
@@ -42,10 +52,13 @@ public class LanguageManager {
     public void init() {
         // 创建 lang 目录
         File langDir = new File(plugin.getDataFolder(), "lang");
+        boolean r = false;
         if (!langDir.exists()) {
-            langDir.mkdirs();
+            r = langDir.mkdirs();
         }
-
+        if (!r) {
+            logger.severe("无法创建文件，请检查各个文件夹权限");
+        }
         // 保存默认语言文件
         saveDefaultLanguageFiles();
 
@@ -170,20 +183,6 @@ public class LanguageManager {
         } else {
             return Locale.SIMPLIFIED_CHINESE;
         }
-    }
-
-    /**
-     * 设置默认语言
-     */
-    public void setDefaultLocale(Locale locale) {
-        this.defaultLocale = locale;
-    }
-
-    /**
-     * 获取默认语言
-     */
-    public Locale getDefaultLocale() {
-        return defaultLocale;
     }
 
     /**

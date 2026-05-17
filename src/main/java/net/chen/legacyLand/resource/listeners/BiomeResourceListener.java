@@ -3,6 +3,7 @@ package net.chen.legacyLand.resource.listeners;
 import net.chen.legacyLand.LegacyLand;
 import net.chen.legacyLand.resource.*;
 import net.chen.legacyLand.util.FoliaScheduler;
+import net.chen.legacyLand.util.LanguageManager;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -108,8 +109,8 @@ public class BiomeResourceListener implements Listener {
                 location.getWorld().dropItemNaturally(location, resourceItem);
 
                 // 发送消息
-                player.sendMessage("§a§l[资源系统] §e你发现了 " + resourceType.getColoredName() + "§e！");
-                player.sendMessage("§7这是一种稀有资源，可以在国家熔炉中精炼。");
+                player.sendMessage(LanguageManager.getInstance().translate("resource.discovered", resourceType.getColoredName()));
+                player.sendMessage(LanguageManager.getInstance().translate("resource.refine_hint"));
 
             } catch (Exception e) {
                 logger.warning("处理特殊资源掉落时出错: " + e.getMessage());

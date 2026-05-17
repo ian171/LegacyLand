@@ -185,6 +185,19 @@ public class SQLiteDatabase implements IDatabase {
                     "UNIQUE(guarantor_nation, protected_nation)" +
                     ")";
 
+            // 区块资源储量表（P1 普查）
+            String chunkResourceTable = "CREATE TABLE IF NOT EXISTS chunk_resources (" +
+                    "world TEXT NOT NULL," +
+                    "chunk_x INTEGER NOT NULL," +
+                    "chunk_z INTEGER NOT NULL," +
+                    "biome TEXT," +
+                    "initial_value REAL NOT NULL," +
+                    "current_value REAL NOT NULL," +
+                    "biome_factor REAL NOT NULL," +
+                    "last_scan BIGINT NOT NULL," +
+                    "PRIMARY KEY (world, chunk_x, chunk_z)" +
+                    ")";
+
             stmt.execute(nationExtTable);
             stmt.execute(playerRolesTable);
             stmt.execute(diplomacyTable);
@@ -196,6 +209,7 @@ public class SQLiteDatabase implements IDatabase {
             stmt.execute(seasonTable);
             stmt.execute(flagWarsTable);
             stmt.execute(guaranteeRelationsTable);
+            stmt.execute(chunkResourceTable);
 
             stmt.close();
             LegacyLand.logger.info("SQLite 数据库表创建成功！");
@@ -935,6 +949,91 @@ public class SQLiteDatabase implements IDatabase {
         } catch (SQLException e) {
             getLogger().severe("删除国家保卫关系失败: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    // ========== 区块资源储量（P1 普查） ==========
+
+    @Override
+    public void saveChunkResource(net.chen.legacyLand.resource.pricing.ChunkResourceData data) {
+        String sql = "INSERT OR REPLACE INTO chunk_resources " +
+                "(world, chunk_x, chunk_z, biome, initial_value, current_value, biome_factor, last_scan) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, data.getWorld());
+            pstmt.setInt(2, data.getChunkX());
+            pstmt.setInt(3, data.getChunkZ());
+            pstmt.setString(4, data.getBiome());
+            pstmt.setDouble(5, data.getInitialValue());
+            pstmt.setDouble(6, data.getCurrentValue());
+            pstmt.setDouble(7, data.getBiomeFactor());
+            pstmt.setLong(8, data.getLastScan());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("保存区块储量失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public net.chen.legacyLand.resource.pricing.ChunkResourceData loadChunkResource(String world, int chunkX, int chunkZ) {
+        String sql = "SELECT biome, initial_value, current_value, biome_factor, last_scan " +
+                "FROM chunk_resources WHERE world = ? AND chunk_x = ? AND chunk_z = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, world);
+            pstmt.setInt(2, chunkX);
+            pstmt.setInt(3, chunkZ);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return new net.chen.legacyLand.resource.pricing.ChunkResourceData(
+                        world, chunkX, chunkZ,
+                        rs.getString("biome"),
+                        rs.getDouble("initial_value"),
+                        rs.getDouble("current_value"),
+                        rs.getDouble("biome_factor"),
+                        rs.getLong("last_scan"));
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载区块储量失败: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> loadAllChunkResources() {
+        java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> list = new java.util.ArrayList<>();
+        String sql = "SELECT world, chunk_x, chunk_z, biome, initial_value, current_value, biome_factor, last_scan FROM chunk_resources";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                list.add(new net.chen.legacyLand.resource.pricing.ChunkResourceData(
+                        rs.getString("world"),
+                        rs.getInt("chunk_x"),
+                        rs.getInt("chunk_z"),
+                        rs.getString("biome"),
+                        rs.getDouble("initial_value"),
+                        rs.getDouble("current_value"),
+                        rs.getDouble("biome_factor"),
+                        rs.getLong("last_scan")));
+            }
+        } catch (SQLException e) {
+            getLogger().severe("加载所有区块储量失败: " + e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
+    public void decrementChunkResource(String world, int chunkX, int chunkZ, double delta) {
+        // P2 阶段调用；采用原子 UPDATE 防止读改写竞争。
+        String sql = "UPDATE chunk_resources SET current_value = MAX(0, current_value - ?) " +
+                "WHERE world = ? AND chunk_x = ? AND chunk_z = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setDouble(1, delta);
+            pstmt.setString(2, world);
+            pstmt.setInt(3, chunkX);
+            pstmt.setInt(4, chunkZ);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            getLogger().severe("递减区块储量失败: " + e.getMessage());
         }
     }
 }

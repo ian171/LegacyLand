@@ -239,4 +239,22 @@ public class DatabaseManager {
     public void deleteNationGuarantees(String nationName) {
         database.deleteNationGuarantees(nationName);
     }
+
+    // ========== 区块资源稀缺度（P1 普查） ==========
+
+    public void saveChunkResource(net.chen.legacyLand.resource.pricing.ChunkResourceData data) {
+        database.saveChunkResource(data);
+    }
+
+    public net.chen.legacyLand.resource.pricing.ChunkResourceData loadChunkResource(String world, int chunkX, int chunkZ) {
+        return database.loadChunkResource(world, chunkX, chunkZ);
+    }
+
+    public java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> loadAllChunkResources() {
+        return database.loadAllChunkResources();
+    }
+
+    public void decrementChunkResource(String world, int chunkX, int chunkZ, double delta) {
+        database.decrementChunkResource(world, chunkX, chunkZ, delta);
+    }
 }
