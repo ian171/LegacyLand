@@ -76,7 +76,10 @@ tasks {
         relocate 'org.bson',            'net.chen.legacyLand.libs.bson'
 
         archiveClassifier.set('')   // 不加 -all 后缀
-        minimize()                  // 移除未使用的依赖类
+        minimize {
+            // MySQL 驱动通过 Class.forName 反射加载，minimize 无法检测到引用，必须手动排除
+            exclude(dependency('com.mysql:mysql-connector-j'))
+        }
     }
 
     // 让 build 触发 shadowJar

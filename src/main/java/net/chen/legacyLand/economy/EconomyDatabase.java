@@ -1,19 +1,22 @@
 package net.chen.legacyLand.economy;
 
 import net.chen.legacyLand.LegacyLand;
+import net.chen.legacyLand.database.DatabaseManager;
 
 import java.sql.*;
 import java.util.logging.Logger;
 
 /**
  * 经济系统数据库管理器
- * 独立的 SQLite 数据库，存储货币、国库、银行、汇率等数据
+ * 支持跟随主数据库配置使用 SQLite 或 MySQL，独立 SQLite 作为 fallback
  */
 public class EconomyDatabase {
     private static EconomyDatabase instance;
     private final LegacyLand plugin;
     private final Logger logger;
     private Connection connection;
+    private DatabaseManager databaseManager; // 共享模式时引用主数据库管理器
+    private String dbType = "sqlite"; // "mysql" or "sqlite"
 
     private EconomyDatabase(LegacyLand plugin) {
         this.plugin = plugin;
@@ -32,13 +35,33 @@ public class EconomyDatabase {
     }
 
     /**
-     * 连接数据库
+     * 使用主数据库连接（跟随 database.type 配置）
+     */
+    public void connect(DatabaseManager dbManager, String dbType) {
+        this.databaseManager = dbManager;
+        this.dbType = dbType != null ? dbType.toLowerCase() : "sqlite";
+        logger.info("经济系统使用共享数据库连接 (" + this.dbType + ")");
+        // 通过共享连接创建表
+        try (Connection conn = dbManager.getConnection()) {
+            this.connection = conn; // 临时用于 createTables
+            createTables();
+        } catch (SQLException e) {
+            logger.severe("经济系统创建表失败: " + e.getMessage());
+        } finally {
+            this.connection = null; // 清除临时引用，后续 getConnection() 走共享路径
+        }
+    }
+
+    /**
+     * 独立 SQLite 连接（fallback）
      */
     public void connect() {
         try {
+            this.dbType = "sqlite";
+            this.databaseManager = null;
             String dbPath = plugin.getDataFolder().getAbsolutePath() + "/economy.db";
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
-            logger.info("经济系统数据库已连接: " + dbPath);
+            logger.info("经济系统数据库已连接 (独立SQLite): " + dbPath);
             createTables();
         } catch (SQLException e) {
             logger.severe("连接经济数据库失败: " + e.getMessage());
@@ -46,106 +69,68 @@ public class EconomyDatabase {
     }
 
     /**
-     * 创建所有表
+     * 创建所有表（适配 SQLite 和 MySQL）
      */
     private void createTables() {
-        createTreasuryTable();
-        createCurrencyTable();
-        createBankAccountTable();
-        createExchangeRateTable();
-        createTransactionTable();
-    }
+        String tt = textType();
+        String rt = realType();
+        String bt = "BIGINT";
+        String ec = engineCharset();
+        String ut = uuidType();
 
-    /**
-     * 国库表 - 存储各国国库信息
-     */
-    private void createTreasuryTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS treasuries (
-                nation_name TEXT PRIMARY KEY,
-                world TEXT NOT NULL,
-                x INTEGER NOT NULL,
-                y INTEGER NOT NULL,
-                z INTEGER NOT NULL,
-                sbc_reserve REAL NOT NULL DEFAULT 0,
-                currency_issued REAL NOT NULL DEFAULT 0,
-                credit_score REAL NOT NULL DEFAULT 1.0,
-                created_at INTEGER NOT NULL,
-                last_updated INTEGER NOT NULL
-            )
-        """;
-        executeUpdate(sql, "国库表");
-    }
+        executeUpdate(
+            "CREATE TABLE IF NOT EXISTS treasuries (" +
+            "nation_name " + tt + " PRIMARY KEY," +
+            "world " + tt + " NOT NULL," +
+            "x INTEGER NOT NULL," +
+            "y INTEGER NOT NULL," +
+            "z INTEGER NOT NULL," +
+            "sbc_reserve " + rt + " NOT NULL DEFAULT 0," +
+            "currency_issued " + rt + " NOT NULL DEFAULT 0," +
+            "credit_score " + rt + " NOT NULL DEFAULT 1.0," +
+            "created_at " + bt + " NOT NULL," +
+            "last_updated " + bt + " NOT NULL" +
+            ")" + ec, "国库表");
 
-    /**
-     * 货币表 - 记录所有发行的货币（用于防伪和追踪）
-     */
-    private void createCurrencyTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS currencies (
-                serial_number TEXT PRIMARY KEY,
-                nation_name TEXT NOT NULL,
-                denomination REAL NOT NULL,
-                issued_at INTEGER NOT NULL,
-                issued_by TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'active',
-                FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)
-            )
-        """;
-        executeUpdate(sql, "货币表");
-    }
+        executeUpdate(
+            "CREATE TABLE IF NOT EXISTS currencies (" +
+            "serial_number " + tt + " PRIMARY KEY," +
+            "nation_name " + tt + " NOT NULL," +
+            "denomination " + rt + " NOT NULL," +
+            "issued_at " + bt + " NOT NULL," +
+            "issued_by " + tt + " NOT NULL," +
+            "status " + tt + " NOT NULL DEFAULT 'active'" +
+            ")" + ec, "货币表");
 
-    /**
-     * 银行账户表 - 存储玩家的电子余额（M2）
-     */
-    private void createBankAccountTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS bank_accounts (
-                player_uuid TEXT NOT NULL,
-                nation_name TEXT NOT NULL,
-                balance REAL NOT NULL DEFAULT 0,
-                created_at INTEGER NOT NULL,
-                last_transaction INTEGER NOT NULL,
-                PRIMARY KEY (player_uuid, nation_name),
-                FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)
-            )
-        """;
-        executeUpdate(sql, "银行账户表");
-    }
+        executeUpdate(
+            "CREATE TABLE IF NOT EXISTS bank_accounts (" +
+            "player_uuid " + ut + " NOT NULL," +
+            "nation_name " + tt + " NOT NULL," +
+            "balance " + rt + " NOT NULL DEFAULT 0," +
+            "created_at " + bt + " NOT NULL," +
+            "last_transaction " + bt + " NOT NULL," +
+            "PRIMARY KEY (player_uuid, nation_name)" +
+            ")" + ec, "银行账户表");
 
-    /**
-     * 汇率表 - 存储各国货币汇率历史
-     */
-    private void createExchangeRateTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS exchange_rates (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nation_name TEXT NOT NULL,
-                rate_to_sbc REAL NOT NULL,
-                timestamp INTEGER NOT NULL,
-                FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)
-            )
-        """;
-        executeUpdate(sql, "汇率表");
-    }
+        executeUpdate(
+            "CREATE TABLE IF NOT EXISTS exchange_rates (" +
+            "id " + pkIntType() + "," +
+            "nation_name " + tt + " NOT NULL," +
+            "rate_to_sbc " + rt + " NOT NULL," +
+            "timestamp " + bt + " NOT NULL" +
+            ")" + ec, "汇率表");
 
-    /**
-     * 交易记录表 - 记录所有经济活动
-     */
-    private void createTransactionTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS transactions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                type TEXT NOT NULL,
-                from_player TEXT,
-                to_player TEXT,
-                nation_name TEXT,
-                amount REAL NOT NULL,
-                description TEXT,
-                timestamp INTEGER NOT NULL
-            )
-        """;
-        executeUpdate(sql, "交易记录表");
+        executeUpdate(
+            "CREATE TABLE IF NOT EXISTS transactions (" +
+            "id " + pkIntType() + "," +
+            "type " + tt + " NOT NULL," +
+            "from_player " + ut + "," +
+            "to_player " + ut + "," +
+            "nation_name " + tt + "," +
+            "amount " + rt + " NOT NULL," +
+            "description " + tt + "," +
+            "timestamp " + bt + " NOT NULL" +
+            ")" + ec, "交易记录表");
     }
 
     /**
@@ -162,16 +147,63 @@ public class EconomyDatabase {
 
     /**
      * 获取数据库连接
+     * 共享模式：从 DatabaseManager 获取（连接池）
+     * 独立模式：返回自己的 SQLite 连接
      */
     public Connection getConnection() {
+        if (databaseManager != null) {
+            try {
+                return databaseManager.getConnection();
+            } catch (SQLException e) {
+                logger.severe("获取数据库连接失败: " + e.getMessage());
+                return null;
+            }
+        }
         return connection;
     }
 
     /**
-     * 断开数据库连接
+     * 获取数据库类型
+     */
+    public String getDbType() {
+        return dbType;
+    }
+
+    /** 是否为 MySQL */
+    public boolean isMysql() {
+        return "mysql".equals(dbType);
+    }
+
+    /** 数据库适配：文本类型 */
+    public String textType() {
+        return isMysql() ? "VARCHAR(255)" : "TEXT";
+    }
+
+    /** 数据库适配：UUID 列类型 */
+    public String uuidType() {
+        return isMysql() ? "VARCHAR(36)" : "TEXT";
+    }
+
+    /** 数据库适配：自增整数主键 */
+    public String pkIntType() {
+        return isMysql() ? "INT AUTO_INCREMENT PRIMARY KEY" : "INTEGER PRIMARY KEY AUTOINCREMENT";
+    }
+
+    /** 数据库适配：浮点数类型 */
+    public String realType() {
+        return isMysql() ? "DOUBLE" : "REAL";
+    }
+
+    /** 数据库适配：表引擎/字符集后缀 */
+    public String engineCharset() {
+        return isMysql() ? " ENGINE=InnoDB DEFAULT CHARSET=utf8mb4" : "";
+    }
+
+    /**
+     * 断开数据库连接（仅独立 SQLite 模式才关闭）
      */
     public void disconnect() {
-        if (connection != null) {
+        if (databaseManager == null && connection != null) {
             try {
                 connection.close();
                 logger.info("经济系统数据库已断开");

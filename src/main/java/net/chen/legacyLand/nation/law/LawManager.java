@@ -61,37 +61,70 @@ public class LawManager {
     }
 
     private void createTables() {
-        try (Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS nation_laws (
-                    id TEXT PRIMARY KEY,
-                    nation_name TEXT NOT NULL,
-                    type TEXT NOT NULL,
-                    params TEXT NOT NULL DEFAULT '{}',
-                    enacted_by TEXT NOT NULL,
-                    enacted_at INTEGER NOT NULL,
-                    expires_at INTEGER NOT NULL DEFAULT 0,
-                    active INTEGER NOT NULL DEFAULT 1
-                )""");
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS law_proposals (
-                    id TEXT PRIMARY KEY,
-                    nation_name TEXT NOT NULL,
-                    type TEXT NOT NULL,
-                    params TEXT NOT NULL DEFAULT '{}',
-                    proposed_by TEXT NOT NULL,
-                    proposed_at INTEGER NOT NULL,
-                    vote_deadline INTEGER NOT NULL,
-                    closed INTEGER NOT NULL DEFAULT 0
-                )""");
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS law_votes (
-                    proposal_id TEXT NOT NULL,
-                    player_uuid TEXT NOT NULL,
-                    approve INTEGER NOT NULL,
-                    voted_at INTEGER NOT NULL,
-                    PRIMARY KEY (proposal_id, player_uuid)
-                )""");
+        try {
+            boolean isMySQL = connection.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql");
+            try (Statement stmt = connection.createStatement()) {
+                if (isMySQL) {
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS nation_laws (" +
+                            "id VARCHAR(36) PRIMARY KEY," +
+                            "nation_name VARCHAR(255) NOT NULL," +
+                            "type VARCHAR(64) NOT NULL," +
+                            "params TEXT NOT NULL DEFAULT '{}'," +
+                            "enacted_by VARCHAR(255) NOT NULL," +
+                            "enacted_at BIGINT NOT NULL," +
+                            "expires_at BIGINT NOT NULL DEFAULT 0," +
+                            "active TINYINT NOT NULL DEFAULT 1" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS law_proposals (" +
+                            "id VARCHAR(36) PRIMARY KEY," +
+                            "nation_name VARCHAR(255) NOT NULL," +
+                            "type VARCHAR(64) NOT NULL," +
+                            "params TEXT NOT NULL DEFAULT '{}'," +
+                            "proposed_by VARCHAR(255) NOT NULL," +
+                            "proposed_at BIGINT NOT NULL," +
+                            "vote_deadline BIGINT NOT NULL," +
+                            "closed TINYINT NOT NULL DEFAULT 0" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS law_votes (" +
+                            "proposal_id VARCHAR(36) NOT NULL," +
+                            "player_uuid VARCHAR(36) NOT NULL," +
+                            "approve TINYINT NOT NULL," +
+                            "voted_at BIGINT NOT NULL," +
+                            "PRIMARY KEY (proposal_id, player_uuid)" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                } else {
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS nation_laws (
+                            id TEXT PRIMARY KEY,
+                            nation_name TEXT NOT NULL,
+                            type TEXT NOT NULL,
+                            params TEXT NOT NULL DEFAULT '{}',
+                            enacted_by TEXT NOT NULL,
+                            enacted_at INTEGER NOT NULL,
+                            expires_at INTEGER NOT NULL DEFAULT 0,
+                            active INTEGER NOT NULL DEFAULT 1
+                        )""");
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS law_proposals (
+                            id TEXT PRIMARY KEY,
+                            nation_name TEXT NOT NULL,
+                            type TEXT NOT NULL,
+                            params TEXT NOT NULL DEFAULT '{}',
+                            proposed_by TEXT NOT NULL,
+                            proposed_at INTEGER NOT NULL,
+                            vote_deadline INTEGER NOT NULL,
+                            closed INTEGER NOT NULL DEFAULT 0
+                        )""");
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS law_votes (
+                            proposal_id TEXT NOT NULL,
+                            player_uuid TEXT NOT NULL,
+                            approve INTEGER NOT NULL,
+                            voted_at INTEGER NOT NULL,
+                            PRIMARY KEY (proposal_id, player_uuid)
+                        )""");
+                }
+            }
         } catch (SQLException e) {
             logger.severe("[Law] 创建数据库表失败: " + e.getMessage());
         }
@@ -264,7 +297,9 @@ public class LawManager {
 
         proposal.addVote(player.getUniqueId(), approve);
         try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT OR REPLACE INTO law_votes (proposal_id,player_uuid,approve,voted_at) VALUES (?,?,?,?)")) {
+                isMySQL(connection)
+                        ? "INSERT INTO law_votes (proposal_id,player_uuid,approve,voted_at) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE approve=VALUES(approve),voted_at=VALUES(voted_at)"
+                        : "INSERT OR REPLACE INTO law_votes (proposal_id,player_uuid,approve,voted_at) VALUES (?,?,?,?)")) {
             ps.setString(1, proposalId);
             ps.setString(2, player.getUniqueId().toString());
             ps.setInt(3, approve ? 1 : 0);
@@ -374,6 +409,11 @@ public class LawManager {
     }
 
     // ===================== 内部辅助 =====================
+
+    private static boolean isMySQL(Connection conn) {
+        try { return conn.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"); }
+        catch (SQLException e) { return false; }
+    }
 
     private void checkProposalResult(LawProposal proposal) {
         Nation nation = TownyAPI.getInstance().getNation(proposal.getNationName());

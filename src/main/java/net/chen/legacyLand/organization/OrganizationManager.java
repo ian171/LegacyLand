@@ -61,48 +61,91 @@ public class OrganizationManager {
     }
 
     private void createTables() {
-        try (Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS organizations (
-                    id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL UNIQUE,
-                    leader_uuid TEXT NOT NULL,
-                    nation_name TEXT,
-                    created_at INTEGER NOT NULL
-                )""");
+        try {
+            boolean isMySQL = connection.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql");
+            try (Statement stmt = connection.createStatement()) {
+                if (isMySQL) {
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS organizations (" +
+                            "id VARCHAR(36) PRIMARY KEY," +
+                            "name VARCHAR(255) NOT NULL UNIQUE," +
+                            "leader_uuid VARCHAR(36) NOT NULL," +
+                            "nation_name VARCHAR(255)," +
+                            "created_at BIGINT NOT NULL" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS organization_members (
-                    org_id TEXT NOT NULL,
-                    player_uuid TEXT NOT NULL,
-                    role TEXT NOT NULL,
-                    permissions TEXT NOT NULL DEFAULT '',
-                    joined_at INTEGER NOT NULL,
-                    PRIMARY KEY (org_id, player_uuid)
-                )""");
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS organization_members (" +
+                            "org_id VARCHAR(36) NOT NULL," +
+                            "player_uuid VARCHAR(36) NOT NULL," +
+                            "role VARCHAR(64) NOT NULL," +
+                            "permissions TEXT NOT NULL DEFAULT ''," +
+                            "joined_at BIGINT NOT NULL," +
+                            "PRIMARY KEY (org_id, player_uuid)" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS outposts (
-                    id TEXT PRIMARY KEY,
-                    org_id TEXT NOT NULL,
-                    world TEXT NOT NULL,
-                    x REAL NOT NULL,
-                    y REAL NOT NULL,
-                    z REAL NOT NULL,
-                    radius INTEGER NOT NULL,
-                    status TEXT NOT NULL DEFAULT 'OPEN',
-                    created_at INTEGER NOT NULL
-                )""");
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS outposts (" +
+                            "id VARCHAR(36) PRIMARY KEY," +
+                            "org_id VARCHAR(36) NOT NULL," +
+                            "world VARCHAR(64) NOT NULL," +
+                            "x DOUBLE NOT NULL," +
+                            "y DOUBLE NOT NULL," +
+                            "z DOUBLE NOT NULL," +
+                            "radius INT NOT NULL," +
+                            "status VARCHAR(32) NOT NULL DEFAULT 'OPEN'," +
+                            "created_at BIGINT NOT NULL" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS outpost_goods (
-                    id TEXT PRIMARY KEY,
-                    outpost_id TEXT NOT NULL,
-                    item_data TEXT NOT NULL,
-                    price REAL NOT NULL,
-                    quantity INTEGER NOT NULL,
-                    added_at INTEGER NOT NULL
-                )""");
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS outpost_goods (" +
+                            "id VARCHAR(36) PRIMARY KEY," +
+                            "outpost_id VARCHAR(36) NOT NULL," +
+                            "item_data TEXT NOT NULL," +
+                            "price DOUBLE NOT NULL," +
+                            "quantity INT NOT NULL," +
+                            "added_at BIGINT NOT NULL" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                } else {
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS organizations (
+                            id TEXT PRIMARY KEY,
+                            name TEXT NOT NULL UNIQUE,
+                            leader_uuid TEXT NOT NULL,
+                            nation_name TEXT,
+                            created_at INTEGER NOT NULL
+                        )""");
+
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS organization_members (
+                            org_id TEXT NOT NULL,
+                            player_uuid TEXT NOT NULL,
+                            role TEXT NOT NULL,
+                            permissions TEXT NOT NULL DEFAULT '',
+                            joined_at INTEGER NOT NULL,
+                            PRIMARY KEY (org_id, player_uuid)
+                        )""");
+
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS outposts (
+                            id TEXT PRIMARY KEY,
+                            org_id TEXT NOT NULL,
+                            world TEXT NOT NULL,
+                            x REAL NOT NULL,
+                            y REAL NOT NULL,
+                            z REAL NOT NULL,
+                            radius INTEGER NOT NULL,
+                            status TEXT NOT NULL DEFAULT 'OPEN',
+                            created_at INTEGER NOT NULL
+                        )""");
+
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS outpost_goods (
+                            id TEXT PRIMARY KEY,
+                            outpost_id TEXT NOT NULL,
+                            item_data TEXT NOT NULL,
+                            price REAL NOT NULL,
+                            quantity INTEGER NOT NULL,
+                            added_at INTEGER NOT NULL
+                        )""");
+                }
+            }
         } catch (SQLException e) {
             logger.severe("[Organization] 创建表失败: " + e.getMessage());
         }

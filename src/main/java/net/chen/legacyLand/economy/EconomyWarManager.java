@@ -55,19 +55,17 @@ public class EconomyWarManager {
      * 创建经济战争表
      */
     private void createWarTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS economy_wars (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                attacker_nation TEXT NOT NULL,
-                target_nation TEXT NOT NULL,
-                war_type TEXT NOT NULL,
-                started_at INTEGER NOT NULL,
-                ended_at INTEGER,
-                status TEXT NOT NULL DEFAULT 'active',
-                FOREIGN KEY (attacker_nation) REFERENCES treasuries(nation_name),
-                FOREIGN KEY (target_nation) REFERENCES treasuries(nation_name)
-            )
-        """;
+        String sql = "CREATE TABLE IF NOT EXISTS economy_wars (" +
+            "id " + database.pkIntType() + "," +
+            "attacker_nation " + database.textType() + " NOT NULL," +
+            "target_nation " + database.textType() + " NOT NULL," +
+            "war_type " + database.textType() + " NOT NULL," +
+            "started_at INTEGER NOT NULL," +
+            "ended_at INTEGER," +
+            "status " + database.textType() + " NOT NULL DEFAULT 'active'," +
+            "FOREIGN KEY (attacker_nation) REFERENCES treasuries(nation_name)," +
+            "FOREIGN KEY (target_nation) REFERENCES treasuries(nation_name)" +
+            ")" + database.engineCharset();
 
         try (Statement stmt = database.getConnection().createStatement()) {
             stmt.executeUpdate(sql);

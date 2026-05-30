@@ -52,21 +52,19 @@ public class FuturesManager {
      * 创建期货表
      */
     private void createFuturesTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS futures (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                seller_uuid TEXT NOT NULL,
-                buyer_uuid TEXT,
-                nation_name TEXT NOT NULL,
-                material TEXT NOT NULL,
-                amount INTEGER NOT NULL,
-                price REAL NOT NULL,
-                delivery_date INTEGER NOT NULL,
-                created_at INTEGER NOT NULL,
-                status TEXT NOT NULL DEFAULT 'open',
-                FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)
-            )
-        """;
+        String sql = "CREATE TABLE IF NOT EXISTS futures (" +
+            "id " + database.pkIntType() + "," +
+            "seller_uuid " + database.uuidType() + " NOT NULL," +
+            "buyer_uuid " + database.uuidType() + "," +
+            "nation_name " + database.textType() + " NOT NULL," +
+            "material " + database.textType() + " NOT NULL," +
+            "amount INTEGER NOT NULL," +
+            "price " + database.realType() + " NOT NULL," +
+            "delivery_date INTEGER NOT NULL," +
+            "created_at INTEGER NOT NULL," +
+            "status " + database.textType() + " NOT NULL DEFAULT 'open'," +
+            "FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)" +
+            ")" + database.engineCharset();
 
         try (Statement stmt = database.getConnection().createStatement()) {
             stmt.executeUpdate(sql);

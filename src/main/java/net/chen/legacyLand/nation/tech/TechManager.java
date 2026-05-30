@@ -111,19 +111,35 @@ public class TechManager {
     }
 
     private void createTables() {
-        try (Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS nation_tech_state (
-                    nation_name TEXT PRIMARY KEY,
-                    research_points INTEGER NOT NULL DEFAULT 0
-                )""");
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS nation_tech_completed (
-                    nation_name TEXT NOT NULL,
-                    node_id TEXT NOT NULL,
-                    completed_at INTEGER NOT NULL,
-                    PRIMARY KEY (nation_name, node_id)
-                )""");
+        try {
+            boolean isMySQL = isMySQL(connection);
+            try (Statement stmt = connection.createStatement()) {
+                if (isMySQL) {
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS nation_tech_state (" +
+                            "nation_name VARCHAR(255) PRIMARY KEY," +
+                            "research_points INT NOT NULL DEFAULT 0" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS nation_tech_completed (" +
+                            "nation_name VARCHAR(255) NOT NULL," +
+                            "node_id VARCHAR(255) NOT NULL," +
+                            "completed_at BIGINT NOT NULL," +
+                            "PRIMARY KEY (nation_name, node_id)" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                } else {
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS nation_tech_state (
+                            nation_name TEXT PRIMARY KEY,
+                            research_points INTEGER NOT NULL DEFAULT 0
+                        )""");
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS nation_tech_completed (
+                            nation_name TEXT NOT NULL,
+                            node_id TEXT NOT NULL,
+                            completed_at INTEGER NOT NULL,
+                            PRIMARY KEY (nation_name, node_id)
+                        )""");
+                }
+            }
         } catch (SQLException e) {
             logger.severe("[Tech] 创建数据库表失败: " + e.getMessage());
         }
@@ -270,7 +286,9 @@ public class TechManager {
 
     private void persistState(NationTechState state) {
         try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT OR REPLACE INTO nation_tech_state (nation_name, research_points) VALUES (?,?)")) {
+                isMySQL(connection)
+                        ? "INSERT INTO nation_tech_state (nation_name, research_points) VALUES (?,?) ON DUPLICATE KEY UPDATE research_points=VALUES(research_points)"
+                        : "INSERT OR REPLACE INTO nation_tech_state (nation_name, research_points) VALUES (?,?)")) {
             ps.setString(1, state.getNationName());
             ps.setInt(2, state.getResearchPoints());
             ps.executeUpdate();
@@ -281,7 +299,9 @@ public class TechManager {
 
     private void persistCompleted(String nationName, String nodeId) {
         try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT OR IGNORE INTO nation_tech_completed (nation_name, node_id, completed_at) VALUES (?,?,?)")) {
+                isMySQL(connection)
+                        ? "INSERT IGNORE INTO nation_tech_completed (nation_name, node_id, completed_at) VALUES (?,?,?)"
+                        : "INSERT OR IGNORE INTO nation_tech_completed (nation_name, node_id, completed_at) VALUES (?,?,?)")) {
             ps.setString(1, nationName);
             ps.setString(2, nodeId);
             ps.setLong(3, System.currentTimeMillis());
@@ -289,6 +309,11 @@ public class TechManager {
         } catch (SQLException e) {
             logger.severe("[Tech] 保存已完成科技失败: " + e.getMessage());
         }
+    }
+
+    private static boolean isMySQL(Connection conn) {
+        try { return conn.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"); }
+        catch (SQLException e) { return false; }
     }
 
     private NationTechState getOrCreateState(String nationName) {

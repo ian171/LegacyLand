@@ -73,7 +73,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 @Getter
@@ -149,9 +148,14 @@ public final class LegacyLand extends JavaPlugin {
         databaseManager = new DatabaseManager(this);
         databaseManager.connect();
 
-        // 初始化经济系统（独立数据库）- 必须在 registerCommands 之前
+        // 初始化经济系统（跟随主数据库配置，独立 SQLite 作为 fallback）
         economyDatabase = net.chen.legacyLand.economy.EconomyDatabase.getInstance(this);
-        economyDatabase.connect();
+        String dbType = getConfig().getString("database.type", "sqlite").toLowerCase();
+        if (!"mongodb".equals(dbType)) {
+            economyDatabase.connect(databaseManager, dbType);
+        } else {
+            economyDatabase.connect();
+        }
         treasuryManager = net.chen.legacyLand.economy.TreasuryManager.getInstance(this);
         treasuryManager.init();
         bankManager = net.chen.legacyLand.economy.BankManager.getInstance(this, treasuryManager);

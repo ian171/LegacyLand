@@ -70,32 +70,59 @@ public class MarketManager {
     }
 
     private void createTables() {
-        try (Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS markets (
-                    id TEXT PRIMARY KEY,
-                    nation_name TEXT NOT NULL,
-                    world TEXT NOT NULL,
-                    chunk_x INTEGER NOT NULL,
-                    chunk_z INTEGER NOT NULL,
-                    approved_by TEXT NOT NULL,
-                    created_at INTEGER NOT NULL,
-                    UNIQUE(world, chunk_x, chunk_z)
-                )""");
-
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS market_chests (
-                    id TEXT PRIMARY KEY,
-                    market_id TEXT NOT NULL,
-                    world TEXT NOT NULL,
-                    x INTEGER NOT NULL,
-                    y INTEGER NOT NULL,
-                    z INTEGER NOT NULL,
-                    owner_uuid TEXT NOT NULL,
-                    price_per_item REAL NOT NULL DEFAULT 0,
-                    price_set INTEGER NOT NULL DEFAULT 0,
-                    created_at INTEGER NOT NULL
-                )""");
+        try {
+            boolean isMySQL = isMySQL(connection);
+            try (Statement stmt = connection.createStatement()) {
+                if (isMySQL) {
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS markets (" +
+                            "id VARCHAR(36) PRIMARY KEY," +
+                            "nation_name VARCHAR(255) NOT NULL," +
+                            "world VARCHAR(64) NOT NULL," +
+                            "chunk_x INT NOT NULL," +
+                            "chunk_z INT NOT NULL," +
+                            "approved_by VARCHAR(36) NOT NULL," +
+                            "created_at BIGINT NOT NULL," +
+                            "UNIQUE(world, chunk_x, chunk_z)" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS market_chests (" +
+                            "id VARCHAR(36) PRIMARY KEY," +
+                            "market_id VARCHAR(36) NOT NULL," +
+                            "world VARCHAR(64) NOT NULL," +
+                            "x INT NOT NULL," +
+                            "y INT NOT NULL," +
+                            "z INT NOT NULL," +
+                            "owner_uuid VARCHAR(36) NOT NULL," +
+                            "price_per_item DOUBLE NOT NULL DEFAULT 0," +
+                            "price_set TINYINT NOT NULL DEFAULT 0," +
+                            "created_at BIGINT NOT NULL" +
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                } else {
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS markets (
+                            id TEXT PRIMARY KEY,
+                            nation_name TEXT NOT NULL,
+                            world TEXT NOT NULL,
+                            chunk_x INTEGER NOT NULL,
+                            chunk_z INTEGER NOT NULL,
+                            approved_by TEXT NOT NULL,
+                            created_at INTEGER NOT NULL,
+                            UNIQUE(world, chunk_x, chunk_z)
+                        )""");
+                    stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS market_chests (
+                            id TEXT PRIMARY KEY,
+                            market_id TEXT NOT NULL,
+                            world TEXT NOT NULL,
+                            x INTEGER NOT NULL,
+                            y INTEGER NOT NULL,
+                            z INTEGER NOT NULL,
+                            owner_uuid TEXT NOT NULL,
+                            price_per_item REAL NOT NULL DEFAULT 0,
+                            price_set INTEGER NOT NULL DEFAULT 0,
+                            created_at INTEGER NOT NULL
+                        )""");
+                }
+            }
         } catch (SQLException e) {
             logger.severe("[Market] 创建表失败: " + e.getMessage());
         }
@@ -395,7 +422,9 @@ public class MarketManager {
 
     private void saveMarket(Market market) {
         try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT OR IGNORE INTO markets (id, nation_name, world, chunk_x, chunk_z, approved_by, created_at) VALUES (?,?,?,?,?,?,?)")) {
+                isMySQL(connection)
+                        ? "INSERT IGNORE INTO markets (id, nation_name, world, chunk_x, chunk_z, approved_by, created_at) VALUES (?,?,?,?,?,?,?)"
+                        : "INSERT OR IGNORE INTO markets (id, nation_name, world, chunk_x, chunk_z, approved_by, created_at) VALUES (?,?,?,?,?,?,?)")) {
             ps.setString(1, market.getId());
             ps.setString(2, market.getNationName());
             ps.setString(3, market.getWorldName());
@@ -421,7 +450,9 @@ public class MarketManager {
 
     private void saveChest(MarketChest chest) {
         try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT OR IGNORE INTO market_chests (id, market_id, world, x, y, z, owner_uuid, price_per_item, price_set, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)")) {
+                isMySQL(connection)
+                        ? "INSERT IGNORE INTO market_chests (id, market_id, world, x, y, z, owner_uuid, price_per_item, price_set, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)"
+                        : "INSERT OR IGNORE INTO market_chests (id, market_id, world, x, y, z, owner_uuid, price_per_item, price_set, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)")) {
             ps.setString(1, chest.getId());
             ps.setString(2, chest.getMarketId());
             ps.setString(3, chest.getWorldName());
@@ -545,6 +576,11 @@ public class MarketManager {
         } catch (IOException ex) {
             logger.severe("Failed to save market markers: " + ex.getMessage());
         }
+    }
+
+    private static boolean isMySQL(Connection conn) {
+        try { return conn.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"); }
+        catch (SQLException e) { return false; }
     }
 
     private String chunkKey(String world, int cx, int cz) {
