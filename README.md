@@ -385,5 +385,8 @@ JAR文件位置：`build/libs/LegacyLand-1.0-Beta2.jar`
 本项目为私有项目，未经授权不得使用。
 
 ## Contributor
-[@ian171](https://github.com/ian171)
+<a href="https://github.com/ian171/LegacyLand/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ian171/LegacyLand" />
+</a>
+
 
