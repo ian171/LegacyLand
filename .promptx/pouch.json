@@ -1,0 +1,148 @@
+{
+  "currentState": "initial",
+  "stateHistory": [
+    {
+      "from": "initial",
+      "command": "project",
+      "timestamp": "2026-02-27T09:52:29.539Z",
+      "args": [
+        {
+          "workingDirectory": "/Users/chen/Documents/Develop/LegacyLand",
+          "ideType": "claude"
+        }
+      ]
+    },
+    {
+      "from": "initial",
+      "command": "remember",
+      "timestamp": "2026-02-27T09:52:45.495Z",
+      "args": [
+        {
+          "role": "_",
+          "engrams": [
+            {
+              "content": "LegacyLand is a Minecraft Paper 1.21 plugin (Java 21, Gradle) simulating nation-state systems. Version 1.0-Beta2.0. License: MS-RSL.",
+              "schema": "LegacyLand Minecraft Paper plugin nation-state Java21 Gradle",
+              "strength": 0.95,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "Core dependencies: Towny 0.102.0.0 (required), ItemsAdder (required), PlaceholderAPI (optional), Vault, CraftEngine, HikariCP. Database: SQLite/MySQL/MongoDB.",
+              "schema": "LegacyLand dependencies Towny ItemsAdder Vault database SQLite MySQL MongoDB",
+              "strength": 0.9,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "LegacyLand core systems: Nation管理, 5种政体(封建/共和/君主立宪/军事独裁/商业联邦), 外交系统, 战争(标准战/攻城战/旗帜战), 玩家状态(温度/水分/职业/伤势), 季节系统(12子季节), 市场系统, 成就系统, 组织系统.",
+              "schema": "LegacyLand 系统 国家 政体 外交 战争 攻城 旗帜 玩家状态 季节 市场 成就 组织",
+              "strength": 0.95,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "LegacyLand架构: Manager模式(每个系统独立Manager), 事件驱动, 多数据库抽象层, 配置驱动设计(politics.yml定义政体), Folia兼容(FoliaScheduler), Lombok减少样板代码, 20+ PlaceholderAPI变量.",
+              "schema": "LegacyLand 架构 Manager 事件驱动 数据库抽象 配置驱动 Folia Lombok PlaceholderAPI",
+              "strength": 0.9,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "LegacyLand包结构: nation/(politics/diplomacy/transaction/plot/commands), war/(siege/flagwar/commands), player/(status/commands/listeners), season/, market/, organization/, achievements/, database/, config/, command/, util/, listeners/, item/, events/",
+              "schema": "LegacyLand 包结构 nation war player season market organization achievements database",
+              "strength": 0.85,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "LegacyLand当前活跃开发: feat分支修改了NationTradeManager(贸易系统), OrganizationManager(组织系统), OrganizationPermission(权限系统).",
+              "schema": "LegacyLand feat分支 NationTradeManager OrganizationManager OrganizationPermission 开发中",
+              "strength": 0.85,
+              "type": "ATOMIC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "from": "initial",
+      "command": "remember",
+      "timestamp": "2026-02-27T10:07:07.063Z",
+      "args": [
+        {
+          "role": "_",
+          "engrams": [
+            {
+              "content": "LegacyLand feat分支完成两项整合：1) OrganizationManager与Nation权限体系整合（MANAGE_ORGANIZATION权限、CREATE_OUTPOST修复）；2) NationTradeManager贸易逻辑重构（原子性事务、外交门控、贸易税、TradeResult枚举）。版本标记为1.0-Beta2.1。",
+              "schema": "LegacyLand feat分支 整合 OrganizationManager NationTradeManager 版本 Beta2.1",
+              "strength": 0.9,
+              "type": "ATOMIC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "from": "initial",
+      "command": "recall",
+      "timestamp": "2026-02-27T13:38:18.497Z",
+      "args": [
+        {
+          "role": "_",
+          "query": "LegacyLand 系统 国家 政体 战争 经济"
+        }
+      ]
+    },
+    {
+      "from": "initial",
+      "command": "remember",
+      "timestamp": "2026-02-27T14:33:06.920Z",
+      "args": [
+        {
+          "role": "sean",
+          "engrams": [
+            {
+              "content": "LegacyLand 是 Bukkit/Folia 国家模拟插件，依赖 Towny+Vault，Manager 单例+SQLite 持久化+FoliaScheduler 定时任务架构",
+              "schema": "LegacyLand 插件 架构 Towny Vault Manager 单例 SQLite FoliaScheduler",
+              "strength": 0.9,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "NationManager 关键方法：getPoliticalSystemId(nationName) 返回政体ID字符串，getPlayerRole(nationName, uuid) 返回 NationRole，hasPermission(player, permission) 检查权限，getPlayerNation(player) 获取所属国家",
+              "schema": "NationManager getPoliticalSystemId getPlayerRole hasPermission getPlayerNation",
+              "strength": 0.95,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "法令系统位于 nation/law/ 包：LawType(8种), ActiveLaw(record), LawProposal, LawManager(单例 getInstance(plugin)/getInstance()), LawCommand(/law), LawTimerTask(每分钟)。新增权限 ENACT_LAW/PROPOSE_LAW/VOTE_LAW",
+              "schema": "法令系统 LawType ActiveLaw LawProposal LawManager LawCommand LawTimerTask ENACT_LAW PROPOSE_LAW VOTE_LAW",
+              "strength": 0.9,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "科技树系统位于 nation/tech/ 包：TechNode(record), TechStatus(enum), NationTechState, TechManager(单例), TechCommand(/tech), TechPointTask(每5分钟)。配置文件 resources/tech.yml，government-locks 节定义政体锁定科技线",
+              "schema": "科技树 TechNode TechStatus NationTechState TechManager TechCommand TechPointTask tech.yml government-locks",
+              "strength": 0.9,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "tech.yml government-locks 配置政体与科技线冲突：键名需与 getPoliticalSystemId() 返回值一致（代码做 toUpperCase 处理）。当前配置：MILITARY_DICTATORSHIP 锁定 TRADE+DIPLOMACY，TRADE_FEDERATION 锁定 MILITARY",
+              "schema": "tech.yml government-locks 政体锁定 科技线 MILITARY_DICTATORSHIP TRADE_FEDERATION",
+              "strength": 0.85,
+              "type": "ATOMIC"
+            },
+            {
+              "content": "NationTradeManager.purchaseFrom() 新增钩子：外交检查后检查 TRADE_EMBARGO 禁运令，税率计算时叠加 TRADE_TAX_MODIFIER 法令和 TRADE 科技线 trade_tax_reduction 效果。新增 TradeResult.TRADE_EMBARGOED",
+              "schema": "NationTradeManager purchaseFrom TRADE_EMBARGO TRADE_TAX_MODIFIER trade_tax_reduction TRADE_EMBARGOED",
+              "strength": 0.85,
+              "type": "PATTERN"
+            },
+            {
+              "content": "LegacyLand 初始化顺序：OrganizationManager → MarketManager → LawManager(init) → TechManager(loadConfig+init)，均在 dbConn != null 块内。定时任务：LawTimerTask 1200L，TechPointTask 从 config tech.research-tick-interval 读取",
+              "schema": "LegacyLand 初始化顺序 LawManager TechManager 定时任务 LawTimerTask TechPointTask",
+              "strength": 0.85,
+              "type": "PATTERN"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "lastUpdated": "2026-02-27T14:33:06.943Z"
+}

@@ -69,7 +69,7 @@ public class LawManager {
                             "id VARCHAR(36) PRIMARY KEY," +
                             "nation_name VARCHAR(255) NOT NULL," +
                             "type VARCHAR(64) NOT NULL," +
-                            "params TEXT NOT NULL DEFAULT '{}'," +
+                            "params TEXT NOT NULL," +
                             "enacted_by VARCHAR(255) NOT NULL," +
                             "enacted_at BIGINT NOT NULL," +
                             "expires_at BIGINT NOT NULL DEFAULT 0," +
@@ -79,7 +79,7 @@ public class LawManager {
                             "id VARCHAR(36) PRIMARY KEY," +
                             "nation_name VARCHAR(255) NOT NULL," +
                             "type VARCHAR(64) NOT NULL," +
-                            "params TEXT NOT NULL DEFAULT '{}'," +
+                            "params TEXT NOT NULL," +
                             "proposed_by VARCHAR(255) NOT NULL," +
                             "proposed_at BIGINT NOT NULL," +
                             "vote_deadline BIGINT NOT NULL," +

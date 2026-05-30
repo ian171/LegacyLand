@@ -77,7 +77,7 @@ public class OrganizationManager {
                             "org_id VARCHAR(36) NOT NULL," +
                             "player_uuid VARCHAR(36) NOT NULL," +
                             "role VARCHAR(64) NOT NULL," +
-                            "permissions TEXT NOT NULL DEFAULT ''," +
+                            "permissions TEXT NOT NULL," +
                             "joined_at BIGINT NOT NULL," +
                             "PRIMARY KEY (org_id, player_uuid)" +
                             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
