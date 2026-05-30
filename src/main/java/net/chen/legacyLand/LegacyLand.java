@@ -73,7 +73,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 @Getter

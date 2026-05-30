@@ -9,6 +9,7 @@ import net.chen.legacyLand.nation.diplomacy.DiplomacyRelation;
 import net.chen.legacyLand.nation.diplomacy.RelationType;
 import net.chen.legacyLand.player.PlayerData;
 import net.chen.legacyLand.player.Profession;
+import net.chen.legacyLand.resource.pricing.ChunkResourceData;
 
 import java.sql.*;
 import java.util.*;
@@ -37,10 +38,12 @@ public class MySQLDatabase implements IDatabase {
             String username = plugin.getConfig().getString("database.mysql.username", "root");
             String password = plugin.getConfig().getString("database.mysql.password", "password");
 
+            // 手动加载驱动，确保 HikariCP 的 ClassLoader 能找到 Shadow 重定向后的驱动类
+            Class.forName("net.chen.legacyLand.libs.mysql.cj.jdbc.Driver", true, getClass().getClassLoader());
+
             config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&serverTimezone=UTC&characterEncoding=utf8");
             config.setUsername(username);
             config.setPassword(password);
-            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
             // 连接池配置
             config.setMaximumPoolSize(plugin.getConfig().getInt("database.mysql.pool.maximum-pool-size", 10));
@@ -58,7 +61,7 @@ public class MySQLDatabase implements IDatabase {
             createTables();
         } catch (Exception e) {
             getLogger().severe("MySQL 数据库连接失败: " + e.getMessage());
-            getLogger().severe(e.getCause().toString());
+            getLogger().severe(e.getCause() != null ? e.getCause().toString() : "（无 cause）");
         }
     }
 
@@ -222,6 +225,31 @@ public class MySQLDatabase implements IDatabase {
                     "INDEX idx_chunk_world (world)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
+            // 市场表
+            String marketsTable = "CREATE TABLE IF NOT EXISTS markets (" +
+                    "id VARCHAR(36) PRIMARY KEY," +
+                    "nation_name VARCHAR(255) NOT NULL," +
+                    "world VARCHAR(64) NOT NULL," +
+                    "chunk_x INT NOT NULL," +
+                    "chunk_z INT NOT NULL," +
+                    "approved_by VARCHAR(36) NOT NULL," +
+                    "created_at BIGINT NOT NULL" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+            // 市场箱子表
+            String marketChestsTable = "CREATE TABLE IF NOT EXISTS market_chests (" +
+                    "id VARCHAR(36) PRIMARY KEY," +
+                    "market_id VARCHAR(36) NOT NULL," +
+                    "world VARCHAR(64) NOT NULL," +
+                    "x INT NOT NULL," +
+                    "y INT NOT NULL," +
+                    "z INT NOT NULL," +
+                    "owner_uuid VARCHAR(36) NOT NULL," +
+                    "price_per_item DOUBLE DEFAULT 0," +
+                    "price_set TINYINT DEFAULT 0," +
+                    "created_at BIGINT NOT NULL" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(nationExtTable);
                 stmt.execute(playerRolesTable);
@@ -235,6 +263,8 @@ public class MySQLDatabase implements IDatabase {
                 stmt.execute(flagWarsTable);
                 stmt.execute(guaranteeRelationsTable);
                 stmt.execute(chunkResourceTable);
+                stmt.execute(marketsTable);
+                stmt.execute(marketChestsTable);
                 LegacyLand.logger.info("MySQL 数据库表创建成功！");
             }
         } catch (SQLException e) {
@@ -361,10 +391,15 @@ public class MySQLDatabase implements IDatabase {
 
     @Override
     public void deleteNationData(String nationName) {
+        String sql1 = "DELETE FROM nation_extensions WHERE nation_name = ?";
+        String sql2 = "DELETE FROM player_roles WHERE nation_name = ?";
         try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-            stmt.execute("DELETE FROM nation_extensions WHERE nation_name = '" + nationName + "'");
-            stmt.execute("DELETE FROM player_roles WHERE nation_name = '" + nationName + "'");
+             PreparedStatement pstmt1 = conn.prepareStatement(sql1);
+             PreparedStatement pstmt2 = conn.prepareStatement(sql2)) {
+            pstmt1.setString(1, nationName);
+            pstmt1.executeUpdate();
+            pstmt2.setString(1, nationName);
+            pstmt2.executeUpdate();
         } catch (SQLException e) {
             LegacyLand.logger.severe("删除国家数据失败: " + e.getMessage());
         }
@@ -1083,7 +1118,7 @@ public class MySQLDatabase implements IDatabase {
     // ========== 区块资源储量（P1 普查） ==========
 
     @Override
-    public void saveChunkResource(net.chen.legacyLand.resource.pricing.ChunkResourceData data) {
+    public void saveChunkResource(ChunkResourceData data) {
         String sql = "INSERT INTO chunk_resources " +
                 "(world, chunk_x, chunk_z, biome, initial_value, current_value, biome_factor, last_scan) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
@@ -1106,7 +1141,7 @@ public class MySQLDatabase implements IDatabase {
     }
 
     @Override
-    public net.chen.legacyLand.resource.pricing.ChunkResourceData loadChunkResource(String world, int chunkX, int chunkZ) {
+    public ChunkResourceData loadChunkResource(String world, int chunkX, int chunkZ) {
         String sql = "SELECT biome, initial_value, current_value, biome_factor, last_scan " +
                 "FROM chunk_resources WHERE world = ? AND chunk_x = ? AND chunk_z = ?";
         try (Connection conn = getConnection();
@@ -1132,7 +1167,7 @@ public class MySQLDatabase implements IDatabase {
     }
 
     @Override
-    public java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> loadAllChunkResources() {
+    public List<ChunkResourceData> loadAllChunkResources() {
         java.util.List<net.chen.legacyLand.resource.pricing.ChunkResourceData> list = new java.util.ArrayList<>();
         String sql = "SELECT world, chunk_x, chunk_z, biome, initial_value, current_value, biome_factor, last_scan FROM chunk_resources";
         try (Connection conn = getConnection();
