@@ -60,20 +60,18 @@ public class EconomyStatsManager {
      * 创建统计表
      */
     private void createStatsTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS economy_stats (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nation_name TEXT NOT NULL,
-                timestamp INTEGER NOT NULL,
-                m0 REAL NOT NULL,
-                m1 REAL NOT NULL,
-                m2 REAL NOT NULL,
-                gdp REAL NOT NULL,
-                inflation_rate REAL NOT NULL,
-                exchange_rate REAL NOT NULL,
-                FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)
-            )
-        """;
+        String sql = "CREATE TABLE IF NOT EXISTS economy_stats (" +
+            "id " + database.pkIntType() + "," +
+            "nation_name " + database.textType() + " NOT NULL," +
+            "timestamp INTEGER NOT NULL," +
+            "m0 " + database.realType() + " NOT NULL," +
+            "m1 " + database.realType() + " NOT NULL," +
+            "m2 " + database.realType() + " NOT NULL," +
+            "gdp " + database.realType() + " NOT NULL," +
+            "inflation_rate " + database.realType() + " NOT NULL," +
+            "exchange_rate " + database.realType() + " NOT NULL," +
+            "FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)" +
+            ")" + database.engineCharset();
 
         try (Statement stmt = database.getConnection().createStatement()) {
             stmt.executeUpdate(sql);

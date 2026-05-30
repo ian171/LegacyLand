@@ -57,20 +57,18 @@ public class LoanManager {
      * 创建贷款表
      */
     private void createLoanTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS loans (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                player_uuid TEXT NOT NULL,
-                nation_name TEXT NOT NULL,
-                amount REAL NOT NULL,
-                interest_rate REAL NOT NULL,
-                issued_at INTEGER NOT NULL,
-                due_at INTEGER NOT NULL,
-                repaid_amount REAL NOT NULL DEFAULT 0,
-                status TEXT NOT NULL DEFAULT 'active',
-                FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)
-            )
-        """;
+        String sql = "CREATE TABLE IF NOT EXISTS loans (" +
+            "id " + database.pkIntType() + "," +
+            "player_uuid " + database.uuidType() + " NOT NULL," +
+            "nation_name " + database.textType() + " NOT NULL," +
+            "amount " + database.realType() + " NOT NULL," +
+            "interest_rate " + database.realType() + " NOT NULL," +
+            "issued_at INTEGER NOT NULL," +
+            "due_at INTEGER NOT NULL," +
+            "repaid_amount " + database.realType() + " NOT NULL DEFAULT 0," +
+            "status " + database.textType() + " NOT NULL DEFAULT 'active'," +
+            "FOREIGN KEY (nation_name) REFERENCES treasuries(nation_name)" +
+            ")" + database.engineCharset();
 
         try (Statement stmt = database.getConnection().createStatement()) {
             stmt.executeUpdate(sql);

@@ -37,6 +37,8 @@ public class SQLiteDatabase implements IDatabase {
             connection = DriverManager.getConnection(url);
             LegacyLand.logger.info("SQLite 数据库连接成功！");
             createTables();
+            // 自动迁移数据库结构
+            new DatabaseMigration(connection, "sqlite").migrate();
         } catch (SQLException e) {
             LegacyLand.logger.severe("SQLite 数据库连接失败: " + e.getMessage());
             e.printStackTrace();
@@ -198,6 +200,31 @@ public class SQLiteDatabase implements IDatabase {
                     "PRIMARY KEY (world, chunk_x, chunk_z)" +
                     ")";
 
+            // 市场数据表
+            String marketsTable = "CREATE TABLE IF NOT EXISTS markets (" +
+                    "id TEXT PRIMARY KEY," +
+                    "nation_name TEXT NOT NULL," +
+                    "world TEXT NOT NULL," +
+                    "chunk_x INTEGER NOT NULL," +
+                    "chunk_z INTEGER NOT NULL," +
+                    "approved_by TEXT NOT NULL," +
+                    "created_at INTEGER NOT NULL" +
+                    ")";
+
+            // 市场箱子表
+            String marketChestsTable = "CREATE TABLE IF NOT EXISTS market_chests (" +
+                    "id TEXT PRIMARY KEY," +
+                    "market_id TEXT NOT NULL," +
+                    "world TEXT NOT NULL," +
+                    "x INTEGER NOT NULL," +
+                    "y INTEGER NOT NULL," +
+                    "z INTEGER NOT NULL," +
+                    "owner_uuid TEXT NOT NULL," +
+                    "price_per_item REAL DEFAULT 0," +
+                    "price_set INTEGER DEFAULT 0," +
+                    "created_at INTEGER NOT NULL" +
+                    ")";
+
             stmt.execute(nationExtTable);
             stmt.execute(playerRolesTable);
             stmt.execute(diplomacyTable);
@@ -210,6 +237,8 @@ public class SQLiteDatabase implements IDatabase {
             stmt.execute(flagWarsTable);
             stmt.execute(guaranteeRelationsTable);
             stmt.execute(chunkResourceTable);
+            stmt.execute(marketsTable);
+            stmt.execute(marketChestsTable);
 
             stmt.close();
             LegacyLand.logger.info("SQLite 数据库表创建成功！");
@@ -318,11 +347,12 @@ public class SQLiteDatabase implements IDatabase {
 
     @Override
     public void deleteNationData(String nationName) {
-        try {
-            Statement stmt = connection.createStatement();
-            stmt.execute("DELETE FROM nation_extensions WHERE nation_name = '" + nationName + "'");
-            stmt.execute("DELETE FROM player_roles WHERE nation_name = '" + nationName + "'");
-            stmt.close();
+        try (PreparedStatement pstmt1 = connection.prepareStatement("DELETE FROM nation_extensions WHERE nation_name = ?");
+             PreparedStatement pstmt2 = connection.prepareStatement("DELETE FROM player_roles WHERE nation_name = ?")) {
+            pstmt1.setString(1, nationName);
+            pstmt1.executeUpdate();
+            pstmt2.setString(1, nationName);
+            pstmt2.executeUpdate();
         } catch (SQLException e) {
             getLogger().severe("删除国家数据失败: " + e.getMessage());
         }

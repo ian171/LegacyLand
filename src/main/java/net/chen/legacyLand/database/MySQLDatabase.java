@@ -59,9 +59,16 @@ public class MySQLDatabase implements IDatabase {
             dataSource = new HikariDataSource(config);
             LegacyLand.logger.info("MySQL 数据库连接成功！");
             createTables();
+            // 自动迁移数据库结构
+            try (Connection conn = dataSource.getConnection()) {
+                new DatabaseMigration(conn, "mysql").migrate();
+            }
         } catch (Exception e) {
             getLogger().severe("MySQL 数据库连接失败: " + e.getMessage());
-            getLogger().severe(e.getCause() != null ? e.getCause().toString() : "（无 cause）");
+            if (e.getCause() != null) {
+                getLogger().severe("原因: " + e.getCause().toString());
+            }
+            e.printStackTrace();
         }
     }
 
@@ -225,7 +232,7 @@ public class MySQLDatabase implements IDatabase {
                     "INDEX idx_chunk_world (world)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
-            // 市场表
+            // 市场数据表
             String marketsTable = "CREATE TABLE IF NOT EXISTS markets (" +
                     "id VARCHAR(36) PRIMARY KEY," +
                     "nation_name VARCHAR(255) NOT NULL," +
@@ -246,8 +253,9 @@ public class MySQLDatabase implements IDatabase {
                     "z INT NOT NULL," +
                     "owner_uuid VARCHAR(36) NOT NULL," +
                     "price_per_item DOUBLE DEFAULT 0," +
-                    "price_set TINYINT DEFAULT 0," +
-                    "created_at BIGINT NOT NULL" +
+                    "price_set INT DEFAULT 0," +
+                    "created_at BIGINT NOT NULL," +
+                    "INDEX idx_market_chests_market (market_id)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
             try (Statement stmt = conn.createStatement()) {
